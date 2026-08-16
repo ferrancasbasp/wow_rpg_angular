@@ -31,12 +31,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           <div class="header-info">
             <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" placeholder="Nombre">
             <div class="char-meta">
-              <span class="level-control">
-                Nv
-                <button class="stat-btn" (click)="changeLevel(-1)">-</button>
-                <input type="number" [value]="charSvc.character().level" min="1" [attr.max]="MAX_LEVEL" (input)="onLevelInput($event)" (change)="clampLevel()">
-                <button class="stat-btn" (click)="changeLevel(1)">+</button>
-              </span>
+              <span class="level-display">Nv {{ charSvc.character().level }}</span>
               <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
                 @for (entry of classEntries; track entry[0]) {
                   <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
@@ -699,6 +694,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       width: 32px; text-align: center; background: var(--bg-input);
       border: 1px solid var(--gold-dark); border-radius: 3px; color: var(--text);
       padding: 1px; font-family: 'EB Garamond', serif; font-size: 13px; outline: none;
+    }
+    .level-display {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--gold);
     }
 
     .class-select {
