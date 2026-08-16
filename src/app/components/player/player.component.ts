@@ -50,25 +50,45 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     </div>
 
     <div class="top-bar-row">
-      <div class="xp-section">
-        <div class="xp-bar-wrapper" [class.xp-levelup-anim]="levelUpFlash()">
-          <div class="xp-bar-header">
-            <span class="xp-bar-label">Experiencia</span>
-            <span class="xp-bar-value">{{ charSvc.character().currentXP || 0 }} / {{ charSvc.xpForNextLevel() }}</span>
+      <div class="resource-section">
+        <div class="resource-bar">
+          <div class="resource-label">
+            <span>Vida@if (shieldValue() > 0) {<span class="shield-text"> shield {{ shieldValue() }}</span>}</span>
+            <span>{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}</span>
           </div>
-          <div class="xp-bar-track">
-            <div class="xp-bar-fill" [style.width]="charSvc.xpProgressPercent() + '%'"></div>
-            <div class="xp-bar-text">{{ charSvc.xpProgressPercent() }}%</div>
+          <div class="resource-track">
+            <div class="resource-fill hp" [style.width]="charSvc.hpPercent() + '%'"></div>
+            @if (shieldValue() > 0) {
+              <div class="resource-fill shield" [style.width]="shieldPercent() + '%'"></div>
+            }
+            <div class="resource-text">{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}@if (shieldValue() > 0) { +{{ shieldValue() }} }</div>
           </div>
-          <div class="xp-controls">
-            <input type="number" [value]="xpInputAmount()" (input)="onXpInput($event)" class="xp-input" placeholder="XP" min="1">
-            <button class="xp-quick-btn" (click)="addXP(xpInputAmount() || 0)">Anadir XP</button>
-            <div class="xp-quick-btns">
-              <button class="xp-quick-btn" (click)="addXP(1000)">+1k</button>
-              <button class="xp-quick-btn" (click)="addXP(5000)">+5k</button>
-              <button class="xp-quick-btn" (click)="addXP(10000)">+10k</button>
+        </div>
+
+        <div class="resource-bar">
+          <div class="resource-label">
+            <span>{{ resourceLabel() }}</span>
+            <span>{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</span>
+          </div>
+          <div class="resource-track">
+            <div class="resource-fill"
+                 [class.mana]="charSvc.resourceConfig().type === 'mana'"
+                 [class.rage]="charSvc.resourceConfig().type === 'rage'"
+                 [class.energy]="charSvc.resourceConfig().type === 'energy'"
+                 [style.width]="charSvc.resourcePercent() + '%'"
+                 [style.background]="resourceBarBackground()">
             </div>
+            <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
           </div>
+        </div>
+
+        <div class="quick-icons">
+          <button class="quick-icon-btn" (click)="showStatsModal.set(true)" title="Atributos">
+            <span>📊</span>
+          </button>
+          <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
+            <span>🛡️</span>
+          </button>
         </div>
       </div>
 
@@ -214,73 +234,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     </div>
 
     <div class="main-grid">
-      <div class="wow-panel">
-        <div class="panel-title">Atributos</div>
-        <div class="panel-body">
-          @for (entry of statEntries; track entry[1]) {
-            <div class="stat-row">
-              <div class="stat-label">
-                <span class="stat-icon">{{ STAT_ICONS[entry[1]] }}</span>
-                {{ entry[0] }}
-              </div>
-              <div class="stat-value-group">
-                <span class="stat-base-val">{{ charSvc.character().baseStats[entry[1]] }}</span>
-                @if (levelStatBonus(entry[1]) > 0) {
-                  <span class="stat-level-bonus">+{{ levelStatBonus(entry[1]) }}</span>
-                }
-                <span class="stat-final">{{ charSvc.finalStats()[entry[1]] }}</span>
-                @if (statBonus(entry[1]) > 0) {
-                  <span class="stat-bonus">+{{ statBonus(entry[1]) }}</span>
-                }
-              </div>
-            </div>
-          }
-
-          <div class="resource-bar">
-            <div class="resource-label">
-              <span>Vida@if (shieldValue() > 0) {<span class="shield-text"> shield {{ shieldValue() }}</span>}</span>
-              <span>{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}</span>
-            </div>
-            <div class="resource-track">
-              <div class="resource-fill hp" [style.width]="charSvc.hpPercent() + '%'"></div>
-              @if (shieldValue() > 0) {
-                <div class="resource-fill shield" [style.width]="shieldPercent() + '%'"></div>
-              }
-              <div class="resource-text">{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}@if (shieldValue() > 0) { +{{ shieldValue() }} }</div>
-            </div>
-          </div>
-
-          <div class="resource-bar">
-            <div class="resource-label">
-              <span>{{ resourceLabel() }}</span>
-              <span>{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</span>
-            </div>
-            <div class="resource-track">
-              <div class="resource-fill"
-                   [class.mana]="charSvc.resourceConfig().type === 'mana'"
-                   [class.rage]="charSvc.resourceConfig().type === 'rage'"
-                   [class.energy]="charSvc.resourceConfig().type === 'energy'"
-                   [style.width]="charSvc.resourcePercent() + '%'"
-                   [style.background]="resourceBarBackground()">
-              </div>
-              <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
-            </div>
-          </div>
-
-          <div class="derived-stats">
-            <div class="derived-row"><span class="derived-label">Poder de Hechizo</span><span class="derived-value">{{ charSvc.spellPower() }}</span></div>
-            <div class="derived-row"><span class="derived-label">Prob. Critico Hechizo</span><span class="derived-value">{{ charSvc.spellCrit() }}%</span></div>
-            <div class="derived-row"><span class="derived-label">Poder de Ataque</span><span class="derived-value">{{ charSvc.attackPower() }}</span></div>
-            <div class="derived-row"><span class="derived-label">Prob. Critico Fisico</span><span class="derived-value">{{ charSvc.meleeCrit() }}%</span></div>
-            <div class="derived-row"><span class="derived-label">Regen. de Mana</span><span class="derived-value">{{ charSvc.manaRegen() }}/5s</span></div>
-            <div class="derived-row"><span class="derived-label">Armadura Fisica</span><span class="derived-value">{{ charSvc.armorTotal() }} (-{{ charSvc.physReduction() }}%)</span></div>
-            <div class="derived-row"><span class="derived-label">Armadura Magica</span><span class="derived-value">{{ charSvc.magicResistTotal() }} (-{{ charSvc.magicReduction() }}%)</span></div>
-            @if (charSvc.evasion() > 5) {
-              <div class="derived-row"><span class="derived-label">Evasion</span><span class="derived-value">{{ charSvc.evasion() }}%</span></div>
-            }
-          </div>
-        </div>
-      </div>
 
       <div class="wow-panel">
         <div class="panel-title">Habilidades
@@ -434,19 +387,86 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
       }
 
-      <div class="wow-panel equip-panel" [class.equip-collapsed]="!showEquipment()">
-        @if (!showEquipment()) {
-          <div class="panel-title" (click)="showEquipment.set(true)" style="cursor: pointer;">
-            <span class="equip-collapsed-icon">🛡️</span>
-            <span class="equip-collapsed-label">Equipo</span>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn" (click)="fullRest()">Full Rest</button>
+      <button class="action-btn" (click)="saveChar()">Guardar</button>
+      <button class="action-btn" (click)="loadChar()">Cargar</button>
+      <button class="action-btn" (click)="openExport()">Exportar JSON</button>
+      <button class="action-btn danger" (click)="resetCharacter()">Reiniciar</button>
+    </div>
+
+    <div class="xp-bottom-bar">
+      <div class="xp-bar-wrapper" [class.xp-levelup-anim]="levelUpFlash()">
+        <div class="xp-bar-header">
+          <span class="xp-bar-label">Experiencia</span>
+          <span class="xp-bar-value">{{ charSvc.character().currentXP || 0 }} / {{ charSvc.xpForNextLevel() }}</span>
+        </div>
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" [style.width]="charSvc.xpProgressPercent() + '%'"></div>
+          <div class="xp-bar-text">{{ charSvc.xpProgressPercent() }}%</div>
+        </div>
+        <div class="xp-controls">
+          <input type="number" [value]="xpInputAmount()" (input)="onXpInput($event)" class="xp-input" placeholder="XP" min="1">
+          <button class="xp-quick-btn" (click)="addXP(xpInputAmount() || 0)">Anadir XP</button>
+          <div class="xp-quick-btns">
+            <button class="xp-quick-btn" (click)="addXP(1000)">+1k</button>
+            <button class="xp-quick-btn" (click)="addXP(5000)">+5k</button>
+            <button class="xp-quick-btn" (click)="addXP(10000)">+10k</button>
           </div>
-        } @else {
-          <div class="panel-title">Equipo
-            <button class="equip-toggle-btn" (click)="showEquipment.set(false)">Ocultar</button>
+        </div>
+      </div>
+    </div>
+
+    @if (showStatsModal()) {
+      <div class="modal-overlay" (click)="showStatsModal.set(false)">
+        <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">Atributos</div>
+          <div class="stats-modal-body">
+            @for (entry of statEntries; track entry[1]) {
+              <div class="stat-row">
+                <div class="stat-label">
+                  <span class="stat-icon">{{ STAT_ICONS[entry[1]] }}</span>
+                  {{ entry[0] }}
+                </div>
+                <div class="stat-value-group">
+                  <span class="stat-base-val">{{ charSvc.character().baseStats[entry[1]] }}</span>
+                  @if (levelStatBonus(entry[1]) > 0) {
+                    <span class="stat-level-bonus">+{{ levelStatBonus(entry[1]) }}</span>
+                  }
+                  <span class="stat-final">{{ charSvc.finalStats()[entry[1]] }}</span>
+                  @if (statBonus(entry[1]) > 0) {
+                    <span class="stat-bonus">+{{ statBonus(entry[1]) }}</span>
+                  }
+                </div>
+              </div>
+            }
+            <div class="derived-stats">
+              <div class="derived-row"><span class="derived-label">Poder de Hechizo</span><span class="derived-value">{{ charSvc.spellPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">Prob. Critico Hechizo</span><span class="derived-value">{{ charSvc.spellCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">Poder de Ataque</span><span class="derived-value">{{ charSvc.attackPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">Prob. Critico Fisico</span><span class="derived-value">{{ charSvc.meleeCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">Regen. de Mana</span><span class="derived-value">{{ charSvc.manaRegen() }}/5s</span></div>
+              <div class="derived-row"><span class="derived-label">Armadura Fisica</span><span class="derived-value">{{ charSvc.armorTotal() }} (-{{ charSvc.physReduction() }}%)</span></div>
+              <div class="derived-row"><span class="derived-label">Armadura Magica</span><span class="derived-value">{{ charSvc.magicResistTotal() }} (-{{ charSvc.magicReduction() }}%)</span></div>
+              @if (charSvc.evasion() > 5) {
+                <div class="derived-row"><span class="derived-label">Evasion</span><span class="derived-value">{{ charSvc.evasion() }}%</span></div>
+              }
+            </div>
           </div>
-        }
-        @if (showEquipment()) {
-          <div class="panel-body">
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showStatsModal.set(false)">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showEquipment()) {
+      <div class="modal-overlay" (click)="showEquipment.set(false)">
+        <div class="modal-content equip-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">Equipo</div>
+          <div class="equip-modal-body">
             @for (slot of visibleEquipmentSlots(); track slot.key) {
               <div class="equip-slot">
                 <div class="equip-slot-header">
@@ -481,17 +501,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               </div>
             }
           </div>
-        }
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showEquipment.set(false)">Cerrar</button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="action-bar">
-      <button class="action-btn" (click)="fullRest()">Full Rest</button>
-      <button class="action-btn" (click)="saveChar()">Guardar</button>
-      <button class="action-btn" (click)="loadChar()">Cargar</button>
-      <button class="action-btn" (click)="openExport()">Exportar JSON</button>
-      <button class="action-btn danger" (click)="resetCharacter()">Reiniciar</button>
-    </div>
+    }
 
     @if (showExportModal()) {
       <div class="modal-overlay" (click)="showExportModal.set(false)">
@@ -939,24 +954,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .effect-add-btn:hover { border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 8px var(--gold-glow); }
 
-    .equip-panel { transition: all 0.3s; }
-    .equip-panel.equip-collapsed {
-      padding: 0; background: transparent; border: none; box-shadow: none;
-    }
-    .equip-panel.equip-collapsed .panel-title {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; margin: 0; background: var(--bg-panel);
-      border: 1px solid var(--gold-dark); border-radius: var(--radius);
-      font-size: 13px; cursor: pointer; transition: var(--transition);
-    }
-    .equip-panel.equip-collapsed .panel-title:hover {
-      border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow);
-    }
-    .equip-collapsed-icon { font-size: 18px; }
-    .equip-collapsed-label {
-      font-family: 'Cinzel', serif; font-weight: 600; color: var(--gold);
-      letter-spacing: 0.03em; text-transform: uppercase; font-size: 12px;
-    }
     .equip-slot {
       margin-bottom: 10px; padding: 10px;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.2);
@@ -1070,13 +1067,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border: 1px solid var(--gold-dark); border-radius: 4px; color: var(--text-dim);
       cursor: pointer; transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
     }
-    .equip-toggle-btn {
-      float: right; padding: 4px 14px; font-family: 'Cinzel', serif; font-size: 12px;
-      font-weight: 600; background: linear-gradient(180deg, var(--bg-input) 0%, var(--bg-dark) 100%);
-      border: 1px solid var(--gold-dark); border-radius: 4px; color: var(--text-dim);
-      cursor: pointer; transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .equip-toggle-btn:hover { border-color: var(--gold); color: var(--gold-light); }
     .train-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold-light); }
     .train-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .train-btn.train-available {
@@ -1167,6 +1157,26 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       z-index: 200; animation: toast-in 0.3s ease;
     }
     @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+    .resource-section {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;
+    }
+    .quick-icons {
+      display: flex; gap: 8px; margin-top: 4px;
+    }
+    .quick-icon-btn {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      background: var(--bg-panel); border: 1px solid var(--gold-dark); border-radius: var(--radius);
+      cursor: pointer; transition: var(--transition); font-size: 18px;
+    }
+    .quick-icon-btn:hover {
+      border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); transform: scale(1.05);
+    }
+    .xp-bottom-bar { margin-top: 20px; }
+    .stats-modal { max-width: 500px; }
+    .stats-modal-body { max-height: 60vh; overflow-y: auto; }
+    .equip-modal { max-width: 600px; }
+    .equip-modal-body { max-height: 60vh; overflow-y: auto; }
 
     .xp-section { margin-bottom: 0; flex: 1; min-width: 0; }
 
@@ -1312,6 +1322,7 @@ export class PlayerComponent implements OnInit {
 
   showExportModal = signal(false);
   showTalentModal = signal(false);
+  showStatsModal = signal(false);
   showEquipment = signal(false);
   showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
