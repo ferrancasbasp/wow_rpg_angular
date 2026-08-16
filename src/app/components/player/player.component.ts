@@ -1998,6 +1998,7 @@ export class PlayerComponent implements OnInit {
       const sndDuration = comboSpent + this.charSvc.talentRank('improved_slice_and_dice');
       this.charSvc.character.update(c => ({
         ...c,
+        comboPoints: 0,
         activeEffects: [
           ...(c.activeEffects || []).filter(e => e.name !== 'Slice and Dice'),
           { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Slice and Dice', target: 'slice_and_dice', value: 0, duration: sndDuration },
