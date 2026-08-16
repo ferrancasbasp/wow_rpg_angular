@@ -17,35 +17,59 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     '[style.--class-glow]': 'classGlow()',
   },
   template: `
-    <div class="app-header">
-      <div class="class-icon">
-        @if (charSvc.classConfig().iconImg) {
-          <img [src]="charSvc.classConfig().iconImg" class="class-icon-img" (error)="onImgError($event)">
-          <span style="display:none">{{ charSvc.classConfig().icon }}</span>
-        } @else {
-          <span>{{ charSvc.classConfig().icon }}</span>
-        }
-      </div>
-      <div class="header-info">
-        <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" placeholder="Nombre del personaje">
-        <div class="char-meta">
-          <span class="level-control">
-            Nivel
-            <button class="stat-btn" (click)="changeLevel(-1)">-</button>
-            <input type="number" [value]="charSvc.character().level" min="1" [attr.max]="MAX_LEVEL" (input)="onLevelInput($event)" (change)="clampLevel()">
-            <button class="stat-btn" (click)="changeLevel(1)">+</button>
-          </span>
-          <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
-            @for (entry of classEntries; track entry[0]) {
-              <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
-            }
-          </select>
-        </div>
-      </div>
-    </div>
-
     <div class="top-bar-row">
       <div class="resource-section">
+        <div class="char-header-row">
+          <div class="class-icon">
+            @if (charSvc.classConfig().iconImg) {
+              <img [src]="charSvc.classConfig().iconImg" class="class-icon-img" (error)="onImgError($event)">
+              <span style="display:none">{{ charSvc.classConfig().icon }}</span>
+            } @else {
+              <span>{{ charSvc.classConfig().icon }}</span>
+            }
+          </div>
+          <div class="header-info">
+            <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" placeholder="Nombre">
+            <div class="char-meta">
+              <span class="level-control">
+                Nv
+                <button class="stat-btn" (click)="changeLevel(-1)">-</button>
+                <input type="number" [value]="charSvc.character().level" min="1" [attr.max]="MAX_LEVEL" (input)="onLevelInput($event)" (change)="clampLevel()">
+                <button class="stat-btn" (click)="changeLevel(1)">+</button>
+              </span>
+              <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
+                @for (entry of classEntries; track entry[0]) {
+                  <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="quick-icons">
+            <button class="quick-icon-btn" (click)="showStatsModal.set(true)" title="Atributos">
+              <span>📊</span>
+            </button>
+            <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
+              <span>🛡️</span>
+            </button>
+            <button class="quick-icon-btn talent-btn" [class.has-points]="charSvc.availableTalentPoints() > 0"
+                    (click)="showTalentModal.set(true)" title="Talentos">
+              <span>🌟</span>
+              @if (charSvc.availableTalentPoints() > 0) {
+                <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
+              }
+            </button>
+            @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
+              <div class="combo-inline">
+                <div class="combo-points">
+                  @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
+                    <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
         <div class="resource-bar">
           <div class="resource-label">
             <span>Vida@if (shieldValue() > 0) {<span class="shield-text"> shield {{ shieldValue() }}</span>}</span>
@@ -75,31 +99,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             </div>
             <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
           </div>
-        </div>
-
-        <div class="quick-icons">
-          <button class="quick-icon-btn" (click)="showStatsModal.set(true)" title="Atributos">
-            <span>📊</span>
-          </button>
-          <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
-            <span>🛡️</span>
-          </button>
-          <button class="quick-icon-btn talent-btn" [class.has-points]="charSvc.availableTalentPoints() > 0"
-                  (click)="showTalentModal.set(true)" title="Talentos">
-            <span>🌟</span>
-            @if (charSvc.availableTalentPoints() > 0) {
-              <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
-            }
-          </button>
-          @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
-            <div class="combo-inline">
-              <div class="combo-points">
-                @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
-                  <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
-                }
-              </div>
-            </div>
-          }
         </div>
       </div>
 
@@ -647,39 +646,43 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       opacity: 0.6;
     }
 
+    .char-header-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+
     .class-icon {
-      width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-      font-size: 28px; background: radial-gradient(circle, var(--bg-input) 60%, var(--bg-dark));
+      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; background: radial-gradient(circle, var(--bg-input) 60%, var(--bg-dark));
       border: 2px solid var(--class-color, #C79C6E); border-radius: 50%;
-      box-shadow: 0 0 12px var(--class-glow, rgba(199,156,110,0.3)); flex-shrink: 0; overflow: hidden;
+      box-shadow: 0 0 10px var(--class-glow, rgba(199,156,110,0.3)); flex-shrink: 0; overflow: hidden;
     }
     .class-icon-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-    .header-info { flex: 1; }
+    .header-info { flex: 1; min-width: 0; }
 
     .char-name-input {
-      font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700;
+      font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
       color: var(--gold-light); background: transparent; border: none;
-      border-bottom: 1px solid transparent; outline: none; padding: 2px 4px;
+      border-bottom: 1px solid transparent; outline: none; padding: 1px 2px;
       width: 100%; transition: var(--transition);
     }
     .char-name-input:hover, .char-name-input:focus { border-bottom-color: var(--gold-dark); }
 
     .char-meta {
-      display: flex; align-items: center; gap: 16px; margin-top: 4px;
-      font-size: 15px; color: var(--text-dim);
+      display: flex; align-items: center; gap: 10px; margin-top: 2px;
+      font-size: 13px; color: var(--text-dim);
     }
-    .level-control { display: flex; align-items: center; gap: 6px; }
+    .level-control { display: flex; align-items: center; gap: 4px; }
     .level-control input {
-      width: 40px; text-align: center; background: var(--bg-input);
+      width: 32px; text-align: center; background: var(--bg-input);
       border: 1px solid var(--gold-dark); border-radius: 3px; color: var(--text);
-      padding: 2px; font-family: 'EB Garamond', serif; font-size: 15px; outline: none;
+      padding: 1px; font-family: 'EB Garamond', serif; font-size: 13px; outline: none;
     }
 
     .class-select {
       background: var(--bg-input); border: 1px solid var(--gold-dark); border-radius: 3px;
-      color: var(--class-color, #C79C6E); padding: 3px 8px; font-family: 'Cinzel', serif;
-      font-size: 14px; outline: none; cursor: pointer;
+      color: var(--class-color, #C79C6E); padding: 2px 6px; font-family: 'Cinzel', serif;
+      font-size: 12px; outline: none; cursor: pointer;
     }
 
     .tp-badge {
@@ -1170,15 +1173,24 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
     .resource-section {
-      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;
+      padding: 10px 14px; background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
+      border: 1px solid var(--gold-dark); border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(201,178,126,0.08);
+      position: relative; overflow: hidden;
+    }
+    .resource-section::before {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--class-color, #C79C6E), transparent);
+      opacity: 0.4;
     }
     .quick-icons {
-      display: flex; gap: 8px; margin-top: 4px;
+      display: flex; gap: 6px; align-items: center; flex-shrink: 0;
     }
     .quick-icon-btn {
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
       background: var(--bg-panel); border: 1px solid var(--gold-dark); border-radius: var(--radius);
-      cursor: pointer; transition: var(--transition); font-size: 18px;
+      cursor: pointer; transition: var(--transition); font-size: 16px;
     }
     .quick-icon-btn:hover {
       border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); transform: scale(1.05);
@@ -1208,7 +1220,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .xp-section { margin-bottom: 0; flex: 1; min-width: 0; }
 
     .top-bar-row {
-      display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; flex-wrap: wrap;
+      display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; flex-wrap: wrap;
     }
     .top-side-controls {
       display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 220px;

@@ -86,10 +86,10 @@ h1, h2, h3, .title-font { font-family: 'Cinzel', serif; letter-spacing: 0.05em; 
 
 /* Nav */
 .nav-bar {
-  display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;
+  display: flex; gap: 8px; justify-content: center; margin-top: 16px; padding-bottom: 12px;
 }
 .nav-link {
-  padding: 8px 24px; font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600;
+  padding: 6px 20px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
   letter-spacing: 0.05em; background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
   border: 1px solid var(--gold-dark); border-radius: var(--radius); color: var(--gold);
   cursor: pointer; transition: var(--transition); text-transform: uppercase;
