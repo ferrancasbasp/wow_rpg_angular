@@ -30,6 +30,7 @@ export const ROGUE: CharacterClass = {
 
   talents: [
     { id: 'vitality', name: 'Vitality', icon: '⚡', iconImg: 'img/talents/rogue/vitality.jpg', description: 'Aumenta la regeneración de energía al final del turno un 10% por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'energetic_basic_attack', name: 'Energetic Basic Attack', icon: '👊', iconImg: '', description: 'Aumenta el daño de Basic Attack un 2% por punto. Basic Attack genera 1 energía (2 si es crítico).', maxRank: 5, tier: 1, requires: null },
     { id: 'ruthlessness', name: 'Ruthlessness', icon: '🎯', iconImg: 'img/talents/rogue/ruthlessness.jpg', description: 'Reduce el coste de energía de tus finishers en 2 por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'improved_backstab', name: 'Improved Backstab', icon: '🔪', iconImg: 'img/abilities/rogue/backstab.jpg', description: 'Reduce el coste de energía de Backstab en 3 por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'improved_slice_and_dice', name: 'Improved Slice and Dice', icon: '⚔️', iconImg: 'img/abilities/rogue/slice_and_dice.jpg', description: 'Aumenta la duración de Slice and Dice en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },

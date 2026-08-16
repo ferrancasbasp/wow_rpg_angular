@@ -2094,6 +2094,16 @@ export class PlayerComponent implements OnInit {
             roll += holyDmg;
           }
         }
+        const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
+        if (ebaRank > 0 && isEnergy) {
+          const energyGen = isCrit ? 2 : 1;
+          const resourceMax = this.charSvc.resourceMax();
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + energyGen),
+          }));
+          rageText = ' · +' + energyGen + ' energia';
+        }
       }
       this.charSvc.turnDamage.update(d => d + roll);
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';

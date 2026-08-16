@@ -347,6 +347,11 @@ export class CharacterService {
         minVal = Math.round(minVal * oppBonus);
         maxVal = Math.round(maxVal * oppBonus);
       }
+      if (a.id === 'basic_attack' && this.character().classKey === 'rogue') {
+        const ebaBonus = 1 + this.talentRank('energetic_basic_attack') * 0.02;
+        minVal = Math.round(minVal * ebaBonus);
+        maxVal = Math.round(maxVal * ebaBonus);
+      }
       if (a.category === 'shadow') {
         const shadowBonus = 1 + this.talentRank('shadow_ally') * 0.03;
         minVal = Math.round(minVal * shadowBonus);
@@ -645,6 +650,7 @@ export class CharacterService {
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 5}% AP, −${rank} ira`,
       vitality: `Regen energía: +${rank * 10}%`,
+      energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +1 energía (2 si crit)`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
       improved_slice_and_dice: `Slice and Dice: +${rank} turno${rank > 1 ? 's' : ''} duración`,
