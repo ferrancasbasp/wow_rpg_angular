@@ -294,15 +294,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                   }
                 </div>
                 <div class="ability-cast-row">
-                  @if (abilityRolls()[ability.id]) {
-                    <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
-                      {{ ability.type === 'heal' ? 'Curacion' : 'Dano' }}: {{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? ' ¡CRITICO!' : '' }}
-                    </span>
-                  }
                   <button class="cast-btn" (click)="castSpell(ability)"
                           [disabled]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
                     {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
                   </button>
+                  @if (abilityRolls()[ability.id]) {
+                    <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
+                      {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
+                    </span>
+                  }
                 </div>
               </div>
             </div>
@@ -379,6 +379,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                             [disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
                       {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
                     </button>
+                    <span style="flex:1"></span>
                   </div>
                 </div>
               </div>
@@ -994,26 +995,26 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .equip-extra-label { font-size: 11px; color: var(--text-dim); }
 
     .ability-card {
-      display: flex; gap: 12px; padding: 12px; margin-bottom: 8px;
+      display: flex; gap: 8px; padding: 8px; margin-bottom: 6px;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.3);
       border-radius: var(--radius); transition: var(--transition);
     }
     .ability-card:hover { border-color: var(--gold-dark); background: var(--bg-panel-hover); }
     .ability-icon {
-      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-      font-size: 22px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
-      border: 1px solid var(--gold-dark); border-radius: var(--radius); flex-shrink: 0;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
+      border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
       overflow: hidden; position: relative;
     }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; }
     .ability-info { flex: 1; }
-    .ability-name { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; color: var(--text); }
+    .ability-name { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--text); }
     .ability-school {
-      font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+      font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
     }
     .ability-req-tag { color: #9b59b6; font-weight: 600; }
-    .ability-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; line-height: 1.3; }
-    .ability-stats { display: flex; gap: 12px; margin-top: 6px; font-size: 13px; }
+    .ability-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; line-height: 1.2; }
+    .ability-stats { display: flex; gap: 10px; margin-top: 4px; font-size: 12px; flex-wrap: wrap; }
     .ability-stat { display: flex; align-items: center; gap: 4px; }
     .ability-stat.dmg { color: var(--danger); }
     .ability-stat.heal { color: var(--success); }
@@ -1023,18 +1024,17 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .ability-card.ability-locked { opacity: 0.5; }
 
     .ability-cast-row {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 8px; gap: 12px;
+      display: flex; align-items: center; margin-top: 4px; gap: 8px;
     }
     .ability-roll-text {
       font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold-light);
-      font-weight: 600;
+      font-weight: 700; margin-left: auto; min-width: 50px; text-align: right;
     }
     .ability-roll-text.crit-roll {
       color: #ff9c00; text-shadow: 0 0 8px rgba(255,156,0,0.5); font-size: 16px;
     }
     .cast-btn {
-      padding: 6px 18px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
+      padding: 4px 14px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600;
       background: linear-gradient(180deg, var(--mana) 0%, var(--mana-dark) 100%);
       border: 1px solid #5a9aff; border-radius: 4px; color: #fff; cursor: pointer;
       transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
@@ -1046,15 +1046,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .cast-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .locked-abilities-section {
-      margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--gold-dark);
+      margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gold-dark);
     }
     .locked-abilities-title {
-      font-family: 'Cinzel', serif; font-size: 12px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
+      font-family: 'Cinzel', serif; font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
     }
     .locked-ability {
-      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
-      margin-bottom: 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(138,115,68,0.2);
+      display: flex; align-items: center; gap: 6px; padding: 4px 8px;
+      margin-bottom: 3px; background: rgba(0,0,0,0.3); border: 1px solid rgba(138,115,68,0.2);
       border-radius: 4px; opacity: 0.6;
     }
     .locked-ability-icon { font-size: 16px; filter: grayscale(1); }
