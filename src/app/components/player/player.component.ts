@@ -1997,7 +1997,7 @@ export class PlayerComponent implements OnInit {
     }
 
     if (ability.id === 'slice_and_dice') {
-      const sndDuration = 2 + comboSpent;
+      const sndDuration = comboSpent;
       this.charSvc.character.update(c => ({
         ...c,
         activeEffects: [
@@ -2005,7 +2005,7 @@ export class PlayerComponent implements OnInit {
           { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Slice and Dice', target: 'slice_and_dice', value: 0, duration: sndDuration },
         ],
       }));
-      this.charSvc.showToast(ability.name + ': +1 accion/turno durante ' + sndDuration + ' turnos');
+      this.charSvc.showToast(ability.name + ': +1 accion/turno durante ' + sndDuration + ' turnos · ' + comboSpent + ' combo gastados');
       this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll: 0, crit: false } }));
       return;
     }
