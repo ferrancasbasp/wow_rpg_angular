@@ -1997,7 +1997,7 @@ export class PlayerComponent implements OnInit {
     }
 
     if (ability.id === 'slice_and_dice') {
-      const sndDuration = comboSpent;
+      const sndDuration = comboSpent + this.charSvc.talentRank('improved_slice_and_dice');
       this.charSvc.character.update(c => ({
         ...c,
         activeEffects: [

@@ -644,6 +644,7 @@ export class CharacterService {
       vitality: `Regen energía: +${rank * 10}%`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
+      improved_slice_and_dice: `Slice and Dice: +${rank} turno${rank > 1 ? 's' : ''} duración`,
       opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 4}%`,
       precision: `Crítico físico: +${rank}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
