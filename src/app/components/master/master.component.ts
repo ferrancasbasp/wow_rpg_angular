@@ -330,64 +330,39 @@ interface DamageEvent {
           } @else {
             <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
           }
-          <div class="send-row">
-            <input
-              type="text"
-              [value]="sendTargetName()"
-              class="send-input"
-              placeholder="Nombre del jugador"
-              (input)="sendTargetName.set($any($event.target).value)"
-            />
-            <select [value]="sendType()" (change)="sendType.set($any($event.target).value)" class="send-select">
-              <option value="heal">Curar</option>
-              <option value="damage">Dannar</option>
-              <option value="buff">Buff</option>
-            </select>
-          </div>
-          <div class="send-row">
-            <input
-              type="number"
-              [value]="sendAmount() || ''"
-              class="send-input"
-              placeholder="Cantidad"
-              min="1"
-              (input)="sendAmount.set($any($event.target).valueAsNumber || null)"
-              (keyup.enter)="sendToPlayer()"
-            />
-            @if (sendType() === 'buff') {
-              <select [value]="sendBuffName()" (change)="sendBuffName.set($any($event.target).value)" class="send-select">
-                <option value="">Efecto...</option>
-                <option value="Inspiration">Inspiration</option>
-                <option value="Blessing">Blessing</option>
-                <option value="Fortitude">Fortitude</option>
-                <option value="Shield">Shield</option>
-                <option value="Stun">Stun</option>
-                <option value="Silence">Silence</option>
-                <option value="Slow">Slow</option>
-              </select>
-            }
-            <button class="send-btn" (click)="sendToPlayer()">Enviar</button>
-          </div>
-          @if (sendType() === 'buff' && sendBuffName()) {
-            <div class="send-row">
-              <input
-                type="number"
-                [value]="sendBuffDuration() || ''"
-                class="send-input small"
-                placeholder="Turnos"
-                min="1"
-                (input)="sendBuffDuration.set($any($event.target).valueAsNumber || null)"
-              />
-              <input
-                type="number"
-                [value]="sendBuffValue() || ''"
-                class="send-input small"
-                placeholder="Valor"
-                min="0"
-                (input)="sendBuffValue.set($any($event.target).valueAsNumber || null)"
-              />
+
+          @if (sendTargetName()) {
+            <div class="quick-effects">
+              <div class="quick-effect-group">
+                <span class="quick-label">Debuffs</span>
+                <div class="quick-btns">
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
+                </div>
+              </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">DoT</span>
+                <div class="quick-btns">
+                  <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
+                    [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
+                  <input type="number" class="dot-input small" placeholder="Turnos" min="1"
+                    [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
+                  <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
+                </div>
+              </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">Directo</span>
+                <div class="quick-btns">
+                  <input type="number" class="dot-input" placeholder="Cantidad" min="1"
+                    [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
+                  <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
+                  <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
+                </div>
+              </div>
             </div>
           }
+
           @if (sendLog().length > 0) {
             <div class="send-log">
               @for (entry of sendLog(); track $index) {
@@ -1084,6 +1059,76 @@ interface DamageEvent {
       padding: 2px 8px;
     }
 
+    .quick-effects {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+      border-top: 1px solid var(--gold-dark);
+      padding-top: 10px;
+    }
+
+    .quick-effect-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: var(--gold);
+      white-space: nowrap;
+      width: 60px;
+    }
+
+    .quick-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .quick-btn {
+      border: none;
+      border-radius: var(--radius);
+      padding: 5px 14px;
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      color: #fff;
+    }
+
+    .debuff-btn { background: linear-gradient(135deg, #8a2a2a, #c45151); }
+    .debuff-btn:hover { background: linear-gradient(135deg, #a33a3a, #d46060); }
+
+    .dot-btn { background: linear-gradient(135deg, #6a2a6a, #9a4a9a); }
+    .dot-btn:hover { background: linear-gradient(135deg, #7a3a7a, #aa5aaa); }
+
+    .heal-btn { background: linear-gradient(135deg, #2a6a2a, #4a9a4a); }
+    .heal-btn:hover { background: linear-gradient(135deg, #3a7a3a, #5aaa5a); }
+
+    .dmg-btn { background: linear-gradient(135deg, #6a3a1a, #c47a3a); }
+    .dmg-btn:hover { background: linear-gradient(135deg, #7a4a2a, #d48a4a); }
+
+    .dot-input {
+      width: 90px;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 4px 8px;
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .dot-input.small { width: 60px; }
+    .dot-input:focus { border-color: var(--gold); }
+
     .assign-player-btn {
       background: linear-gradient(135deg, #2a6a2a, #4a9a4a);
       color: #fff;
@@ -1209,14 +1254,12 @@ export class MasterComponent implements OnInit {
   monsterIdCounter = signal(1);
   selectedNpc = signal('');
   sendTargetName = signal('');
-  sendType = signal('heal');
   sendAmount = signal<number | null>(null);
-  sendBuffName = signal('');
-  sendBuffDuration = signal<number | null>(null);
-  sendBuffValue = signal<number | null>(null);
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
   knownPlayers = signal<string[]>([]);
+  dotAmount = signal<number | null>(null);
+  dotDuration = signal<number | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1734,54 +1777,52 @@ export class MasterComponent implements OnInit {
     this.dmgInput.update((d) => ({ ...d, [monsterId]: value }));
   }
 
-  sendToPlayer() {
+  quickSendDebuff(name: string, targetStat: string, value: number, duration: number) {
     const target = this.sendTargetName().trim();
-    if (!target) {
-      this.showToast('Escribe el nombre del jugador');
-      return;
-    }
-    const type = this.sendType();
-    if (type === 'buff') {
-      const buffName = this.sendBuffName();
-      if (!buffName) {
-        this.showToast('Selecciona un efecto');
-        return;
-      }
-      const effect = {
-        type: 'buff' as const,
-        name: buffName,
-        target: buffName.toLowerCase(),
-        value: this.sendBuffValue() || 0,
-        duration: this.sendBuffDuration() || 2,
-      };
-      this.firebase.pushData('playerEvents', {
-        target,
-        type: 'buff',
-        effect,
-        timestamp: Date.now(),
-      });
-      this.sendLog.update(log => [`${target}: ${buffName} (${effect.duration}t)`, ...log].slice(0, 8));
-      this.showToast(`${buffName} enviado a ${target}`);
-      this.sendBuffName.set('');
-      this.sendBuffDuration.set(null);
-      this.sendBuffValue.set(null);
-    } else {
-      const amount = this.sendAmount();
-      if (!amount || amount <= 0) {
-        this.showToast('Introduce una cantidad');
-        return;
-      }
-      this.firebase.pushData('playerEvents', {
-        target,
-        type,
-        amount,
-        timestamp: Date.now(),
-      });
-      const label = type === 'heal' ? '+' + amount : '-' + amount;
-      this.sendLog.update(log => [`${target}: ${label} HP`, ...log].slice(0, 8));
-      this.showToast(`${label} HP enviado a ${target}`);
-      this.sendAmount.set(null);
-    }
+    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    this.firebase.pushData('playerEvents', {
+      target,
+      type: 'buff',
+      effect: { type: 'debuff', name, target: targetStat, value, duration },
+      timestamp: Date.now(),
+    });
+    this.sendLog.update(log => [`${target}: ${name} (${duration}t)`, ...log].slice(0, 8));
+    this.showToast(`${name} → ${target}`);
+  }
+
+  quickSendDot() {
+    const target = this.sendTargetName().trim();
+    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const dmg = this.dotAmount();
+    const dur = this.dotDuration() || 3;
+    if (!dmg || dmg <= 0) { this.showToast('Introduce danno/turno'); return; }
+    this.firebase.pushData('playerEvents', {
+      target,
+      type: 'buff',
+      effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur },
+      timestamp: Date.now(),
+    });
+    this.sendLog.update(log => [`${target}: DoT ${dmg}/t · ${dur}t`, ...log].slice(0, 8));
+    this.showToast(`DoT ${dmg}/t · ${dur}t → ${target}`);
+    this.dotAmount.set(null);
+    this.dotDuration.set(null);
+  }
+
+  quickSendDirect(type: 'heal' | 'damage') {
+    const target = this.sendTargetName().trim();
+    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const amount = this.sendAmount();
+    if (!amount || amount <= 0) { this.showToast('Introduce una cantidad'); return; }
+    this.firebase.pushData('playerEvents', {
+      target,
+      type,
+      amount,
+      timestamp: Date.now(),
+    });
+    const label = type === 'heal' ? '+' + amount : '-' + amount;
+    this.sendLog.update(log => [`${target}: ${label} HP`, ...log].slice(0, 8));
+    this.showToast(`${label} HP → ${target}`);
+    this.sendAmount.set(null);
   }
 
   assignToPlayer(event: DamageEvent) {

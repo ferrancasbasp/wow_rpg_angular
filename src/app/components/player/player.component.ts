@@ -1521,7 +1521,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'buff') {
           if (event.effect) {
             this.charSvc.addEffect(event.effect);
-            this.incomingMasterMsg.set('✨ Master aplica ' + (event.effect.name || 'efecto'));
+            const eff = event.effect;
+            const icon = eff.type === 'dot' ? '🩸' : eff.type === 'debuff' ? '⛔' : '✨';
+            const detail = eff.type === 'dot'
+              ? `${eff.value}/t · ${eff.duration}t`
+              : eff.type === 'debuff'
+                ? `${eff.duration}t`
+                : `+${eff.value} ${eff.target} · ${eff.duration}t`;
+            this.incomingMasterMsg.set(`${icon} Master: ${eff.name} (${detail})`);
           } else {
             this.charSvc.character.update(c => ({
               ...c,
