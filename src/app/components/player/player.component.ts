@@ -37,7 +37,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </span>
           <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
             @for (entry of classEntries; track entry[0]) {
-              <option [value]="entry[0]">{{ entry[1].name }}</option>
+              <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
             }
           </select>
         </div>
