@@ -1164,8 +1164,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .action-btn.danger:hover { border-color: var(--danger); box-shadow: 0 0 10px rgba(196,81,81,0.3); }
     .turn-btn-row {
       display: flex;
+      flex-direction: row;
       gap: 6px;
       width: 100%;
+      align-items: stretch;
     }
     .end-turn-btn {
       flex: 1 1 75%;
