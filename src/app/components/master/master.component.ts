@@ -44,6 +44,14 @@ interface DamageEvent {
   aoe?: boolean;
   effects?: any[];
   assigned?: boolean;
+  isHot?: boolean;
+  hotTick?: number;
+  hotDuration?: number;
+  isShield?: boolean;
+  buffStat?: string;
+  buffValue?: number;
+  buffDuration?: number;
+  isPercent?: boolean;
 }
 
 @Component({
@@ -80,14 +88,17 @@ interface DamageEvent {
                   class="damage-event"
                   [class.selected]="selectedEventId() === event.id"
                   [class.assigned]="event.assigned"
+                  [class.buff-event]="event.damageType === 'buff'"
                   (click)="selectEvent(event.id)"
                 >
                   <span class="damage-event-icon">{{
                     event.damageType === 'physical'
                       ? '⚔️'
                       : event.damageType === 'heal'
-                        ? '💚'
-                        : '✨'
+                        ? (event.isHot ? '🩹' : (event.isShield ? '🛡️' : '💚'))
+                        : event.damageType === 'buff'
+                          ? '🌟'
+                          : '✨'
                   }}</span>
                   <div class="damage-event-info">
                     <div class="damage-event-player">{{ event.player }}</div>
@@ -97,8 +108,13 @@ interface DamageEvent {
                         class="damage-type-tag"
                         [class.magical]="event.damageType === 'magical'"
                         [class.physical]="event.damageType === 'physical'"
-                        >{{ event.damageType === 'physical' ? 'Físico' : 'Mágico' }}</span
-                      >
+                        [class.heal-tag]="event.damageType === 'heal'"
+                        [class.buff-tag]="event.damageType === 'buff'"
+                        >{{
+                          event.damageType === 'physical' ? 'Físico' :
+                          event.damageType === 'heal' ? (event.isHot ? 'HoT' : (event.isShield ? 'Escudo' : 'Cura')) :
+                          event.damageType === 'buff' ? 'Buff' : 'Mágico'
+                        }}</span>
                       @if (event.aoe) {
                         <span class="damage-type-tag aoe">AOE</span>
                       }
@@ -109,10 +125,28 @@ interface DamageEvent {
                   </div>
                   <span
                     class="damage-event-value"
-                    [class.heal-value]="event.damageType === 'heal'"
-                    >{{ event.damage }}</span
-                  >
+                    [class.heal-value]="event.damageType === 'heal' || event.damageType === 'buff'"
+                    >{{
+                      event.damageType === 'buff'
+                        ? '+' + event.buffValue + ' ' + (event.buffStat || '')
+                        : event.isHot
+                          ? event.hotTick + '/t · ' + event.hotDuration + 't'
+                          : event.damage
+                    }}</span>
                 </div>
+                @if (selectedEventId() === event.id && (event.damageType === 'heal' || event.damageType === 'buff')) {
+                  <div class="assign-player-row">
+                    <input
+                      type="text"
+                      class="assign-player-input"
+                      placeholder="Nombre del jugador"
+                      [value]="playerTargetName()"
+                      (input)="playerTargetName.set($any($event.target).value)"
+                      (keyup.enter)="assignToPlayer(event)"
+                    />
+                    <button class="assign-player-btn" (click)="assignToPlayer(event)">→ Jugador</button>
+                  </div>
+                }
               }
             </div>
           } @else {
@@ -980,6 +1014,63 @@ interface DamageEvent {
       background: var(--danger);
     }
 
+    .damage-event.buff-event {
+      border-left: 3px solid #e8d5a3;
+    }
+
+    .assign-player-row {
+      display: flex;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(201, 178, 126, 0.08);
+      border-radius: 0 0 var(--radius) var(--radius);
+      margin: -4px 0 4px 0;
+    }
+
+    .assign-player-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 4px 8px;
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .assign-player-input:focus {
+      border-color: var(--gold);
+    }
+
+    .assign-player-btn {
+      background: linear-gradient(135deg, #2a6a2a, #4a9a4a);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 4px 14px;
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+
+    .assign-player-btn:hover {
+      background: linear-gradient(135deg, #3a7a3a, #5aaa5a);
+    }
+
+    .damage-type-tag.heal-tag {
+      background: rgba(95, 168, 95, 0.25);
+      color: #6fbf6f;
+    }
+
+    .damage-type-tag.buff-tag {
+      background: rgba(232, 213, 163, 0.25);
+      color: var(--gold-light);
+    }
+
     .send-panel-wrap {
       max-width: 1200px;
       margin: 20px auto 0;
@@ -1083,6 +1174,7 @@ export class MasterComponent implements OnInit {
   sendBuffDuration = signal<number | null>(null);
   sendBuffValue = signal<number | null>(null);
   sendLog = signal<string[]>([]);
+  playerTargetName = signal('');
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1618,5 +1710,62 @@ export class MasterComponent implements OnInit {
       this.showToast(`${label} HP enviado a ${target}`);
       this.sendAmount.set(null);
     }
+  }
+
+  assignToPlayer(event: DamageEvent) {
+    const target = this.playerTargetName().trim();
+    if (!target) {
+      this.showToast('Escribe el nombre del jugador');
+      return;
+    }
+
+    if (event.damageType === 'buff') {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'buff',
+        abilityName: event.ability.replace(' (Buff)', ''),
+        buffStat: event.buffStat,
+        buffValue: event.buffValue,
+        buffDuration: event.buffDuration,
+        isPercent: event.isPercent,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
+    } else if (event.damageType === 'heal') {
+      if (event.isHot) {
+        this.firebase.pushData('playerEvents', {
+          target,
+          type: 'hot',
+          abilityName: event.ability.replace(' (Cura)', ''),
+          hotTick: event.hotTick,
+          hotDuration: event.hotDuration,
+          hotTotal: event.damage,
+          timestamp: Date.now(),
+        });
+        this.showToast(`${event.ability} → ${target}: ${event.hotTick}/t · ${event.hotDuration}t`);
+      } else if (event.isShield) {
+        this.firebase.pushData('playerEvents', {
+          target,
+          type: 'shield',
+          abilityName: event.ability.replace(' (Cura)', ''),
+          amount: event.damage,
+          timestamp: Date.now(),
+        });
+        this.showToast(`${event.ability} → ${target}: 🛡️ ${event.damage} absorcion`);
+      } else {
+        this.firebase.pushData('playerEvents', {
+          target,
+          type: 'heal',
+          abilityName: event.ability.replace(' (Cura)', ''),
+          amount: event.damage,
+          timestamp: Date.now(),
+        });
+        this.showToast(`${event.ability} → ${target}: +${event.damage} HP`);
+      }
+    }
+
+    this.markEventAssigned(event);
+    this.playerTargetName.set('');
+    this.selectedEventId.set(null);
   }
 }

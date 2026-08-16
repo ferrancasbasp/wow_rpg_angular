@@ -782,7 +782,7 @@ export class CharacterService {
     }
   }
 
-  sendHealEvent(ability: any, healAmount: number) {
+   sendHealEvent(ability: any, healAmount: number) {
     try {
       this.firebase.pushData('damageEvents', {
         player: this.character().name || 'Jugador',
@@ -792,12 +792,39 @@ export class CharacterService {
         damageType: 'heal',
         aoe: false,
         effects: null,
+        isHot: ability.isHot || false,
+        hotTick: ability.hotTick || 0,
+        hotDuration: ability.hotDuration || 0,
+        isShield: ability.id === 'power_word_shield',
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
       });
     } catch (e) {
       console.error('Firebase send heal error:', e);
+    }
+  }
+
+  sendBuffEvent(ability: any) {
+    try {
+      this.firebase.pushData('damageEvents', {
+        player: this.character().name || 'Jugador',
+        ability: `${ability.name} (Buff)`,
+        rank: ability.currentRank || 1,
+        damage: 0,
+        damageType: 'buff',
+        buffStat: ability.currentBuffStat,
+        buffValue: ability.currentBuffValue,
+        buffDuration: ability.currentBuffDuration,
+        isPercent: ability.buff?.isPercent || false,
+        aoe: false,
+        effects: null,
+        turn: this.turnNumber(),
+        timestamp: Date.now(),
+        assigned: false,
+      });
+    } catch (e) {
+      console.error('Firebase send buff error:', e);
     }
   }
 

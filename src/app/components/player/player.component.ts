@@ -1493,16 +1493,47 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const myName = (this.charSvc.character().name || '').trim().toLowerCase();
         const targetName = (event?.target || '').trim().toLowerCase();
         if (!myName || !targetName || myName !== targetName) return;
+
         if (event.type === 'heal') {
           this.charSvc.adjustHP(event.amount);
-          this.incomingMasterMsg.set('💚 Master te cura +' + event.amount);
+          this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + event.amount + ' HP');
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
-          this.incomingMasterMsg.set('💢 Master te hace -' + event.amount + ' daño');
-        } else if (event.type === 'buff' && event.effect) {
-          this.charSvc.addEffect(event.effect);
-          this.incomingMasterMsg.set('✨ Master aplica ' + (event.effect.name || 'efecto'));
+          this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
+        } else if (event.type === 'shield') {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== (event.abilityName || 'Shield')),
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: event.abilityName || 'Shield', target: 'shield', value: event.amount, duration: 99 },
+            ],
+          }));
+          this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
+        } else if (event.type === 'hot') {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== (event.abilityName || 'HoT')),
+              { id: Date.now() + Math.random(), type: 'hot' as const, name: event.abilityName || 'HoT', target: 'hp', value: event.hotTick, duration: event.hotDuration },
+            ],
+          }));
+          this.incomingMasterMsg.set('🩹 ' + (event.abilityName || 'Master') + ': ' + event.hotTick + '/t · ' + event.hotDuration + 't');
+        } else if (event.type === 'buff') {
+          if (event.effect) {
+            this.charSvc.addEffect(event.effect);
+            this.incomingMasterMsg.set('✨ Master aplica ' + (event.effect.name || 'efecto'));
+          } else {
+            this.charSvc.character.update(c => ({
+              ...c,
+              activeEffects: [
+                ...(c.activeEffects || []).filter(e => e.name !== (event.abilityName || 'Buff')),
+                { id: Date.now() + Math.random(), type: 'buff' as const, name: event.abilityName || 'Buff', target: event.buffStat || 'all_stats', value: event.buffValue || 0, duration: event.buffDuration || 5, isPercent: event.isPercent || false },
+              ],
+            }));
+            this.incomingMasterMsg.set('🌟 ' + (event.abilityName || 'Master') + ': +' + event.buffValue + ' ' + event.buffStat + ' (' + event.buffDuration + 't)');
+          }
         }
+
         this.firebase.removeData('playerEvents/' + snapshot.key);
         setTimeout(() => this.incomingMasterMsg.set(''), 4000);
       });
@@ -2069,7 +2100,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + ability.hotTick + '/turno · ' +
         ability.hotDuration + 't (' + ability.hotTotal + ' total)' + lunarText +
-        ' — aplicalo manualmente en Efectos'
+        ' — enviado al Master'
       );
       this.charSvc.sendHealEvent(ability, ability.hotTotal);
     } else if (ability.isDot) {
@@ -2112,7 +2143,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — aplicalo al objetivo'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — enviado al Master'
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -2120,7 +2151,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — aplicalo al objetivo'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — enviado al Master'
         );
         this.charSvc.sendHealEvent(ability, roll);
       }
@@ -2310,8 +2341,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.buff) {
       const buffText = '+' + ability.currentBuffValue + ' ' + ability.currentBuffStat +
         ' (' + ability.currentBuffDuration + ' turnos)';
+      this.charSvc.sendBuffEvent(ability);
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — aplicalo manualmente en Efectos'
+        ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — enviado al Master'
       );
     } else {
       this.charSvc.showToast(ability.name + ': Lanzado');
