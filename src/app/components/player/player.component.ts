@@ -2028,11 +2028,27 @@ export class PlayerComponent implements OnInit {
       );
       this.charSvc.sendHealEvent(ability, ability.hotTotal);
     } else if (ability.isDot) {
-      this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + ability.dotTick + '/turno · ' +
-        ability.dotDuration + 't (' + ability.dotTotal + ' total) — aplicalo al enemigo'
-      );
-      this.charSvc.sendDamageEvent(ability, 0, 1, 1);
+      const impGarrote = this.charSvc.talentRank('improved_garrote');
+      if (ability.id === 'garrote' && impGarrote > 0) {
+        this.charSvc.showToast(
+          ability.name + ' R' + ability.currentRank + ': ' + ability.dotTick + '/turno · ' +
+          ability.dotDuration + 't (' + ability.dotTotal + ' total) + Silencio — aplicalo al enemigo'
+        );
+        this.charSvc.sendDamageEvent(ability, 0, 1, 1);
+        this.charSvc.sendDamageEvent({
+          ...ability,
+          id: ability.id + '_silence',
+          name: ability.name + ' (Silencio)',
+          isDot: false,
+          inflictsEffects: [{ type: 'debuff', name: 'Silencio', target: 'silenced', value: 0, duration: 2 }],
+        }, 0, 1, 1);
+      } else {
+        this.charSvc.showToast(
+          ability.name + ' R' + ability.currentRank + ': ' + ability.dotTick + '/turno · ' +
+          ability.dotDuration + 't (' + ability.dotTotal + ' total) — aplicalo al enemigo'
+        );
+        this.charSvc.sendDamageEvent(ability, 0, 1, 1);
+      }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
       let lunarText = '';

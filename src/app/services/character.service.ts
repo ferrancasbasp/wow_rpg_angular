@@ -368,6 +368,9 @@ export class CharacterService {
         if (a.id === 'shadow_word_pain') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_pain') * 0.10));
         }
+        if (a.id === 'garrote') {
+          dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_garrote') * 0.20));
+        }
         dotTick = Math.round(dotTotal / dotDuration);
       }
       return {
@@ -650,6 +653,7 @@ export class CharacterService {
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
       initiative: `Combo extra: ${rank * 15}% prob`,
       energetic: `Energía máxima: +${rank * 4}`,
+      improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 2}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
       beligerance: `Basic Attack: +${rank * 7}% Smite como sagrado`,
