@@ -285,17 +285,17 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                     <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                   }
                 </div>
-                <div class="ability-cast-row">
-                  <button class="cast-btn" (click)="castSpell(ability)"
-                          [disabled]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
-                    {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
-                  </button>
-                  @if (abilityRolls()[ability.id]) {
-                    <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
-                      {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
-                    </span>
-                  }
-                </div>
+              </div>
+              <div class="ability-cast-col">
+                <button class="cast-btn" (click)="castSpell(ability)"
+                        [disabled]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
+                  {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
+                </button>
+                @if (abilityRolls()[ability.id]) {
+                  <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
+                    {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
+                  </span>
+                }
               </div>
             </div>
           }
@@ -370,13 +370,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                     }
                   </div>
-                  <div class="ability-cast-row">
-                    <button class="cast-btn" (click)="castUtility(ability)"
-                            [disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
-                      {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
-                    </button>
-                    <span style="flex:1"></span>
-                  </div>
+                </div>
+                <div class="ability-cast-col">
+                  <button class="cast-btn" (click)="castUtility(ability)"
+                          [disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
+                    {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
+                  </button>
                 </div>
               </div>
             }
@@ -998,16 +997,16 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
     }
     .ability-card {
-      display: flex; align-items: center; gap: 5px; padding: 4px 5px; margin-bottom: 0;
+      display: flex; align-items: center; gap: 6px; padding: 5px 6px; margin-bottom: 0;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.3);
       border-radius: 4px; transition: var(--transition);
     }
     .ability-card:hover { border-color: var(--gold-dark); background: var(--bg-panel-hover); }
     .ability-icon {
-      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
+      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
       border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
-      overflow: hidden; position: relative;
+      overflow: hidden; position: relative; cursor: help;
     }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; }
     .ability-tooltip {
@@ -1019,13 +1018,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .ability-icon:hover .ability-tooltip { display: block; }
     .ability-info { flex: 1; min-width: 0; }
-    .ability-name { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ability-name { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ability-school {
-      font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;
+      font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;
     }
     .ability-req-tag { color: #9b59b6; font-weight: 600; }
-    .ability-desc { display: none; }
-    .ability-stats { display: flex; gap: 5px; margin-top: 1px; font-size: 10px; flex-wrap: nowrap; overflow: hidden; }
+    .ability-stats { display: flex; gap: 6px; margin-top: 2px; font-size: 11px; flex-wrap: nowrap; overflow: hidden; }
     .ability-stat { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
     .ability-stat.dmg { color: var(--danger); }
     .ability-stat.heal { color: var(--success); }
@@ -1034,18 +1032,18 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
     .ability-card.ability-locked { opacity: 0.5; }
 
-    .ability-cast-row {
-      display: flex; align-items: center; margin-top: 2px; gap: 4px;
+    .ability-cast-col {
+      display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0;
     }
     .ability-roll-text {
       font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold-light);
-      font-weight: 700; margin-left: auto; min-width: 30px; text-align: right;
+      font-weight: 700; text-align: center; min-width: 30px;
     }
     .ability-roll-text.crit-roll {
-      color: #ff9c00; text-shadow: 0 0 6px rgba(255,156,0,0.5); font-size: 13px;
+      color: #ff9c00; text-shadow: 0 0 6px rgba(255,156,0,0.5); font-size: 14px;
     }
     .cast-btn {
-      padding: 2px 8px; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+      padding: 3px 10px; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
       background: linear-gradient(180deg, var(--mana) 0%, var(--mana-dark) 100%);
       border: 1px solid #5a9aff; border-radius: 4px; color: #fff; cursor: pointer;
       transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
