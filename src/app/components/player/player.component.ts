@@ -128,6 +128,24 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="charSvc.warriorWeaponMode.set('twohanded')">2H</button>
           </div>
         }
+        <div class="action-slots-row">
+          <div class="action-slots-label">Acciones</div>
+          <div class="action-slots">
+            @for (n of actionSlotArray(); track n) {
+              <div class="action-slot" [class.used]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
+                @if (n <= charSvc.actionsUsed()) {
+                  <span>⚡</span>
+                } @else {
+                  <span class="empty">·</span>
+                }
+              </div>
+            }
+          </div>
+          <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
+                  title="Mover — gasta 1 accion instantanea">
+            <span>🥾</span>
+          </button>
+        </div>
         <div class="turn-damage-box">
           <span class="turn-damage-label">Dano del Turno</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
@@ -1253,6 +1271,41 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       background: linear-gradient(180deg, #2d3a1e 0%, #1a2310 100%);
       border-color: #6ba83a; color: #a0e060; box-shadow: 0 0 8px rgba(108,168,58,0.3);
     }
+    .action-slots-row {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .action-slots-label {
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.05em; color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .action-slots { display: flex; gap: 5px; }
+    .action-slot {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
+      border-radius: 4px; transition: all 0.2s;
+    }
+    .action-slot .empty { color: var(--text-muted); opacity: 0.3; font-size: 16px; }
+    .action-slot.used {
+      background: linear-gradient(180deg, var(--mana-dark) 0%, var(--bg-dark) 100%);
+      border-color: var(--mana); box-shadow: 0 0 6px rgba(59,127,224,0.3);
+    }
+    .action-slot.snD {
+      border-color: #e74c3c;
+    }
+    .action-slot.snD.used {
+      background: linear-gradient(180deg, #a02020 0%, var(--bg-dark) 100%);
+      border-color: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.4);
+    }
+    .move-btn {
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
+      border-radius: 4px; cursor: pointer; transition: var(--transition); margin-top: 2px;
+    }
+    .move-btn:hover:not(:disabled) {
+      border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.05);
+    }
+    .move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
     .turn-damage-box {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
       background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
@@ -1417,6 +1470,10 @@ export class PlayerComponent implements OnInit {
 
   comboPointArray(max: number): number[] {
     return Array.from({ length: max }, (_, i) => i + 1);
+  }
+
+  actionSlotArray(): number[] {
+    return Array.from({ length: this.charSvc.maxActions() }, (_, i) => i + 1);
   }
 
   getEquipItem(slotKey: string): EquipmentItem {
@@ -1589,6 +1646,15 @@ export class PlayerComponent implements OnInit {
     } else {
       this.charSvc.showToast('+' + amount + ' XP');
     }
+  }
+
+  moveAction() {
+    if (!this.charSvc.canAct(1)) {
+      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      return;
+    }
+    this.charSvc.useAction(1);
+    this.charSvc.showToast('🥾 Movimiento — 1 accion gastada');
   }
 
   endTurn() {
@@ -1793,6 +1859,13 @@ export class PlayerComponent implements OnInit {
       return;
     }
 
+    const actionCost = ability.castType === 'instant' ? 1 : 2;
+    if (!this.charSvc.canAct(actionCost)) {
+      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      return;
+    }
+    this.charSvc.useAction(actionCost);
+
     const clearcast = (isRage || isEnergy) ? false : this.charSvc.checkClearcasting();
 
     if (isRage) {
@@ -1923,6 +1996,20 @@ export class PlayerComponent implements OnInit {
       comboText = ' · ' + comboSpent + ' combo gastados';
     }
 
+    if (ability.id === 'slice_and_dice') {
+      const sndDuration = 2 + comboSpent;
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.name !== 'Slice and Dice'),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Slice and Dice', target: 'slice_and_dice', value: 0, duration: sndDuration },
+        ],
+      }));
+      this.charSvc.showToast(ability.name + ': +1 accion/turno durante ' + sndDuration + ' turnos');
+      this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll: 0, crit: false } }));
+      return;
+    }
+
     if (ability.isHot) {
       let lunarText = '';
       const lhRank = this.charSvc.talentRank('lunar_healing');
@@ -2040,6 +2127,14 @@ export class PlayerComponent implements OnInit {
       this.charSvc.showToast(ability.name + ' no se puede usar en esta estancia');
       return;
     }
+
+    const actionCost = ability.castType === 'instant' ? 1 : 2;
+    if (!this.charSvc.canAct(actionCost)) {
+      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      return;
+    }
+    this.charSvc.useAction(actionCost);
+
     if (isRage) {
       if (resourceActual < cost) {
         this.charSvc.showToast('Ira insuficiente');

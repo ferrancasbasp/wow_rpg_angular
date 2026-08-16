@@ -13,6 +13,21 @@ export class CharacterService {
   readonly toastMessage = signal('');
   readonly turnNumber = signal(1);
   readonly turnDamage = signal(0);
+  readonly actionsUsed = signal(0);
+
+  maxActions = computed<number>(() => {
+    const effects = this.character().activeEffects || [];
+    const hasSnD = effects.some(e => e.name === 'Slice and Dice');
+    return hasSnD ? 3 : 2;
+  });
+
+  canAct(cost: number): boolean {
+    return this.actionsUsed() + cost <= this.maxActions();
+  }
+
+  useAction(cost: number) {
+    this.actionsUsed.update(n => n + cost);
+  }
   readonly warriorStance = signal<string>('battle');
   readonly warriorWeaponMode = signal<string>('twohanded');
 
@@ -823,6 +838,7 @@ export class CharacterService {
     });
     this.turnNumber.update(n => n + 1);
     this.turnDamage.set(0);
+    this.actionsUsed.set(0);
     if (this.resourceConfig().type === 'energy') {
       const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * 0.10));
       this.character.update(c => {
