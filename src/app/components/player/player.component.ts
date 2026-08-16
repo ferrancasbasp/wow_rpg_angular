@@ -148,6 +148,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
         <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
+        <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🍞</button>
         <div class="hp-action-row">
           <select [value]="hpActionType()" (change)="onHpActionTypeChange($event)" class="hp-loss-type">
             <option value="magical">Magico</option>
@@ -406,14 +407,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
     </div>
 
-    <div class="action-bar">
-      <button class="action-btn" (click)="fullRest()">Full Rest</button>
-      <button class="action-btn" (click)="saveChar()">Guardar</button>
-      <button class="action-btn" (click)="loadChar()">Cargar</button>
-      <button class="action-btn" (click)="openExport()">Exportar JSON</button>
-      <button class="action-btn danger" (click)="resetCharacter()">Reiniciar</button>
-    </div>
-
     <div class="xp-bottom-bar">
       <div class="xp-bar-wrapper" [class.xp-levelup-anim]="levelUpFlash()">
         <div class="xp-bar-header">
@@ -434,6 +427,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn" (click)="saveChar()">Guardar</button>
+      <button class="action-btn" (click)="loadChar()">Cargar</button>
+      <button class="action-btn" (click)="openExport()">Exportar JSON</button>
+      <button class="action-btn danger" (click)="resetCharacter()">Reiniciar</button>
     </div>
 
     @if (showStatsModal()) {
@@ -1165,8 +1165,18 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border-color: #4a7c2e; color: #7cc44a;
     }
     .end-turn-btn:hover {
-      background: linear-gradient(180deg, #3a5e26 0%, #234015 100%);
-      border-color: #6ba83a; color: #a0e060; box-shadow: 0 0 12px rgba(108,168,58,0.4);
+      background: linear-gradient(135deg, #a02828, #d04040);
+    }
+    .full-rest-btn {
+      background: linear-gradient(135deg, #1a4a7a, #2a6aaa);
+      color: #fff;
+      font-size: 18px;
+      padding: 4px 10px;
+      min-width: 38px;
+      border: 1px solid #3a8aba;
+    }
+    .full-rest-btn:hover {
+      background: linear-gradient(135deg, #2a5a8a, #3a7aba);
     }
 
     .modal-overlay {
@@ -2371,24 +2381,23 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const maxHP = this.charSvc.maxHP();
     const maxMana = this.charSvc.maxMana();
     const resourceMax = this.charSvc.resourceMax();
-    this.charSvc.character.update(c => ({
-      ...c,
-      currentHP: maxHP,
-      comboPoints: 0,
-      currentCooldowns: {},
-    }));
+    this.charSvc.character.update(c => {
+      const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
+      return { ...c, currentHP: maxHP, comboPoints: 0, currentCooldowns: {}, activeEffects: effects };
+    });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
-      this.charSvc.showToast('Full Rest: vida al maximo, ira reseteada');
+      this.charSvc.showToast('Full Rest: vida al maximo, ira reseteada, buffs -2 turnos');
     } else if (this.charSvc.resourceConfig().type === 'energy') {
       this.charSvc.character.update(c => ({ ...c, currentEnergy: resourceMax }));
-      this.charSvc.showToast('Full Rest: vida y energia al maximo');
+      this.charSvc.showToast('Full Rest: vida y energia al maximo, buffs -2 turnos');
     } else {
       this.charSvc.character.update(c => ({ ...c, currentMana: maxMana }));
-      this.charSvc.showToast('Full Rest: vida y mana al maximo');
+      this.charSvc.showToast('Full Rest: vida y mana al maximo, buffs -2 turnos');
     }
     this.charSvc.turnNumber.set(1);
     this.charSvc.turnDamage.set(0);
+    this.charSvc.actionsUsed.set(0);
   }
 
   resetCharacter() {

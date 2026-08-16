@@ -62,6 +62,77 @@ interface DamageEvent {
       <div class="app-title">Master Screen</div>
     </div>
 
+    <div class="send-panel-wrap">
+      <div class="wow-panel send-panel">
+        <div class="panel-title">
+          @if (isPlayerTargeting()) {
+            <span class="targeting-hint">Clicka un jugador para asignar {{ selectedEvent()?.ability }}</span>
+          } @else {
+            Enviar a Jugadores
+          }
+          @if (knownPlayers().length > 0) {
+            <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
+          }
+        </div>
+        <div class="panel-body">
+          @if (knownPlayers().length > 0) {
+            <div class="player-chips" [class.targeting]="isPlayerTargeting()">
+              @for (name of knownPlayers(); track name) {
+                <button
+                  class="player-chip"
+                  [class.targeting-chip]="isPlayerTargeting()"
+                  [class.active]="sendTargetName() === name"
+                  (click)="onPlayerChipClick(name)"
+                >{{ name }}</button>
+              }
+            </div>
+          } @else {
+            <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
+          }
+
+          @if (!isPlayerTargeting() && sendTargetName()) {
+            <div class="quick-effects">
+              <div class="quick-effect-group">
+                <span class="quick-label">Debuffs</span>
+                <div class="quick-btns">
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
+                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
+                </div>
+              </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">DoT</span>
+                <div class="quick-btns">
+                  <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
+                    [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
+                  <input type="number" class="dot-input small" placeholder="Turnos" min="1"
+                    [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
+                  <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
+                </div>
+              </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">Directo</span>
+                <div class="quick-btns">
+                  <input type="number" class="dot-input" placeholder="Cantidad" min="1"
+                    [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
+                  <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
+                  <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (sendLog().length > 0) {
+            <div class="send-log">
+              @for (entry of sendLog(); track $index) {
+                <div class="send-log-entry">{{ entry }}</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
     <div class="master-layout">
       <div class="wow-panel">
         <div class="panel-title">
@@ -287,77 +358,6 @@ interface DamageEvent {
             </div>
           } @else {
             <div class="damage-empty">No hay monstruos. Añade uno arriba.</div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <div class="send-panel-wrap">
-      <div class="wow-panel send-panel">
-        <div class="panel-title">
-          @if (isPlayerTargeting()) {
-            <span class="targeting-hint">Clicka un jugador para asignar {{ selectedEvent()?.ability }}</span>
-          } @else {
-            Enviar a Jugadores
-          }
-          @if (knownPlayers().length > 0) {
-            <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
-          }
-        </div>
-        <div class="panel-body">
-          @if (knownPlayers().length > 0) {
-            <div class="player-chips" [class.targeting]="isPlayerTargeting()">
-              @for (name of knownPlayers(); track name) {
-                <button
-                  class="player-chip"
-                  [class.targeting-chip]="isPlayerTargeting()"
-                  [class.active]="sendTargetName() === name"
-                  (click)="onPlayerChipClick(name)"
-                >{{ name }}</button>
-              }
-            </div>
-          } @else {
-            <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
-          }
-
-          @if (!isPlayerTargeting() && sendTargetName()) {
-            <div class="quick-effects">
-              <div class="quick-effect-group">
-                <span class="quick-label">Debuffs</span>
-                <div class="quick-btns">
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
-                </div>
-              </div>
-              <div class="quick-effect-group">
-                <span class="quick-label">DoT</span>
-                <div class="quick-btns">
-                  <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
-                    [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
-                  <input type="number" class="dot-input small" placeholder="Turnos" min="1"
-                    [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
-                  <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
-                </div>
-              </div>
-              <div class="quick-effect-group">
-                <span class="quick-label">Directo</span>
-                <div class="quick-btns">
-                  <input type="number" class="dot-input" placeholder="Cantidad" min="1"
-                    [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
-                  <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
-                  <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
-                </div>
-              </div>
-            </div>
-          }
-
-          @if (sendLog().length > 0) {
-            <div class="send-log">
-              @for (entry of sendLog(); track $index) {
-                <div class="send-log-entry">{{ entry }}</div>
-              }
-            </div>
           }
         </div>
       </div>
@@ -1178,7 +1178,7 @@ interface DamageEvent {
 
     .send-panel-wrap {
       max-width: 1200px;
-      margin: 20px auto 0;
+      margin: 0 auto 20px;
     }
 
     .send-panel .panel-body {
