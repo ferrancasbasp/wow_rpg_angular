@@ -42,11 +42,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </select>
         </div>
       </div>
-      <div class="tp-badge" [class.has-points]="charSvc.availableTalentPoints() > 0"
-           (click)="showTalentModal.set(true)" style="cursor: pointer;" title="Abrir arbol de talentos">
-        <span>Puntos de Talento</span>
-        <span class="tp-value">{{ charSvc.availableTalentPoints() }}</span>
-      </div>
     </div>
 
     <div class="top-bar-row">
@@ -88,6 +83,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </button>
           <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
             <span>🛡️</span>
+          </button>
+          <button class="quick-icon-btn talent-btn" [class.has-points]="charSvc.availableTalentPoints() > 0"
+                  (click)="showTalentModal.set(true)" title="Talentos">
+            <span>🌟</span>
+            @if (charSvc.availableTalentPoints() > 0) {
+              <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
+            }
           </button>
           @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
             <div class="combo-inline">
@@ -1180,6 +1182,22 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .quick-icon-btn:hover {
       border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); transform: scale(1.05);
+    }
+    .quick-icon-btn.talent-btn { position: relative; }
+    .quick-icon-btn.talent-btn.has-points {
+      border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow);
+      animation: pulse-gold 2s ease-in-out infinite;
+    }
+    .tp-badge-mini {
+      position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; font-family: 'Cinzel', serif;
+      background: var(--gold); color: var(--bg-dark); border-radius: 8px;
+      padding: 0 4px; border: 1px solid var(--bg-dark);
+    }
+    @keyframes pulse-gold {
+      0%, 100% { box-shadow: 0 0 4px var(--gold-glow); }
+      50% { box-shadow: 0 0 12px var(--gold-glow); }
     }
     .xp-bottom-bar { margin-top: 20px; }
     .stats-modal { max-width: 500px; }
