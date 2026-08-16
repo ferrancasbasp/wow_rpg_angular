@@ -243,6 +243,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </button>
         </div>
         <div class="panel-body">
+          <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
                  [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0)"
@@ -264,33 +265,29 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               <div class="ability-info">
                 <div class="ability-name">{{ ability.name }}</div>
                 <div class="ability-school">
-                  {{ ability.school }} · {{ ability.castType === 'instant' ? 'Instantaneo' : 'Casteo' }} · Nv. {{ ability.requiredLevel }}
+                  {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
                   @if (ability.requiresStealth) {<span class="ability-req-tag"> · Sigilo</span>}
-                  @if (ability.requiresBehind) {<span class="ability-req-tag"> · Por detras</span>}
+                  @if (ability.requiresBehind) {<span class="ability-req-tag"> · Detras</span>}
                 </div>
-                <div class="ability-desc">{{ ability.description }}</div>
                 <div class="ability-stats">
                   @if (ability.type === 'damage' && !ability.isDot) {
-                    <span class="ability-stat dmg">Dano {{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                    <span class="ability-stat dmg">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
                   }
                   @if (ability.isDot) {
-                    <span class="ability-stat dmg">DoT {{ ability.dotTick }}/turno · {{ ability.dotDuration }}t ({{ ability.dotTotal }} total)</span>
+                    <span class="ability-stat dmg">{{ ability.dotTick }}/t · {{ ability.dotDuration }}t</span>
                   }
                   @if (ability.type === 'heal' && !ability.isHot) {
-                    <span class="ability-stat heal">Curacion {{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                    <span class="ability-stat heal">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
                   }
                   @if (ability.isHot) {
-                    <span class="ability-stat heal">HoT {{ ability.hotTick }}/turno · {{ ability.hotDuration }}t ({{ ability.hotTotal }} total)</span>
+                    <span class="ability-stat heal">{{ ability.hotTick }}/t · {{ ability.hotDuration }}t</span>
                   }
                   @if (charSvc.resourceConfig().type === 'rage') {
-                    <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} ira }</span>
+                    <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
                   } @else if (charSvc.resourceConfig().type === 'energy') {
-                    <span class="ability-stat cost">{{ ability.costEnergy || 0 }} energia</span>
+                    <span class="ability-stat cost">{{ ability.costEnergy || 0 }} en</span>
                   } @else {
-                    <span class="ability-stat cost">{{ ability.scaledCost }} mana</span>
-                  }
-                  @if (ability.talentNote) {
-                    <span class="ability-stat bonus">{{ ability.talentNote }}</span>
+                    <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                   }
                 </div>
                 <div class="ability-cast-row">
@@ -307,6 +304,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               </div>
             </div>
           }
+          </div>
 
           @if (charSvc.trainableAbilities().length > 0) {
             <div class="locked-abilities-section">
@@ -340,6 +338,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         <div class="wow-panel">
           <div class="panel-title">Utilidad</div>
           <div class="panel-body">
+            <div class="ability-grid">
             @for (ability of charSvc.unlockedUtility(); track ability.id) {
               <div class="ability-card"
                    [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0)"
@@ -360,18 +359,19 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                 </div>
                 <div class="ability-info">
                   <div class="ability-name">{{ ability.name }}</div>
-                  <div class="ability-school">{{ ability.school }} · {{ ability.castType === 'instant' ? 'Instantaneo' : 'Casteo' }} · Nv. {{ ability.requiredLevel }}</div>
-                  <div class="ability-desc">{{ ability.description }}</div>
+                  <div class="ability-school">
+                    {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
+                  </div>
                   <div class="ability-stats">
                     @if (ability.currentBuffValue) {
-                      <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }} turnos</span>
+                      <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
                     }
                     @if (charSvc.resourceConfig().type === 'rage') {
                       <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
                     } @else if (charSvc.resourceConfig().type === 'energy') {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} energia</span>
+                      <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
                     } @else {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} mana</span>
+                      <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                     }
                   </div>
                   <div class="ability-cast-row">
@@ -384,6 +384,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                 </div>
               </div>
             }
+            </div>
           </div>
         </div>
       }
@@ -994,15 +995,18 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .equip-extra-label { font-size: 11px; color: var(--text-dim); }
 
+    .ability-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
     .ability-card {
-      display: flex; gap: 8px; padding: 8px; margin-bottom: 6px;
+      display: flex; gap: 6px; padding: 6px; margin-bottom: 0;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.3);
       border-radius: var(--radius); transition: var(--transition);
     }
     .ability-card:hover { border-color: var(--gold-dark); background: var(--bg-panel-hover); }
     .ability-icon {
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      font-size: 18px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
       border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
       overflow: hidden; position: relative;
     }
@@ -1014,7 +1018,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .ability-req-tag { color: #9b59b6; font-weight: 600; }
     .ability-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; line-height: 1.2; }
-    .ability-stats { display: flex; gap: 10px; margin-top: 4px; font-size: 12px; flex-wrap: wrap; }
+    .ability-stats { display: flex; gap: 8px; margin-top: 3px; font-size: 11px; flex-wrap: wrap; }
     .ability-stat { display: flex; align-items: center; gap: 4px; }
     .ability-stat.dmg { color: var(--danger); }
     .ability-stat.heal { color: var(--success); }
@@ -1024,17 +1028,17 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .ability-card.ability-locked { opacity: 0.5; }
 
     .ability-cast-row {
-      display: flex; align-items: center; margin-top: 4px; gap: 8px;
+      display: flex; align-items: center; margin-top: 3px; gap: 6px;
     }
     .ability-roll-text {
-      font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold-light);
-      font-weight: 700; margin-left: auto; min-width: 50px; text-align: right;
+      font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold-light);
+      font-weight: 700; margin-left: auto; min-width: 40px; text-align: right;
     }
     .ability-roll-text.crit-roll {
-      color: #ff9c00; text-shadow: 0 0 8px rgba(255,156,0,0.5); font-size: 16px;
+      color: #ff9c00; text-shadow: 0 0 8px rgba(255,156,0,0.5); font-size: 15px;
     }
     .cast-btn {
-      padding: 4px 14px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600;
+      padding: 3px 12px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
       background: linear-gradient(180deg, var(--mana) 0%, var(--mana-dark) 100%);
       border: 1px solid #5a9aff; border-radius: 4px; color: #fff; cursor: pointer;
       transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
