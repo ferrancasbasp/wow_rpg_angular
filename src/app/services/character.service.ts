@@ -449,7 +449,9 @@ export class CharacterService {
 
   tierUnlocked(tier: number): boolean {
     if (tier <= 1) return true;
-    return this.tierPointsSpent(tier - 1) >= 5;
+    let total = 0;
+    for (let t = 1; t < tier; t++) total += this.tierPointsSpent(t);
+    return total >= (tier - 1) * 5;
   }
 
   prereqMet(talent: any): boolean {
@@ -568,12 +570,16 @@ export class CharacterService {
     if (this.talentRank(id) === 0) return;
     const talent = this.classConfig().talents.find(t => t.id === id);
     if (talent) {
-      const nextTier = talent.tier + 1;
-      const hasPointsAbove = this.tierPointsSpent(nextTier) > 0;
-      const currentTierPoints = this.tierPointsSpent(talent.tier);
-      if (hasPointsAbove && currentTierPoints <= 5) {
-        this.showToast('No puedes quitar puntos: hay talentos en el siguiente tier que dependen de los 5 puntos de este tier.');
-        return;
+      const higherTiers = this.classConfig().talents.filter(t => t.tier > talent.tier);
+      const hasPointsAbove = higherTiers.some(t => this.talentRank(t.id) > 0);
+      if (hasPointsAbove) {
+        let totalBelow = 0;
+        for (let t = 1; t <= talent.tier; t++) totalBelow += this.tierPointsSpent(t);
+        const required = talent.tier * 5;
+        if (totalBelow <= required) {
+          this.showToast('No puedes quitar puntos: hay talentos en tiers superiores que dependen de los puntos acumulados.');
+          return;
+        }
       }
     }
     const dependents = this.classConfig().talents.filter(t => t.requires && t.requires.id === id && this.talentRank(t.id) > 0);
