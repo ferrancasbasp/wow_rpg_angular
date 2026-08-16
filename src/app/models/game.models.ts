@@ -112,6 +112,7 @@ export interface Ability {
   lastRoll?: number;
   lastCrit?: boolean;
   multiHit?: number;
+  partyBuff?: boolean;
 }
 
 export interface Talent {
