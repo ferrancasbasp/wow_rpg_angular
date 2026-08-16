@@ -147,8 +147,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           <span class="turn-damage-label">Dano del Turno</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
-        <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
-        <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🍞</button>
+        <div class="turn-btn-row">
+          <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
+          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🍞</button>
+        </div>
         <div class="hp-action-row">
           <select [value]="hpActionType()" (change)="onHpActionTypeChange($event)" class="hp-loss-type">
             <option value="magical">Magico</option>
@@ -1160,7 +1162,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .action-btn:active { transform: scale(0.97); }
     .action-btn.danger { color: var(--danger); border-color: rgba(196,81,81,0.4); }
     .action-btn.danger:hover { border-color: var(--danger); box-shadow: 0 0 10px rgba(196,81,81,0.3); }
+    .turn-btn-row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
     .end-turn-btn {
+      flex: 1 1 75%;
       background: linear-gradient(180deg, #2d4a1e 0%, #1a2d10 100%);
       border-color: #4a7c2e; color: #7cc44a;
     }
@@ -1168,11 +1176,11 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       background: linear-gradient(135deg, #a02828, #d04040);
     }
     .full-rest-btn {
+      flex: 0 0 42px;
       background: linear-gradient(135deg, #1a4a7a, #2a6aaa);
       color: #fff;
       font-size: 18px;
-      padding: 4px 10px;
-      min-width: 38px;
+      padding: 4px;
       border: 1px solid #3a8aba;
     }
     .full-rest-btn:hover {
