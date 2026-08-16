@@ -129,7 +129,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         }
         <div class="action-slots-row">
-          <div class="action-slots-label">Acciones</div>
+          <span class="action-slots-label">Acciones</span>
           <div class="action-slots">
             @for (n of actionSlotArray(); track n) {
               <div class="action-slot" [class.used]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
@@ -1272,16 +1272,16 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border-color: #6ba83a; color: #a0e060; box-shadow: 0 0 8px rgba(108,168,58,0.3);
     }
     .action-slots-row {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      display: flex; flex-direction: row; align-items: center; gap: 5px;
     }
     .action-slots-label {
       font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.05em; color: var(--text-dim);
-      text-transform: uppercase;
+      text-transform: uppercase; white-space: nowrap;
     }
-    .action-slots { display: flex; gap: 5px; }
+    .action-slots { display: flex; gap: 4px; }
     .action-slot {
-      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
+      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
       border-radius: 4px; transition: all 0.2s;
     }
     .action-slot .empty { color: var(--text-muted); opacity: 0.3; font-size: 16px; }
@@ -1297,9 +1297,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border-color: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.4);
     }
     .move-btn {
-      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-      font-size: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
-      border-radius: 4px; cursor: pointer; transition: var(--transition); margin-top: 2px;
+      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
+      border-radius: 4px; cursor: pointer; transition: var(--transition); margin-left: 10px;
     }
     .move-btn:hover:not(:disabled) {
       border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.05);
