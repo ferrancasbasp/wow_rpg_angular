@@ -149,7 +149,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
         <div class="turn-btn-row">
           <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
-          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🍞</button>
+          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
         </div>
         <div class="hp-action-row">
           <select [value]="hpActionType()" (change)="onHpActionTypeChange($event)" class="hp-loss-type">
