@@ -59,7 +59,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               }
             </button>
             @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
-              <div class="combo-inline">
+              <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
                 <div class="combo-points">
                   @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
                     <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
@@ -895,6 +895,21 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .combo-point.active:nth-child(3)::before { clip-path: inset(0 25% 0 0); }
     .combo-point.active:nth-child(4)::before { clip-path: inset(0 0 0 0); }
     .combo-point.active:nth-child(5)::before { clip-path: inset(0 0 0 0); }
+
+    .combo-rogue .combo-point.active {
+      border-color: #e74c3c;
+      box-shadow: 0 0 10px rgba(231,76,60,0.5);
+    }
+    .combo-rogue .combo-point.active::before {
+      background: radial-gradient(circle at 35% 35%, #ff6b6b 0%, #e74c3c 60%, #a02020 100%);
+    }
+    .combo-rogue .combo-point.active:nth-child(1)::before,
+    .combo-rogue .combo-point.active:nth-child(2)::before,
+    .combo-rogue .combo-point.active:nth-child(3)::before,
+    .combo-rogue .combo-point.active:nth-child(4)::before,
+    .combo-rogue .combo-point.active:nth-child(5)::before {
+      clip-path: inset(0 0 0 0);
+    }
 
     .effects-section {
       margin-bottom: 20px; background: var(--bg-panel); border: 1px solid var(--gold-dark);

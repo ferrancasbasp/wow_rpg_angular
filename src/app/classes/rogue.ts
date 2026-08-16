@@ -22,6 +22,12 @@ export const ROGUE: CharacterClass = {
 
   resource: { type: 'energy', label: 'Energía', color: '#f1c40f', max: 100, start: 'full', regen: 20 },
 
+  comboConfig: {
+    label: 'Combo Points',
+    icon: '🗡️',
+    max: 5,
+  },
+
   talents: [
     { id: 'vitality', name: 'Vitality', icon: '⚡', iconImg: 'img/talents/rogue/vitality.jpg', description: 'Aumenta la regeneración de energía al final del turno un 10% por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'ruthlessness', name: 'Ruthlessness', icon: '🎯', iconImg: 'img/talents/rogue/ruthlessness.jpg', description: 'Reduce el coste de energía de tus finishers en 2 por punto.', maxRank: 5, tier: 1, requires: null },
