@@ -58,15 +58,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                 <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
               }
             </button>
-            @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
-              <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
-                <div class="combo-points">
-                  @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
-                    <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
-                  }
-                </div>
-              </div>
-            }
           </div>
         </div>
 
@@ -100,6 +91,21 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
           </div>
         </div>
+
+        @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
+          <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
+            <span class="combo-label">{{
+              charSvc.classConfig().comboConfig
+                ? (charSvc.classConfig().comboConfig!.icon + ' ' + charSvc.classConfig().comboConfig!.label)
+                : 'Combo Points'
+            }}</span>
+            <div class="combo-points">
+              @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
+                <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
+              }
+            </div>
+          </div>
+        }
       </div>
 
       <div class="top-side-controls">
@@ -869,7 +875,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       background: var(--bg-panel); border: 1px solid var(--gold-dark); border-radius: var(--radius);
     }
     .combo-inline {
-      display: flex; align-items: center; margin-left: auto;
+      display: flex; align-items: center; gap: 8px; margin-top: 2px;
     }
     .combo-label {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold);
@@ -1378,7 +1384,7 @@ export class PlayerComponent implements OnInit {
   showTalentModal = signal(false);
   showStatsModal = signal(false);
   showEquipment = signal(false);
-  showEffectsPanel = signal(true);
+  showEffectsPanel = signal(false);
   hoveredTalent = signal<any>(null);
   xpInputAmount = signal(0);
   hpLossAmount = signal(0);
