@@ -76,8 +76,18 @@ export const EQUIPMENT_SLOTS = [
 
 export const MAX_LEVEL = 60;
 
+const XP_TABLE = [
+  400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600,
+  8800, 10100, 11500, 13000, 14600, 16300, 18100, 20000, 22000, 24100,
+  26300, 28600, 31000, 33500, 36100, 38800, 41600, 44500, 47500, 50600,
+  53800, 57100, 60500, 64000, 67600, 71300, 75100, 79000, 83000, 87100,
+  91300, 95600, 100000, 104500, 109100, 113800, 118600, 123500, 128500, 133600,
+  138800, 144100, 149500, 155000, 160600, 166300, 172100, 178000, 184000
+];
+
 export function xpForLevel(level: number): number {
-  return Math.round(100 * Math.pow(1.08, level - 1));
+  if (level >= MAX_LEVEL) return 0;
+  return XP_TABLE[level - 1] || 0;
 }
 
 export function createDefaultEquipment(): Equipment {
