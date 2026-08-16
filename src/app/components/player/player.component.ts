@@ -1520,6 +1520,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
+        } else if (event.type === 'monsterAttack') {
+          this.hpAction(event.amount, event.damageType || 'physical');
+          this.incomingMasterMsg.set('⚔️ ' + (event.sourceName || 'Enemigo') + ': ' + event.amount + ' danno ' + (event.damageType === 'physical' ? 'fisico' : 'magico'));
         } else if (event.type === 'shield') {
           this.charSvc.character.update(c => ({
             ...c,

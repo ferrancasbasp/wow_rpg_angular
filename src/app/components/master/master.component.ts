@@ -66,7 +66,7 @@ interface DamageEvent {
       <div class="wow-panel send-panel">
         <div class="panel-title">
           @if (isPlayerTargeting()) {
-            <span class="targeting-hint">Clicka un jugador para asignar {{ selectedEvent()?.ability }}</span>
+            <span class="targeting-hint">Clicka un jugador para asignar {{ targetingLabel() }}</span>
           } @else {
             Enviar a Jugadores
           }
@@ -1279,6 +1279,7 @@ export class MasterComponent implements OnInit {
   knownPlayers = signal<string[]>([]);
   dotAmount = signal<number | null>(null);
   dotDuration = signal<number | null>(null);
+  pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1316,10 +1317,21 @@ export class MasterComponent implements OnInit {
 
   isPlayerTargeting = computed(() => {
     const eventId = this.selectedEventId();
-    if (eventId === null) return false;
-    const event = this.getEvent(eventId);
-    if (!event || event.assigned) return false;
-    return event.damageType === 'heal' || event.damageType === 'buff';
+    if (eventId !== null) {
+      const event = this.getEvent(eventId);
+      if (event && !event.assigned && (event.damageType === 'heal' || event.damageType === 'buff')) {
+        return true;
+      }
+    }
+    return this.pendingMonsterAttack() !== null;
+  });
+
+  targetingLabel = computed(() => {
+    const event = this.selectedEvent();
+    if (event) return event.ability;
+    const atk = this.pendingMonsterAttack();
+    if (atk) return `${atk.sourceName}: ${atk.roll} danno ${atk.damageType === 'physical' ? 'fisico' : 'magico'}`;
+    return '';
   });
 
   selectedEvent = computed(() => {
@@ -1606,14 +1618,14 @@ export class MasterComponent implements OnInit {
     }, 400);
     monster.lastAttackAt = Date.now();
     this.saveMonsters();
+    this.pendingMonsterAttack.set({
+      roll,
+      damageType: 'physical',
+      sourceName: monster.name + ' - ' + attack.name,
+    });
+    this.selectedEventId.set(null);
     this.showToast(
-      monster.name +
-        ' usa ' +
-        attack.name +
-        ': ' +
-        roll +
-        ' daño' +
-        dotText,
+      monster.name + ' usa ' + attack.name + ': ' + roll + ' danno — clicka un jugador para asignar' + dotText,
     );
   }
 
@@ -1796,6 +1808,21 @@ export class MasterComponent implements OnInit {
       if (event) {
         this.playerTargetName.set(name);
         this.assignToPlayer(event);
+      } else {
+        const atk = this.pendingMonsterAttack();
+        if (atk) {
+          this.firebase.pushData('playerEvents', {
+            target: name,
+            type: 'monsterAttack',
+            amount: atk.roll,
+            damageType: atk.damageType,
+            sourceName: atk.sourceName,
+            timestamp: Date.now(),
+          });
+          this.sendLog.update(log => [`${name}: -${atk.roll} (${atk.sourceName})`, ...log].slice(0, 8));
+          this.showToast(`${atk.sourceName}: ${atk.roll} danno → ${name}`);
+          this.pendingMonsterAttack.set(null);
+        }
       }
     } else {
       this.sendTargetName.set(name);
