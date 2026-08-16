@@ -2096,7 +2096,7 @@ export class PlayerComponent implements OnInit {
         }
         const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
         if (ebaRank > 0 && isEnergy) {
-          const energyGen = isCrit ? 2 : 1;
+          const energyGen = isCrit ? ebaRank * 2 : ebaRank;
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,
