@@ -242,13 +242,14 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <div class="ability-card"
                  [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0)"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
-              <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0">
+              <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0" [title]="ability.description">
                 @if (ability.iconImg) {
                   <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
                   <span style="display:none">{{ ability.icon }}</span>
                 } @else {
                   <span>{{ ability.icon }}</span>
                 }
+                <span class="ability-tooltip">{{ ability.name }} — {{ ability.description }}</span>
                 @if (ability.currentRank! > 1) {
                   <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
                 }
@@ -337,13 +338,14 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               <div class="ability-card"
                    [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0)"
                    [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
-                <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0">
+                <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0" [title]="ability.description">
                   @if (ability.iconImg) {
                     <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
                     <span style="display:none">{{ ability.icon }}</span>
                   } @else {
                     <span>{{ ability.icon }}</span>
                   }
+                  <span class="ability-tooltip">{{ ability.name }} — {{ ability.description }}</span>
                   @if (ability.currentRank > 1) {
                     <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
                   }
@@ -1008,6 +1010,14 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       overflow: hidden; position: relative;
     }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; }
+    .ability-tooltip {
+      display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+      background: var(--bg-dark); border: 1px solid var(--gold-dark); border-radius: 4px;
+      padding: 6px 10px; font-size: 11px; color: var(--text); white-space: normal; line-height: 1.3;
+      width: 200px; z-index: 300; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      font-family: 'Segoe UI', sans-serif; text-align: left;
+    }
+    .ability-icon:hover .ability-tooltip { display: block; }
     .ability-info { flex: 1; min-width: 0; }
     .ability-name { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ability-school {
