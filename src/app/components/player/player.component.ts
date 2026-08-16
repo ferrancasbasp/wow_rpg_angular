@@ -247,7 +247,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
-                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0)"
+                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0)"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
               <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0" [title]="ability.description">
                 @if (ability.iconImg) {
@@ -287,7 +287,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                   @if (charSvc.resourceConfig().type === 'rage') {
                     <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
                   } @else if (charSvc.resourceConfig().type === 'energy') {
-                    <span class="ability-stat cost">{{ ability.costEnergy || 0 }} en</span>
+                    <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
                   } @else {
                     <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                   }
@@ -295,7 +295,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               </div>
               <div class="ability-cast-col">
                 <button class="cast-btn" (click)="castSpell(ability)"
-                        [disabled]="charSvc.resourceActual() < (ability.costRage || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
+                        [disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
                   {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
                 </button>
                 @if (abilityRolls()[ability.id]) {
