@@ -870,6 +870,11 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       width: 100%; height: 100%; border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #a8d8ff 0%, #4a9eff 60%, #1a6dd0 100%);
     }
+    .combo-point.active:nth-child(1)::before { clip-path: inset(0 75% 0 0); }
+    .combo-point.active:nth-child(2)::before { clip-path: inset(0 50% 0 0); }
+    .combo-point.active:nth-child(3)::before { clip-path: inset(0 25% 0 0); }
+    .combo-point.active:nth-child(4)::before { clip-path: inset(0 0 0 0); }
+    .combo-point.active:nth-child(5)::before { clip-path: inset(0 0 0 0); }
 
     .effects-section {
       margin-bottom: 20px; background: var(--bg-panel); border: 1px solid var(--gold-dark);
