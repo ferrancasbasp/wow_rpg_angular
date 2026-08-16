@@ -89,6 +89,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
             <span>🛡️</span>
           </button>
+          @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
+            <div class="combo-inline">
+              <div class="combo-points">
+                @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
+                  <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </div>
 
@@ -132,21 +141,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
       </div>
     </div>
-
-    @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
-      <div class="combo-bar">
-        <span class="combo-label">{{
-          charSvc.classConfig().comboConfig
-            ? (charSvc.classConfig().comboConfig!.icon + ' ' + charSvc.classConfig().comboConfig!.label)
-            : 'Combo Points'
-        }}</span>
-        <div class="combo-points">
-          @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
-            <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
-          }
-        </div>
-      </div>
-    }
 
     <div class="effects-section">
       <div class="effects-header" (click)="showEffectsPanel.set(!showEffectsPanel())" style="cursor: pointer;">
@@ -707,13 +701,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       overflow: hidden;
     }
     .panel-title {
-      padding: 10px 16px; font-family: 'Cinzel', serif; font-size: 15px; font-weight: 600;
+      padding: 8px 12px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
       color: var(--gold);
       background: linear-gradient(90deg, rgba(201,178,126,0.1) 0%, transparent 100%);
       border-bottom: 1px solid var(--gold-dark);
       letter-spacing: 0.08em; text-transform: uppercase;
     }
-    .panel-body { padding: 16px; }
+    .panel-body { padding: 8px; }
 
     .stat-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -868,13 +862,16 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 8px 16px;
       background: var(--bg-panel); border: 1px solid var(--gold-dark); border-radius: var(--radius);
     }
+    .combo-inline {
+      display: flex; align-items: center; margin-left: auto;
+    }
     .combo-label {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold);
       letter-spacing: 0.05em; text-transform: uppercase;
     }
-    .combo-points { display: flex; gap: 6px; }
+    .combo-points { display: flex; gap: 4px; }
     .combo-point {
-      width: 20px; height: 20px; border-radius: 50%;
+      width: 16px; height: 16px; border-radius: 50%;
       background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15);
       transition: all 0.3s; position: relative; overflow: hidden;
     }
@@ -996,49 +993,49 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .equip-extra-label { font-size: 11px; color: var(--text-dim); }
 
     .ability-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
     }
     .ability-card {
-      display: flex; gap: 6px; padding: 6px; margin-bottom: 0;
+      display: flex; align-items: center; gap: 5px; padding: 4px 5px; margin-bottom: 0;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.3);
-      border-radius: var(--radius); transition: var(--transition);
+      border-radius: 4px; transition: var(--transition);
     }
     .ability-card:hover { border-color: var(--gold-dark); background: var(--bg-panel-hover); }
     .ability-icon {
-      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-      font-size: 16px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
       border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
       overflow: hidden; position: relative;
     }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; }
-    .ability-info { flex: 1; }
-    .ability-name { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--text); }
+    .ability-info { flex: 1; min-width: 0; }
+    .ability-name { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ability-school {
-      font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+      font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;
     }
     .ability-req-tag { color: #9b59b6; font-weight: 600; }
-    .ability-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; line-height: 1.2; }
-    .ability-stats { display: flex; gap: 8px; margin-top: 3px; font-size: 11px; flex-wrap: wrap; }
-    .ability-stat { display: flex; align-items: center; gap: 4px; }
+    .ability-desc { display: none; }
+    .ability-stats { display: flex; gap: 5px; margin-top: 1px; font-size: 10px; flex-wrap: nowrap; overflow: hidden; }
+    .ability-stat { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
     .ability-stat.dmg { color: var(--danger); }
     .ability-stat.heal { color: var(--success); }
     .ability-stat.cost { color: var(--mana); }
-    .ability-stat.bonus { color: var(--gold); font-size: 11px; }
+    .ability-stat.bonus { color: var(--gold); font-size: 10px; }
 
     .ability-card.ability-locked { opacity: 0.5; }
 
     .ability-cast-row {
-      display: flex; align-items: center; margin-top: 3px; gap: 6px;
+      display: flex; align-items: center; margin-top: 2px; gap: 4px;
     }
     .ability-roll-text {
-      font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold-light);
-      font-weight: 700; margin-left: auto; min-width: 40px; text-align: right;
+      font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold-light);
+      font-weight: 700; margin-left: auto; min-width: 30px; text-align: right;
     }
     .ability-roll-text.crit-roll {
-      color: #ff9c00; text-shadow: 0 0 8px rgba(255,156,0,0.5); font-size: 15px;
+      color: #ff9c00; text-shadow: 0 0 6px rgba(255,156,0,0.5); font-size: 13px;
     }
     .cast-btn {
-      padding: 3px 12px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
       background: linear-gradient(180deg, var(--mana) 0%, var(--mana-dark) 100%);
       border: 1px solid #5a9aff; border-radius: 4px; color: #fff; cursor: pointer;
       transition: var(--transition); text-transform: uppercase; letter-spacing: 0.05em;
@@ -1050,20 +1047,20 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .cast-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .locked-abilities-section {
-      margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gold-dark);
+      margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--gold-dark);
     }
     .locked-abilities-title {
-      font-family: 'Cinzel', serif; font-size: 11px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+      font-family: 'Cinzel', serif; font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
     }
     .locked-ability {
-      display: flex; align-items: center; gap: 6px; padding: 4px 8px;
-      margin-bottom: 3px; background: rgba(0,0,0,0.3); border: 1px solid rgba(138,115,68,0.2);
+      display: flex; align-items: center; gap: 4px; padding: 3px 6px;
+      margin-bottom: 2px; background: rgba(0,0,0,0.3); border: 1px solid rgba(138,115,68,0.2);
       border-radius: 4px; opacity: 0.6;
     }
-    .locked-ability-icon { font-size: 16px; filter: grayscale(1); }
-    .locked-ability-name { flex: 1; font-size: 13px; color: var(--text-dim); }
-    .locked-ability-req { font-size: 12px; color: var(--danger); font-family: 'Cinzel', serif; }
+    .locked-ability-icon { font-size: 14px; filter: grayscale(1); }
+    .locked-ability-name { flex: 1; font-size: 11px; color: var(--text-dim); }
+    .locked-ability-req { font-size: 10px; color: var(--danger); font-family: 'Cinzel', serif; }
 
     .train-btn {
       float: right; padding: 4px 14px; font-family: 'Cinzel', serif; font-size: 12px;
