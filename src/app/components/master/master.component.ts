@@ -134,22 +134,6 @@ interface DamageEvent {
                           : event.damage
                     }}</span>
                 </div>
-                @if (selectedEventId() === event.id && (event.damageType === 'heal' || event.damageType === 'buff')) {
-                  <div class="assign-player-row">
-                    @if (knownPlayers().length > 0) {
-                      <div class="player-chips">
-                        @for (name of knownPlayers(); track name) {
-                          <button
-                            class="player-chip"
-                            [class.active]="playerTargetName() === name"
-                            (click)="selectPlayerTarget(name)"
-                          >{{ name }}</button>
-                        }
-                      </div>
-                    }
-                    <button class="assign-player-btn" (click)="assignToPlayer(event)" [disabled]="!playerTargetName()">→ {{ playerTargetName() || 'Jugador' }}</button>
-                  </div>
-                }
               }
             </div>
           } @else {
@@ -311,19 +295,24 @@ interface DamageEvent {
     <div class="send-panel-wrap">
       <div class="wow-panel send-panel">
         <div class="panel-title">
-          Enviar a Jugadores
+          @if (isPlayerTargeting()) {
+            <span class="targeting-hint">Clicka un jugador para asignar {{ selectedEvent()?.ability }}</span>
+          } @else {
+            Enviar a Jugadores
+          }
           @if (knownPlayers().length > 0) {
             <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
           }
         </div>
         <div class="panel-body">
           @if (knownPlayers().length > 0) {
-            <div class="player-chips">
+            <div class="player-chips" [class.targeting]="isPlayerTargeting()">
               @for (name of knownPlayers(); track name) {
                 <button
                   class="player-chip"
+                  [class.targeting-chip]="isPlayerTargeting()"
                   [class.active]="sendTargetName() === name"
-                  (click)="sendTargetName.set(name)"
+                  (click)="onPlayerChipClick(name)"
                 >{{ name }}</button>
               }
             </div>
@@ -331,7 +320,7 @@ interface DamageEvent {
             <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
           }
 
-          @if (sendTargetName()) {
+          @if (!isPlayerTargeting() && sendTargetName()) {
             <div class="quick-effects">
               <div class="quick-effect-group">
                 <span class="quick-label">Debuffs</span>
@@ -1054,6 +1043,36 @@ interface DamageEvent {
       font-weight: 600;
     }
 
+    .player-chips.targeting {
+      gap: 6px;
+    }
+
+    .player-chip.targeting-chip {
+      animation: pulse-glow 1.5s ease-in-out infinite;
+      border-width: 2px;
+      padding: 5px 14px;
+      font-size: 13px;
+    }
+
+    .player-chip.targeting-chip:hover {
+      background: linear-gradient(135deg, #2a6a2a, #4a9a4a);
+      color: #fff;
+      border-color: #4a9a4a;
+      transform: scale(1.05);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(95, 168, 95, 0.4); }
+      50% { box-shadow: 0 0 8px 2px rgba(95, 168, 95, 0.3); }
+    }
+
+    .targeting-hint {
+      color: #6fbf6f;
+      font-size: 12px;
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+    }
+
     .clear-btn.small {
       font-size: 11px;
       padding: 2px 8px;
@@ -1293,6 +1312,20 @@ export class MasterComponent implements OnInit {
     }
     const event = this.getEvent(eventId);
     return !event?.assigned;
+  });
+
+  isPlayerTargeting = computed(() => {
+    const eventId = this.selectedEventId();
+    if (eventId === null) return false;
+    const event = this.getEvent(eventId);
+    if (!event || event.assigned) return false;
+    return event.damageType === 'heal' || event.damageType === 'buff';
+  });
+
+  selectedEvent = computed(() => {
+    const id = this.selectedEventId();
+    if (!id) return null;
+    return this.getEvent(id) || null;
   });
 
   ngOnInit() {
@@ -1755,6 +1788,18 @@ export class MasterComponent implements OnInit {
 
   selectPlayerTarget(name: string) {
     this.playerTargetName.set(name);
+  }
+
+  onPlayerChipClick(name: string) {
+    if (this.isPlayerTargeting()) {
+      const event = this.selectedEvent();
+      if (event) {
+        this.playerTargetName.set(name);
+        this.assignToPlayer(event);
+      }
+    } else {
+      this.sendTargetName.set(name);
+    }
   }
 
   showToast(msg: string) {
