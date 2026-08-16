@@ -111,6 +111,7 @@ export interface Ability {
   effectiveCost?: number;
   lastRoll?: number;
   lastCrit?: boolean;
+  multiHit?: number;
 }
 
 export interface Talent {
