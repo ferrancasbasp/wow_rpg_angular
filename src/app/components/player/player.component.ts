@@ -1032,9 +1032,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
       font-size: 18px; background: radial-gradient(circle, var(--bg-panel) 50%, var(--bg-dark));
       border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
-      overflow: hidden; position: relative; cursor: help;
+      position: relative; cursor: help;
     }
-    .ability-icon-img { width: 100%; height: 100%; object-fit: cover; }
+    .ability-icon-img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
     .ability-tooltip {
       display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
       background: var(--bg-dark); border: 1px solid var(--gold-dark); border-radius: 4px;
