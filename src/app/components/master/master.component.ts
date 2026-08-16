@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ref, onChildAdded, onChildChanged, set } from 'firebase/database';
+import { ref, onChildAdded, onChildChanged, onChildRemoved, onValue, off, set, remove } from 'firebase/database';
 import { FirebaseService } from '../../services/firebase.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc } from '../../models/game.models';
@@ -136,15 +136,18 @@ interface DamageEvent {
                 </div>
                 @if (selectedEventId() === event.id && (event.damageType === 'heal' || event.damageType === 'buff')) {
                   <div class="assign-player-row">
-                    <input
-                      type="text"
-                      class="assign-player-input"
-                      placeholder="Nombre del jugador"
-                      [value]="playerTargetName()"
-                      (input)="playerTargetName.set($any($event.target).value)"
-                      (keyup.enter)="assignToPlayer(event)"
-                    />
-                    <button class="assign-player-btn" (click)="assignToPlayer(event)">→ Jugador</button>
+                    @if (knownPlayers().length > 0) {
+                      <div class="player-chips">
+                        @for (name of knownPlayers(); track name) {
+                          <button
+                            class="player-chip"
+                            [class.active]="playerTargetName() === name"
+                            (click)="selectPlayerTarget(name)"
+                          >{{ name }}</button>
+                        }
+                      </div>
+                    }
+                    <button class="assign-player-btn" (click)="assignToPlayer(event)" [disabled]="!playerTargetName()">→ {{ playerTargetName() || 'Jugador' }}</button>
                   </div>
                 }
               }
@@ -307,8 +310,26 @@ interface DamageEvent {
 
     <div class="send-panel-wrap">
       <div class="wow-panel send-panel">
-        <div class="panel-title">Enviar a Jugadores</div>
+        <div class="panel-title">
+          Enviar a Jugadores
+          @if (knownPlayers().length > 0) {
+            <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
+          }
+        </div>
         <div class="panel-body">
+          @if (knownPlayers().length > 0) {
+            <div class="player-chips">
+              @for (name of knownPlayers(); track name) {
+                <button
+                  class="player-chip"
+                  [class.active]="sendTargetName() === name"
+                  (click)="sendTargetName.set(name)"
+                >{{ name }}</button>
+              }
+            </div>
+          } @else {
+            <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
+          }
           <div class="send-row">
             <input
               type="text"
@@ -1020,6 +1041,7 @@ interface DamageEvent {
 
     .assign-player-row {
       display: flex;
+      flex-direction: column;
       gap: 6px;
       padding: 6px 12px;
       background: rgba(201, 178, 126, 0.08);
@@ -1027,20 +1049,39 @@ interface DamageEvent {
       margin: -4px 0 4px 0;
     }
 
-    .assign-player-input {
-      flex: 1;
-      background: var(--bg-input);
-      border: 1px solid var(--gold-dark);
-      border-radius: var(--radius);
-      color: var(--text);
-      padding: 4px 8px;
-      font-family: 'EB Garamond', serif;
-      font-size: 13px;
-      outline: none;
+    .player-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
     }
 
-    .assign-player-input:focus {
+    .player-chip {
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      border-radius: 12px;
+      color: var(--text-dim);
+      padding: 3px 12px;
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .player-chip:hover {
       border-color: var(--gold);
+      color: var(--text);
+    }
+
+    .player-chip.active {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--bg-dark);
+      border-color: var(--gold);
+      font-weight: 600;
+    }
+
+    .clear-btn.small {
+      font-size: 11px;
+      padding: 2px 8px;
     }
 
     .assign-player-btn {
@@ -1175,6 +1216,7 @@ export class MasterComponent implements OnInit {
   sendBuffValue = signal<number | null>(null);
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
+  knownPlayers = signal<string[]>([]);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1244,6 +1286,23 @@ export class MasterComponent implements OnInit {
         if (this.selectedEventId() === event.id) {
           this.selectedEventId.set(null);
         }
+      }
+    });
+
+    onChildAdded(ref(db, 'players'), (snapshot) => {
+      const val = snapshot.val();
+      if (val?.name) {
+        this.knownPlayers.update(players => {
+          if (players.includes(val.name)) return players;
+          return [...players, val.name].sort();
+        });
+      }
+    });
+
+    onChildRemoved(ref(db, 'players'), (snapshot) => {
+      const val = snapshot.val();
+      if (val?.name) {
+        this.knownPlayers.update(players => players.filter(p => p !== val.name));
       }
     });
 
@@ -1640,6 +1699,19 @@ export class MasterComponent implements OnInit {
     this.pendingEvents.set([]);
     this.selectedEventId.set(null);
     this.showToast('Eventos limpiados');
+  }
+
+  clearPlayers() {
+    const db = this.firebase.getDb();
+    for (const name of this.knownPlayers()) {
+      remove(ref(db, 'players/' + name));
+    }
+    this.knownPlayers.set([]);
+    this.showToast('Lista de jugadores limpiada');
+  }
+
+  selectPlayerTarget(name: string) {
+    this.playerTargetName.set(name);
   }
 
   showToast(msg: string) {

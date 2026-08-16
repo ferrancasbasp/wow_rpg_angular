@@ -756,7 +756,18 @@ export class CharacterService {
 
   // ==================== FIREBASE ====================
 
+  registerPlayer() {
+    const name = (this.character().name || '').trim();
+    if (!name) return;
+    try {
+      this.firebase.setData('players/' + name, { name, timestamp: Date.now() });
+    } catch (e) {
+      console.error('Firebase register player error:', e);
+    }
+  }
+
   sendDamageEvent(ability: any, damage: number, hitNum: number = 1, totalHits: number = 1) {
+    this.registerPlayer();
     try {
       let effects: any = null;
       if (ability.isDot) {
@@ -783,6 +794,7 @@ export class CharacterService {
   }
 
    sendHealEvent(ability: any, healAmount: number) {
+    this.registerPlayer();
     try {
       this.firebase.pushData('damageEvents', {
         player: this.character().name || 'Jugador',
@@ -806,6 +818,7 @@ export class CharacterService {
   }
 
   sendBuffEvent(ability: any) {
+    this.registerPlayer();
     try {
       this.firebase.pushData('damageEvents', {
         player: this.character().name || 'Jugador',
