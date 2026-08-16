@@ -271,6 +271,79 @@ interface DamageEvent {
       </div>
     </div>
 
+    <div class="send-panel-wrap">
+      <div class="wow-panel send-panel">
+        <div class="panel-title">Enviar a Jugadores</div>
+        <div class="panel-body">
+          <div class="send-row">
+            <input
+              type="text"
+              [value]="sendTargetName()"
+              class="send-input"
+              placeholder="Nombre del jugador"
+              (input)="sendTargetName.set($any($event.target).value)"
+            />
+            <select [value]="sendType()" (change)="sendType.set($any($event.target).value)" class="send-select">
+              <option value="heal">Curar</option>
+              <option value="damage">Dannar</option>
+              <option value="buff">Buff</option>
+            </select>
+          </div>
+          <div class="send-row">
+            <input
+              type="number"
+              [value]="sendAmount() || ''"
+              class="send-input"
+              placeholder="Cantidad"
+              min="1"
+              (input)="sendAmount.set($any($event.target).valueAsNumber || null)"
+              (keyup.enter)="sendToPlayer()"
+            />
+            @if (sendType() === 'buff') {
+              <select [value]="sendBuffName()" (change)="sendBuffName.set($any($event.target).value)" class="send-select">
+                <option value="">Efecto...</option>
+                <option value="Inspiration">Inspiration</option>
+                <option value="Blessing">Blessing</option>
+                <option value="Fortitude">Fortitude</option>
+                <option value="Shield">Shield</option>
+                <option value="Stun">Stun</option>
+                <option value="Silence">Silence</option>
+                <option value="Slow">Slow</option>
+              </select>
+            }
+            <button class="send-btn" (click)="sendToPlayer()">Enviar</button>
+          </div>
+          @if (sendType() === 'buff' && sendBuffName()) {
+            <div class="send-row">
+              <input
+                type="number"
+                [value]="sendBuffDuration() || ''"
+                class="send-input small"
+                placeholder="Turnos"
+                min="1"
+                (input)="sendBuffDuration.set($any($event.target).valueAsNumber || null)"
+              />
+              <input
+                type="number"
+                [value]="sendBuffValue() || ''"
+                class="send-input small"
+                placeholder="Valor"
+                min="0"
+                (input)="sendBuffValue.set($any($event.target).valueAsNumber || null)"
+              />
+            </div>
+          }
+          @if (sendLog().length > 0) {
+            <div class="send-log">
+              @for (entry of sendLog(); track $index) {
+                <div class="send-log-entry">{{ entry }}</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
     @if (toastMessage()) {
       <div class="toast">{{ toastMessage() }}</div>
     }
@@ -906,6 +979,87 @@ interface DamageEvent {
     .status-dot.disconnected {
       background: var(--danger);
     }
+
+    .send-panel-wrap {
+      max-width: 1200px;
+      margin: 20px auto 0;
+    }
+
+    .send-panel .panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .send-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .send-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 6px 10px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .send-input.small {
+      flex: 0 0 100px;
+    }
+
+    .send-input:focus {
+      border-color: var(--gold);
+    }
+
+    .send-select {
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 6px 8px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--bg-dark);
+      border: none;
+      border-radius: var(--radius);
+      padding: 6px 18px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .send-btn:hover {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    }
+
+    .send-log {
+      margin-top: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+      border-top: 1px solid var(--gold-dark);
+      padding-top: 6px;
+    }
+
+    .send-log-entry {
+      font-size: 12px;
+      color: var(--text-dim);
+      padding: 2px 0;
+    }
   `],
 })
 export class MasterComponent implements OnInit {
@@ -922,6 +1076,13 @@ export class MasterComponent implements OnInit {
   firebaseConnected = signal(false);
   monsterIdCounter = signal(1);
   selectedNpc = signal('');
+  sendTargetName = signal('');
+  sendType = signal('heal');
+  sendAmount = signal<number | null>(null);
+  sendBuffName = signal('');
+  sendBuffDuration = signal<number | null>(null);
+  sendBuffValue = signal<number | null>(null);
+  sendLog = signal<string[]>([]);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1407,5 +1568,55 @@ export class MasterComponent implements OnInit {
 
   onDmgInput(monsterId: number, value: number | null) {
     this.dmgInput.update((d) => ({ ...d, [monsterId]: value }));
+  }
+
+  sendToPlayer() {
+    const target = this.sendTargetName().trim();
+    if (!target) {
+      this.showToast('Escribe el nombre del jugador');
+      return;
+    }
+    const type = this.sendType();
+    if (type === 'buff') {
+      const buffName = this.sendBuffName();
+      if (!buffName) {
+        this.showToast('Selecciona un efecto');
+        return;
+      }
+      const effect = {
+        type: 'buff' as const,
+        name: buffName,
+        target: buffName.toLowerCase(),
+        value: this.sendBuffValue() || 0,
+        duration: this.sendBuffDuration() || 2,
+      };
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'buff',
+        effect,
+        timestamp: Date.now(),
+      });
+      this.sendLog.update(log => [`${target}: ${buffName} (${effect.duration}t)`, ...log].slice(0, 8));
+      this.showToast(`${buffName} enviado a ${target}`);
+      this.sendBuffName.set('');
+      this.sendBuffDuration.set(null);
+      this.sendBuffValue.set(null);
+    } else {
+      const amount = this.sendAmount();
+      if (!amount || amount <= 0) {
+        this.showToast('Introduce una cantidad');
+        return;
+      }
+      this.firebase.pushData('playerEvents', {
+        target,
+        type,
+        amount,
+        timestamp: Date.now(),
+      });
+      const label = type === 'heal' ? '+' + amount : '-' + amount;
+      this.sendLog.update(log => [`${target}: ${label} HP`, ...log].slice(0, 8));
+      this.showToast(`${label} HP enviado a ${target}`);
+      this.sendAmount.set(null);
+    }
   }
 }

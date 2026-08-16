@@ -1,5 +1,7 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CharacterService } from '../../services/character.service';
+import { FirebaseService } from '../../services/firebase.service';
+import { onChildAdded, ref, off } from 'firebase/database';
 import { ClassRegistryService } from '../../services/class-registry.service';
 import {
   STAT_KEYS, STAT_ICONS, EFFECT_TYPES, BUFF_DEBUFF_STATS,
@@ -614,6 +616,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @if (charSvc.toastMessage()) {
       <div class="toast">{{ charSvc.toastMessage() }}</div>
     }
+    @if (incomingMasterMsg()) {
+      <div class="toast master-msg">{{ incomingMasterMsg() }}</div>
+    }
   `,
   styles: [`
     :host {
@@ -1198,6 +1203,11 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       z-index: 200; animation: toast-in 0.3s ease;
     }
     @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .master-msg {
+      background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+      border-color: #b8860b;
+      bottom: 70px;
+    }
 
     .resource-section {
       flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;
@@ -1410,8 +1420,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `],
 })
-export class PlayerComponent implements OnInit {
+export class PlayerComponent implements OnInit, OnDestroy {
   charSvc = inject(CharacterService);
+  private firebase = inject(FirebaseService);
   private classRegistry = inject(ClassRegistryService);
 
   MAX_LEVEL = MAX_LEVEL;
@@ -1432,6 +1443,9 @@ export class PlayerComponent implements OnInit {
   hpActionType = signal('magical');
   levelUpFlash = signal(false);
   abilityRolls = signal<Record<string, { roll: number; crit: boolean }>>({});
+  incomingMasterMsg = signal('');
+
+  private playerEventUnsub: (() => void) | null = null;
 
   newEffect = signal<{
     type: ActiveEffect['type'];
@@ -1464,6 +1478,38 @@ export class PlayerComponent implements OnInit {
 
   ngOnInit() {
     this.charSvc.loadFromLocalStorage();
+    this.initPlayerEventListener();
+  }
+
+  ngOnDestroy() {
+    this.playerEventUnsub?.();
+  }
+
+  initPlayerEventListener() {
+    try {
+      const db = this.firebase.getDb();
+      const cb = onChildAdded(ref(db, 'playerEvents'), (snapshot) => {
+        const event = snapshot.val();
+        const myName = (this.charSvc.character().name || '').trim().toLowerCase();
+        const targetName = (event?.target || '').trim().toLowerCase();
+        if (!myName || !targetName || myName !== targetName) return;
+        if (event.type === 'heal') {
+          this.charSvc.adjustHP(event.amount);
+          this.incomingMasterMsg.set('💚 Master te cura +' + event.amount);
+        } else if (event.type === 'damage') {
+          this.charSvc.adjustHP(-event.amount);
+          this.incomingMasterMsg.set('💢 Master te hace -' + event.amount + ' daño');
+        } else if (event.type === 'buff' && event.effect) {
+          this.charSvc.addEffect(event.effect);
+          this.incomingMasterMsg.set('✨ Master aplica ' + (event.effect.name || 'efecto'));
+        }
+        this.firebase.removeData('playerEvents/' + snapshot.key);
+        setTimeout(() => this.incomingMasterMsg.set(''), 4000);
+      });
+      this.playerEventUnsub = () => off(ref(db, 'playerEvents'), 'child_added', cb);
+    } catch (e) {
+      console.error('Player event listener error:', e);
+    }
   }
 
   comboPointArray(max: number): number[] {
