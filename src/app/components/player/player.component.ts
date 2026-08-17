@@ -204,59 +204,59 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <div class="ability-card"
                  [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0)"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
-              <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0" [title]="ability.name + ' — ' + ability.description">
-                @if (ability.iconImg) {
-                  <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
-                  <span style="display:none">{{ ability.icon }}</span>
-                } @else {
-                  <span>{{ ability.icon }}</span>
-                }
-                @if (ability.currentRank! > 1) {
-                  <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
-                }
-                @if (charSvc.getCooldown(ability.id) > 0) {
-                  <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
-                }
-              </div>
-              <div class="ability-info">
-                <div class="ability-name">{{ ability.name }}</div>
-                <div class="ability-school">
-                  {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
-                  @if (ability.requiresStealth) {<span class="ability-req-tag"> · Sigilo</span>}
-                  @if (ability.requiresBehind) {<span class="ability-req-tag"> · Detras</span>}
-                </div>
-                <div class="ability-stats">
-                  @if (ability.type === 'damage' && !ability.isDot) {
-                    <span class="ability-stat dmg">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
-                  }
-                  @if (ability.isDot) {
-                    <span class="ability-stat dmg">{{ ability.dotTick }}/t · {{ ability.dotDuration }}t</span>
-                  }
-                  @if (ability.type === 'heal' && !ability.isHot) {
-                    <span class="ability-stat heal">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
-                  }
-                  @if (ability.isHot) {
-                    <span class="ability-stat heal">{{ ability.hotTick }}/t · {{ ability.hotDuration }}t</span>
-                  }
-                  @if (charSvc.resourceConfig().type === 'rage') {
-                    <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
-                  } @else if (charSvc.resourceConfig().type === 'energy') {
-                    <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
-                  } @else {
-                    <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                  }
-                </div>
-              </div>
-              <div class="ability-cast-col">
-                <button class="cast-btn" (click)="castSpell(ability)"
-                        [disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
-                  {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
-                </button>
-                @if (abilityRolls()[ability.id]) {
-                  <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
-                    {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
-                  </span>
-                }
+              <div class="ability-icon castable"
+                   [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                   [title]="ability.name + ' — ' + ability.description"
+                   (click)="castSpell(ability)">
+                 @if (ability.iconImg) {
+                   <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
+                   <span style="display:none">{{ ability.icon }}</span>
+                 } @else {
+                   <span>{{ ability.icon }}</span>
+                 }
+                 @if (ability.currentRank! > 1) {
+                   <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
+                 }
+                 @if (charSvc.getCooldown(ability.id) > 0) {
+                   <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
+                 }
+               </div>
+               <div class="ability-info">
+                 <div class="ability-name">{{ ability.name }}</div>
+                 <div class="ability-school">
+                   {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
+                   @if (ability.requiresStealth) {<span class="ability-req-tag"> · Sigilo</span>}
+                   @if (ability.requiresBehind) {<span class="ability-req-tag"> · Detras</span>}
+                 </div>
+                 <div class="ability-stats">
+                   @if (ability.type === 'damage' && !ability.isDot) {
+                     <span class="ability-stat dmg">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                   }
+                   @if (ability.isDot) {
+                     <span class="ability-stat dmg">{{ ability.dotTick }}/t · {{ ability.dotDuration }}t</span>
+                   }
+                   @if (ability.type === 'heal' && !ability.isHot) {
+                     <span class="ability-stat heal">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                   }
+                   @if (ability.isHot) {
+                     <span class="ability-stat heal">{{ ability.hotTick }}/t · {{ ability.hotDuration }}t</span>
+                   }
+                   @if (charSvc.resourceConfig().type === 'rage') {
+                     <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
+                   } @else if (charSvc.resourceConfig().type === 'energy') {
+                     <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
+                   } @else {
+                     <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                   }
+                 </div>
+               </div>
+               <div class="ability-cast-col">
+                 @if (abilityRolls()[ability.id]) {
+                   <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
+                     {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
+                   </span>
+                 }
               </div>
             </div>
           }
@@ -299,43 +299,43 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               <div class="ability-card"
                    [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0)"
                    [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
-                <div class="ability-icon" [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0" [title]="ability.name + ' — ' + ability.description">
-                  @if (ability.iconImg) {
-                    <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
-                    <span style="display:none">{{ ability.icon }}</span>
-                  } @else {
-                    <span>{{ ability.icon }}</span>
-                  }
-                  @if (ability.currentRank > 1) {
-                    <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
-                  }
-                  @if (charSvc.getCooldown(ability.id) > 0) {
-                    <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
-                  }
-                </div>
-                <div class="ability-info">
-                  <div class="ability-name">{{ ability.name }}</div>
-                  <div class="ability-school">
-                    {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
-                  </div>
-                  <div class="ability-stats">
-                    @if (ability.currentBuffValue) {
-                      <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
-                    }
-                    @if (charSvc.resourceConfig().type === 'rage') {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
-                    } @else if (charSvc.resourceConfig().type === 'energy') {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
-                    } @else {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                    }
-                  </div>
-                </div>
-                <div class="ability-cast-col">
-                  <button class="cast-btn" (click)="castUtility(ability)"
-                          [disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0">
-                    {{ charSvc.getCooldown(ability.id) > 0 ? 'CD' : 'Lanzar' }}
-                  </button>
+                <div class="ability-icon castable"
+                     [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
+                     [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                     [title]="ability.name + ' — ' + ability.description"
+                     (click)="castUtility(ability)">
+                   @if (ability.iconImg) {
+                     <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
+                     <span style="display:none">{{ ability.icon }}</span>
+                   } @else {
+                     <span>{{ ability.icon }}</span>
+                   }
+                   @if (ability.currentRank > 1) {
+                     <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
+                   }
+                   @if (charSvc.getCooldown(ability.id) > 0) {
+                     <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
+                   }
+                 </div>
+                 <div class="ability-info">
+                   <div class="ability-name">{{ ability.name }}</div>
+                   <div class="ability-school">
+                     {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
+                   </div>
+                   <div class="ability-stats">
+                     @if (ability.currentBuffValue) {
+                       <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
+                     }
+                     @if (charSvc.resourceConfig().type === 'rage') {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
+                     } @else if (charSvc.resourceConfig().type === 'energy') {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
+                     } @else {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                     }
+                   </div>
+                 </div>
+                 <div class="ability-cast-col">
                 </div>
               </div>
             }
@@ -974,6 +974,14 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border: 1px solid var(--gold-dark); border-radius: 4px; flex-shrink: 0;
       position: relative; cursor: help;
     }
+    .ability-icon.castable { cursor: pointer; transition: var(--transition); }
+    .ability-icon.castable:hover:not(.disabled) {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+      transform: scale(1.08);
+    }
+    .ability-icon.castable:active:not(.disabled) { transform: scale(0.95); }
+    .ability-icon.castable.disabled { cursor: not-allowed; opacity: 0.5; }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
     .ability-info { flex: 1; min-width: 0; }
     .ability-name { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
