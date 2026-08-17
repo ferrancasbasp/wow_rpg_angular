@@ -89,6 +89,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
 
+        <div class="xp-mini-bar">
+          <div class="xp-mini-track">
+            <div class="xp-mini-fill" [style.width]="charSvc.xpProgressPercent() + '%'" [class.xp-levelup-anim]="levelUpFlash()"></div>
+            <div class="xp-mini-text">{{ charSvc.xpProgressPercent() }}%</div>
+          </div>
+        </div>
+
         @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
           <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
             <span class="combo-label">{{
@@ -407,28 +414,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
       }
 
-    </div>
-
-    <div class="xp-bottom-bar">
-      <div class="xp-bar-wrapper" [class.xp-levelup-anim]="levelUpFlash()">
-        <div class="xp-bar-header">
-          <span class="xp-bar-label">Experiencia</span>
-          <span class="xp-bar-value">{{ charSvc.character().currentXP || 0 }} / {{ charSvc.xpForNextLevel() }}</span>
-        </div>
-        <div class="xp-bar-track">
-          <div class="xp-bar-fill" [style.width]="charSvc.xpProgressPercent() + '%'"></div>
-          <div class="xp-bar-text">{{ charSvc.xpProgressPercent() }}%</div>
-        </div>
-        <div class="xp-controls">
-          <input type="number" [value]="xpInputAmount()" (input)="onXpInput($event)" class="xp-input" placeholder="XP" min="1">
-          <button class="xp-quick-btn" (click)="addXP(xpInputAmount() || 0)">Anadir XP</button>
-          <div class="xp-quick-btns">
-            <button class="xp-quick-btn" (click)="addXP(1000)">+1k</button>
-            <button class="xp-quick-btn" (click)="addXP(5000)">+5k</button>
-            <button class="xp-quick-btn" (click)="addXP(10000)">+10k</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="action-bar">
@@ -1269,6 +1254,33 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       50% { box-shadow: 0 0 12px var(--gold-glow); }
     }
     .xp-bottom-bar { margin-top: 20px; }
+    .xp-mini-bar { margin-top: 6px; }
+    .xp-mini-track {
+      height: 10px;
+      background: var(--bg-input);
+      border: 1px solid rgba(138, 115, 68, 0.3);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+    .xp-mini-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      background: linear-gradient(180deg, #b06bd9, #7a3ba8);
+      box-shadow: inset 0 1px rgba(255,255,255,0.2);
+    }
+    .xp-mini-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+      white-space: nowrap;
+    }
     .stats-modal { max-width: 500px; }
     .stats-modal-body { max-height: 60vh; overflow-y: auto; }
     .equip-modal { max-width: 600px; }
@@ -1523,6 +1535,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'monsterAttack') {
           this.hpAction(event.amount, event.damageType || 'physical');
           this.incomingMasterMsg.set('⚔️ ' + (event.sourceName || 'Enemigo') + ': ' + event.amount + ' danno ' + (event.damageType === 'physical' ? 'fisico' : 'magico'));
+        } else if (event.type === 'xp') {
+          this.addXP(event.amount);
+          this.incomingMasterMsg.set('✦ +' + event.amount + ' XP');
+        } else if (event.type === 'levelup') {
+          this.grantLevel(event.amount || 1);
+          this.incomingMasterMsg.set('✦ +' + (event.amount || 1) + ' nivel');
         } else if (event.type === 'shield') {
           this.charSvc.character.update(c => ({
             ...c,
@@ -1751,6 +1769,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else {
       this.charSvc.showToast('+' + amount + ' XP');
     }
+    this.charSvc.saveToLocalStorage();
+  }
+
+  grantLevel(levels: number = 1) {
+    if (levels <= 0) return;
+    const char = this.charSvc.character();
+    const newLevel = Math.min(MAX_LEVEL, char.level + levels);
+    if (newLevel === char.level) {
+      this.charSvc.showToast('Nivel maximo alcanzado');
+      return;
+    }
+    this.charSvc.character.update(c => ({ ...c, level: newLevel, currentXP: 0 }));
+    this.levelUpFlash.set(true);
+    setTimeout(() => this.levelUpFlash.set(false), 800);
+    this.charSvc.showToast('¡Nivel ' + newLevel + '! +' + levels + ' nivel' + (levels > 1 ? 'es' : ''));
+    this.charSvc.saveToLocalStorage();
   }
 
   moveAction() {

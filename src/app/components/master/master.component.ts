@@ -119,6 +119,22 @@ interface DamageEvent {
                   <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
                 </div>
               </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">XP</span>
+                <div class="quick-btns">
+                  <input type="number" class="dot-input" placeholder="XP custom" min="1"
+                    [value]="xpAmount() || ''" (input)="xpAmount.set($any($event.target).valueAsNumber || null)"
+                    (keyup.enter)="sendXP()" />
+                  <button class="quick-btn xp-btn" (click)="sendXP()">Enviar</button>
+                </div>
+              </div>
+              <div class="quick-effect-group">
+                <span class="quick-label">Nivel</span>
+                <div class="quick-btns">
+                  <button class="quick-btn xp-btn" (click)="sendLevel(1)">+1 Nivel</button>
+                  <button class="quick-btn xp-btn" (click)="sendLevel(2)">+2 Niveles</button>
+                </div>
+              </div>
             </div>
           }
 
@@ -1133,6 +1149,9 @@ interface DamageEvent {
     .dmg-btn { background: linear-gradient(135deg, #6a3a1a, #c47a3a); }
     .dmg-btn:hover { background: linear-gradient(135deg, #7a4a2a, #d48a4a); }
 
+    .xp-btn { background: linear-gradient(135deg, #6a2a8a, #9a4aba); }
+    .xp-btn:hover { background: linear-gradient(135deg, #7a3a9a, #aa5aca); }
+
     .dot-input {
       width: 90px;
       background: var(--bg-input);
@@ -1279,6 +1298,7 @@ export class MasterComponent implements OnInit {
   knownPlayers = signal<string[]>([]);
   dotAmount = signal<number | null>(null);
   dotDuration = signal<number | null>(null);
+  xpAmount = signal<number | null>(null);
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1895,6 +1915,35 @@ export class MasterComponent implements OnInit {
     this.sendLog.update(log => [`${target}: ${label} HP`, ...log].slice(0, 8));
     this.showToast(`${label} HP → ${target}`);
     this.sendAmount.set(null);
+  }
+
+  sendXP() {
+    const target = this.sendTargetName().trim();
+    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const amount = this.xpAmount();
+    if (!amount || amount <= 0) { this.showToast('Introduce XP'); return; }
+    this.firebase.pushData('playerEvents', {
+      target,
+      type: 'xp',
+      amount,
+      timestamp: Date.now(),
+    });
+    this.sendLog.update(log => [`${target}: +${amount} XP`, ...log].slice(0, 8));
+    this.showToast(`+${amount} XP → ${target}`);
+    this.xpAmount.set(null);
+  }
+
+  sendLevel(levels: number) {
+    const target = this.sendTargetName().trim();
+    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    this.firebase.pushData('playerEvents', {
+      target,
+      type: 'levelup',
+      amount: levels,
+      timestamp: Date.now(),
+    });
+    this.sendLog.update(log => [`${target}: +${levels} nivel(es)`, ...log].slice(0, 8));
+    this.showToast(`+${levels} nivel(es) → ${target}`);
   }
 
   assignToPlayer(event: DamageEvent) {
