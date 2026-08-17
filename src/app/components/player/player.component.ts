@@ -58,26 +58,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
 
-        <div class="resource-bar">
-          <div class="resource-label">
-            <span>Vida@if (shieldValue() > 0) {<span class="shield-text"> shield {{ shieldValue() }}</span>}</span>
-            <span>{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}</span>
-          </div>
-          <div class="resource-track">
+        <div class="compact-bars">
+          <div class="resource-track compact-hp">
             <div class="resource-fill hp" [style.width]="charSvc.hpPercent() + '%'"></div>
             @if (shieldValue() > 0) {
               <div class="resource-fill shield" [style.width]="shieldPercent() + '%'"></div>
             }
-            <div class="resource-text">{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}@if (shieldValue() > 0) { +{{ shieldValue() }} }</div>
+            <div class="resource-text">{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}</div>
           </div>
-        </div>
-
-        <div class="resource-bar">
-          <div class="resource-label">
-            <span>{{ resourceLabel() }}</span>
-            <span>{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</span>
-          </div>
-          <div class="resource-track">
+          <div class="resource-track compact-resource">
             <div class="resource-fill"
                  [class.mana]="charSvc.resourceConfig().type === 'mana'"
                  [class.rage]="charSvc.resourceConfig().type === 'rage'"
@@ -748,6 +737,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .stat-level-bonus { font-size: 13px; color: var(--text-dim); }
 
     .resource-bar { margin-top: 12px; }
+    .compact-bars { display: flex; flex-direction: column; gap: 0; }
+    .compact-bars .resource-track { border-radius: 0; }
+    .compact-bars .compact-hp { border-radius: var(--radius) var(--radius) 0 0; }
+    .compact-bars .compact-resource { border-radius: 0 0 var(--radius) var(--radius); border-top: none; }
     .resource-label {
       display: flex; justify-content: space-between; font-size: 13px;
       margin-bottom: 4px; color: var(--text-dim);
