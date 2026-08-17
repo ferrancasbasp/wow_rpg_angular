@@ -164,88 +164,29 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     </div>
 
     <div class="effects-section">
-      <div class="effects-header" (click)="showEffectsPanel.set(!showEffectsPanel())" style="cursor: pointer;">
+      <div class="effects-header">
         <span class="effects-title">Efectos Activos</span>
         @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
           <span class="effects-count">{{ charSvc.character().activeEffects.length }}</span>
         }
-        <span class="effects-toggle">{{ showEffectsPanel() ? '▼' : '▶' }}</span>
       </div>
-      @if (showEffectsPanel()) {
-        <div class="effects-body">
-          @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
-            <div class="effects-active-list">
-              @for (eff of charSvc.character().activeEffects; track eff.id) {
-                <div class="effect-chip" [style.--eff-color]="EFFECT_TYPES[eff.type].color">
-                  <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
-                  <span class="effect-name">{{ eff.name }}</span>
-                  <span class="effect-value">{{ effectValueText(eff) }}</span>
-                  <span class="effect-duration">{{ eff.duration }}t</span>
-                  <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="effects-empty">Sin efectos activos</div>
-          }
-
-          <div class="effect-add-form">
-            <select [value]="newEffect().type" (change)="onNewEffectTypeChange($event)" class="effect-input">
-              @for (entry of effectTypeEntries; track entry[0]) {
-                <option [value]="entry[0]">{{ entry[1].label }}</option>
-              }
-            </select>
-
-            @if (newEffect().type !== 'status') {
-              <input type="text" [value]="newEffect().name" (input)="onNewEffectNameInput($event)"
-                     class="effect-input effect-name-field" placeholder="Nombre">
+      <div class="effects-body">
+        @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
+          <div class="effects-active-list">
+            @for (eff of charSvc.character().activeEffects; track eff.id) {
+              <div class="effect-chip" [style.--eff-color]="EFFECT_TYPES[eff.type].color">
+                <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
+                <span class="effect-name">{{ eff.name }}</span>
+                <span class="effect-value">{{ effectValueText(eff) }}</span>
+                <span class="effect-duration">{{ eff.duration }}t</span>
+                <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
+              </div>
             }
-
-            @if (newEffect().type === 'status') {
-              <select [value]="newEffect().target" (change)="onNewEffectTargetChange($event)" class="effect-input">
-                @for (s of STATUS_OPTIONS; track s.key) {
-                  <option [value]="s.key">{{ s.label }}</option>
-                }
-              </select>
-            }
-
-            @if (newEffect().type === 'buff' || newEffect().type === 'debuff') {
-              <select [value]="newEffect().target" (change)="onNewEffectTargetChange($event)" class="effect-input">
-                @for (s of BUFF_DEBUFF_STATS; track s.key) {
-                  <option [value]="s.key">{{ s.label }}</option>
-                }
-              </select>
-              <input type="number" [value]="newEffect().value" (input)="onNewEffectValueInput($event)"
-                     class="effect-input effect-value-field" placeholder="Valor" min="0">
-              <input type="number" [value]="newEffect().duration" (input)="onNewEffectDurationInput($event)"
-                     class="effect-input effect-dur-field" placeholder="Turnos" min="1">
-            }
-
-            @if (newEffect().type === 'hot' || newEffect().type === 'dot') {
-              <select [value]="newEffect().target" (change)="onNewEffectTargetChange($event)" class="effect-input">
-                @for (t of HOT_DOT_TARGETS; track t.key) {
-                  <option [value]="t.key">{{ t.label }}</option>
-                }
-              </select>
-              <input type="number" [value]="newEffect().value" (input)="onNewEffectValueInput($event)"
-                     class="effect-input effect-value-field" placeholder="Valor" min="0">
-              <input type="number" [value]="newEffect().duration" (input)="onNewEffectDurationInput($event)"
-                     class="effect-input effect-dur-field" placeholder="Turnos" min="1">
-            }
-
-            @if (newEffect().type === 'misc') {
-              <input type="text" [value]="newEffect().target" (input)="onNewEffectMiscTargetInput($event)"
-                     class="effect-input" placeholder="Target libre" style="min-width: 120px;">
-              <input type="number" [value]="newEffect().value" (input)="onNewEffectValueInput($event)"
-                     class="effect-input effect-value-field" placeholder="Valor" min="0">
-              <input type="number" [value]="newEffect().duration" (input)="onNewEffectDurationInput($event)"
-                     class="effect-input effect-dur-field" placeholder="Turnos" min="1">
-            }
-
-            <button class="effect-add-btn" (click)="addEffect()">Anadir</button>
           </div>
-        </div>
-      }
+        } @else {
+          <div class="effects-empty">Sin efectos activos</div>
+        }
+      </div>
     </div>
 
     <div class="main-grid">
@@ -1461,7 +1402,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showTalentModal = signal(false);
   showStatsModal = signal(false);
   showEquipment = signal(false);
-  showEffectsPanel = signal(false);
+  showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
   xpInputAmount = signal(0);
   hpLossAmount = signal(0);
