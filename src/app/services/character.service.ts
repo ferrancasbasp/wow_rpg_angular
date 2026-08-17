@@ -749,7 +749,9 @@ export class CharacterService {
   }
 
   selectClass(classKey: string) {
+    const currentName = this.character().name || '';
     const newChar = createDefaultCharacter(classKey, this.classRegistry.getAll());
+    newChar.name = currentName;
     this.character.set(newChar);
     this.saveToLocalStorage();
   }
