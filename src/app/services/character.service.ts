@@ -848,7 +848,8 @@ export class CharacterService {
   addEffect(effect: ActiveEffect) {
     this.character.update(c => {
       if (!c.activeEffects) c.activeEffects = [];
-      c.activeEffects.push(effect);
+      const effectWithId = { ...effect, id: effect.id || (Date.now() + Math.random()) };
+      c.activeEffects.push(effectWithId);
       return { ...c };
     });
   }
