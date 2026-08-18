@@ -678,22 +678,33 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .stat-level-bonus { font-size: 13px; color: var(--text-dim); }
 
     .resource-bar { margin-top: 12px; }
-    .compact-bars { display: flex; flex-direction: column; gap: 0; }
-    .compact-bars .resource-track { border-radius: 0; }
-    .compact-bars .compact-hp { border-radius: var(--radius) var(--radius) 0 0; }
-    .compact-bars .compact-resource { border-radius: 0 0 var(--radius) var(--radius); border-top: none; }
+    .compact-bars { display: flex; flex-direction: column; gap: 3px; }
+    .compact-bars .resource-track { border-radius: var(--radius); }
     .resource-label {
       display: flex; justify-content: space-between; font-size: 13px;
       margin-bottom: 4px; color: var(--text-dim);
     }
     .resource-track {
-      height: 22px; background: var(--bg-input); border: 1px solid var(--gold-dark);
-      border-radius: 4px; overflow: hidden; position: relative;
+      height: 24px; background: #0a0a0e; border: 1px solid rgba(0,0,0,0.6);
+      border-radius: 6px; overflow: hidden; position: relative;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05);
     }
-    .resource-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; position: relative; }
+    .resource-fill {
+      height: 100%; border-radius: 5px; transition: width 0.4s ease; position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    .resource-fill::after {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+      border-radius: 5px 5px 0 0;
+    }
+    .resource-fill::before {
+      content: ""; position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0, transparent 19px, rgba(0,0,0,0.12) 19px, rgba(0,0,0,0.12) 20px);
+      border-radius: 5px;
+    }
     .resource-fill.hp {
-      background: linear-gradient(180deg, var(--hp) 0%, var(--hp-dark) 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+      background: linear-gradient(180deg, #5cc83e 0%, #3a8e22 40%, #2d6b1f 100%);
     }
     .resource-fill.shield {
       background: linear-gradient(180deg, #f0c040 0%, #b8902a 100%);
@@ -704,13 +715,19 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .shield-text { color: #f0c040; font-size: 12px; font-weight: 600; }
     .resource-fill.mana {
-      background: linear-gradient(180deg, var(--mana) 0%, var(--mana-dark) 100%);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+      background: linear-gradient(180deg, #4a9eff 0%, #2a6ad8 40%, #1d4ba0 100%);
+    }
+    .resource-fill.rage {
+      background: linear-gradient(180deg, #e85a3a 0%, #c0392b 40%, #8e2010 100%);
+    }
+    .resource-fill.energy {
+      background: linear-gradient(180deg, #f0c040 0%, #cca830 40%, #a08020 100%);
     }
     .resource-text {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      font-size: 12px; font-weight: 600; color: #fff;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.8); white-space: nowrap;
+      font-size: 12px; font-weight: 700; color: #fff;
+      text-shadow: 0 0 3px rgba(0,0,0,0.9), 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap;
+      letter-spacing: 0.02em;
     }
 
     .derived-stats { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--gold-dark); }
