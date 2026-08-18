@@ -34,6 +34,21 @@ export const EFFECT_TYPES: Record<string, EffectType> = {
   misc:   { label: 'Misc', icon: '✦', color: '#9b59b6' },
 };
 
+export const DEBUFF_TYPES: Record<string, { label: string; color: string }> = {
+  none:     { label: 'Sin tipo',  color: '#c45151' },
+  disease:  { label: 'Enfermedad', color: '#99cc33' },
+  poison:   { label: 'Veneno',     color: '#66cc66' },
+  magic:    { label: 'Mágico',     color: '#6699ff' },
+  curse:    { label: 'Maldición',  color: '#cc66ff' },
+};
+
+export function debuffColor(effect: { type: string; debuffType?: string }): string {
+  if (effect.type === 'debuff' || effect.type === 'status' || effect.type === 'dot') {
+    return DEBUFF_TYPES[effect.debuffType || 'none']?.color || DEBUFF_TYPES['none'].color;
+  }
+  return EFFECT_TYPES[effect.type]?.color || '#c45151';
+}
+
 export const BUFF_DEBUFF_STATS = [
   { key: 'fuerza', label: 'Fuerza' },
   { key: 'agilidad', label: 'Agilidad' },

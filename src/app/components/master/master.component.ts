@@ -99,6 +99,16 @@ interface DamageEvent {
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
                 </div>
+                <div class="debuff-type-row">
+                  <span class="debuff-type-label">Tipo:</span>
+                  <select class="debuff-type-select" [value]="selectedDebuffType()" (change)="onDebuffTypeChange($event)">
+                    <option value="none">Sin tipo</option>
+                    <option value="disease">Enfermedad</option>
+                    <option value="poison">Veneno</option>
+                    <option value="magic">Mágico</option>
+                    <option value="curse">Maldición</option>
+                  </select>
+                </div>
               </div>
               <div class="quick-effect-group">
                 <span class="quick-label">DoT</span>
@@ -1107,7 +1117,16 @@ interface DamageEvent {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
     }
+
+    .debuff-type-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .debuff-type-label { font-size: 11px; color: var(--text-dim); }
+    .debuff-type-select {
+      background: var(--bg-input); border: 1px solid var(--gold-dark); border-radius: 4px;
+      color: var(--text); font-size: 11px; padding: 2px 6px; cursor: pointer;
+    }
+    .debuff-type-select:focus { border-color: var(--gold); }
 
     .quick-label {
       font-family: 'Cinzel', serif;
@@ -1299,6 +1318,7 @@ export class MasterComponent implements OnInit {
   dotAmount = signal<number | null>(null);
   dotDuration = signal<number | null>(null);
   xpAmount = signal<number | null>(null);
+  selectedDebuffType = signal<string>('none');
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1867,6 +1887,10 @@ export class MasterComponent implements OnInit {
     this.addPresetNpc();
   }
 
+  onDebuffTypeChange(event: Event) {
+    this.selectedDebuffType.set((event.target as HTMLSelectElement).value);
+  }
+
   onDmgInput(monsterId: number, value: number | null) {
     this.dmgInput.update((d) => ({ ...d, [monsterId]: value }));
   }
@@ -1877,7 +1901,7 @@ export class MasterComponent implements OnInit {
     this.firebase.pushData('playerEvents', {
       target,
       type: 'buff',
-      effect: { type: 'debuff', name, target: targetStat, value, duration },
+      effect: { type: 'debuff', name, target: targetStat, value, duration, debuffType: this.selectedDebuffType() },
       timestamp: Date.now(),
     });
     this.sendLog.update(log => [`${target}: ${name} (${duration}t)`, ...log].slice(0, 8));
@@ -1893,7 +1917,7 @@ export class MasterComponent implements OnInit {
     this.firebase.pushData('playerEvents', {
       target,
       type: 'buff',
-      effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur },
+      effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur, debuffType: this.selectedDebuffType() },
       timestamp: Date.now(),
     });
     this.sendLog.update(log => [`${target}: DoT ${dmg}/t · ${dur}t`, ...log].slice(0, 8));

@@ -5,6 +5,7 @@ import { onChildAdded, ref, off } from 'firebase/database';
 import { ClassRegistryService } from '../../services/class-registry.service';
 import {
   STAT_KEYS, STAT_ICONS, EFFECT_TYPES, BUFF_DEBUFF_STATS,
+  DEBUFF_TYPES, debuffColor,
   STATUS_OPTIONS, HOT_DOT_TARGETS, EQUIPMENT_SLOTS, MAX_LEVEL,
   xpForLevel, createDefaultCharacter,
 } from '../../data/game-data';
@@ -161,9 +162,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
           <div class="effects-active-list">
             @for (eff of charSvc.character().activeEffects; track eff.id) {
-              <div class="effect-chip" [style.--eff-color]="EFFECT_TYPES[eff.type].color">
+              <div class="effect-chip" [style.--eff-color]="debuffColor(eff)">
                 <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
                 <span class="effect-name">{{ eff.name }}</span>
+                @if (eff.debuffType && eff.debuffType !== 'none') {
+                  <span class="effect-debuff-type" [style.color]="DEBUFF_TYPES[eff.debuffType].color">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
+                }
                 <span class="effect-value">{{ effectValueText(eff) }}</span>
                 <span class="effect-duration">{{ eff.duration }}t</span>
                 <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
@@ -886,6 +890,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .effect-chip:hover { background: var(--bg-panel-hover); }
     .effect-icon { font-size: 14px; }
     .effect-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .effect-debuff-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.85; }
     .effect-value { font-size: 12px; color: var(--eff-color, var(--gold)); font-weight: 600; }
     .effect-duration {
       font-size: 11px; color: var(--text-dim); background: var(--bg-dark);
@@ -1404,6 +1409,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   MAX_LEVEL = MAX_LEVEL;
   STAT_ICONS = STAT_ICONS;
   EFFECT_TYPES = EFFECT_TYPES;
+  DEBUFF_TYPES = DEBUFF_TYPES;
+  debuffColor = debuffColor;
   STATUS_OPTIONS = STATUS_OPTIONS;
   BUFF_DEBUFF_STATS = BUFF_DEBUFF_STATS;
   HOT_DOT_TARGETS = HOT_DOT_TARGETS;

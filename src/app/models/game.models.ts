@@ -211,6 +211,7 @@ export interface ActiveEffect {
   value: number;
   duration: number;
   isPercent?: boolean;
+  debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
 }
 
 export interface Character {
