@@ -1860,7 +1860,9 @@ export class MasterComponent implements OnInit {
   }
 
   onNpcSelect(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    select.value = "";
     this.selectedNpc.set(value);
     this.addPresetNpc();
   }
