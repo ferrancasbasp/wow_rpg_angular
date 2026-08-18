@@ -145,20 +145,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
         <div class="turn-btn-row">
           <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
-          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
-        </div>
-        <div class="hp-action-row">
-          <select [value]="hpActionType()" (change)="onHpActionTypeChange($event)" class="hp-loss-type">
-            <option value="magical">Magico</option>
-            <option value="physical">Fisico</option>
-            <option value="heal">Curar</option>
-            <option value="shield">Escudo</option>
-          </select>
-          <input type="number" [value]="hpLossAmount()" (input)="onHpLossInput($event)" class="hp-loss-input" placeholder="—" min="1">
-          <button class="hp-loss-btn" (click)="hpAction(hpLossAmount() || 0, hpActionType())"
-                  [class.heal-btn]="hpActionType() === 'heal' || hpActionType() === 'shield'">
-            {{ hpActionType() === 'heal' ? 'Curar' : hpActionType() === 'shield' ? 'Escudo' : 'Recibir Dano' }}
-          </button>
+           <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
         </div>
       </div>
     </div>
