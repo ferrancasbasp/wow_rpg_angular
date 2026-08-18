@@ -121,31 +121,31 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="charSvc.warriorWeaponMode.set('twohanded')">2H</button>
           </div>
         }
-        <div class="action-slots-row">
-          <span class="action-slots-label">Acciones</span>
-          <div class="action-slots">
-            @for (n of actionSlotArray(); track n) {
-              <div class="action-slot" [class.used]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
-                @if (n <= charSvc.actionsUsed()) {
-                  <span>⚡</span>
-                } @else {
-                  <span class="empty">·</span>
-                }
-              </div>
-            }
-          </div>
-          <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
-                  title="Mover — gasta 1 accion instantanea">
-            <span>🥾</span>
-          </button>
-        </div>
+        <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
+                title="Mover — gasta 1 accion instantanea">
+          <span>🥾</span>
+        </button>
         <div class="turn-damage-box">
           <span class="turn-damage-label">Dano del Turno</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
         <div class="turn-btn-row">
           <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
-           <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
+          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
+        </div>
+        <div class="action-slots-row">
+          <span class="action-slots-label">Acciones</span>
+          <div class="action-slots">
+            @for (n of actionSlotArray(); track n) {
+              <div class="action-slot" [class.spent]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
+                @if (n <= charSvc.actionsUsed()) {
+                  <span class="spent-icon">·</span>
+                } @else {
+                  <span>⚡</span>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -1258,34 +1258,37 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border-color: #6ba83a; color: #a0e060; box-shadow: 0 0 8px rgba(108,168,58,0.3);
     }
     .action-slots-row {
-      display: flex; flex-direction: row; align-items: center; gap: 5px;
+      display: flex; flex-direction: row; align-items: center; gap: 8px;
+      justify-content: center; width: 100%; margin-top: 4px;
     }
     .action-slots-label {
-      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.05em; color: var(--text-dim);
+      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.05em; color: var(--text-dim);
       text-transform: uppercase; white-space: nowrap;
     }
-    .action-slots { display: flex; gap: 4px; }
+    .action-slots { display: flex; gap: 6px; }
     .action-slot {
-      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-      font-size: 13px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
-      border-radius: 4px; transition: all 0.2s;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; background: rgba(0,0,0,0.4); border: 1px solid var(--gold-dark);
+      border-radius: 6px; transition: all 0.2s;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
-    .action-slot .empty { color: var(--text-muted); opacity: 0.3; font-size: 16px; }
-    .action-slot.used {
-      background: linear-gradient(180deg, var(--mana-dark) 0%, var(--bg-dark) 100%);
-      border-color: var(--mana); box-shadow: 0 0 6px rgba(59,127,224,0.3);
+    .action-slot .spent-icon { color: var(--text-muted); opacity: 0.2; font-size: 20px; }
+    .action-slot.spent {
+      background: rgba(0,0,0,0.6); border-color: rgba(138,115,68,0.2);
+      opacity: 0.3;
     }
-    .action-slot.snD {
-      border-color: #e74c3c;
+    .action-slot:not(.spent) {
+      background: linear-gradient(180deg, rgba(59,127,224,0.15) 0%, rgba(0,0,0,0.4) 100%);
+      border-color: var(--mana); box-shadow: 0 0 8px rgba(59,127,224,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
     }
-    .action-slot.snD.used {
-      background: linear-gradient(180deg, #a02020 0%, var(--bg-dark) 100%);
-      border-color: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.4);
+    .action-slot.snD:not(.spent) {
+      background: linear-gradient(180deg, rgba(231,76,60,0.15) 0%, rgba(0,0,0,0.4) 100%);
+      border-color: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
     }
     .move-btn {
-      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
-      border-radius: 4px; cursor: pointer; transition: var(--transition); margin-left: 10px;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; background: rgba(0,0,0,0.3); border: 1px solid var(--gold-dark);
+      border-radius: 6px; cursor: pointer; transition: var(--transition);
     }
     .move-btn:hover:not(:disabled) {
       border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.05);
