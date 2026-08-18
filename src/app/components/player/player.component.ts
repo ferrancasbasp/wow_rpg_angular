@@ -685,11 +685,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
       border-radius: 5px 5px 0 0;
     }
-    .resource-fill::before {
-      content: ""; position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent 0, transparent 19px, rgba(0,0,0,0.12) 19px, rgba(0,0,0,0.12) 20px);
-      border-radius: 5px;
-    }
     .resource-fill.hp {
       background: linear-gradient(180deg, #5cc83e 0%, #3a8e22 40%, #2d6b1f 100%);
     }
