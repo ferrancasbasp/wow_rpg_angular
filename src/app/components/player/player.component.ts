@@ -121,10 +121,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="charSvc.warriorWeaponMode.set('twohanded')">2H</button>
           </div>
         }
-        <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
-                title="Mover — gasta 1 accion instantanea">
-          <span>🥾</span>
-        </button>
         <div class="turn-damage-box">
           <span class="turn-damage-label">Dano del Turno</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
@@ -146,6 +142,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               </div>
             }
           </div>
+          <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
+                  title="Mover — gasta 1 accion instantanea">
+            <span>🥾</span>
+          </button>
         </div>
       </div>
     </div>
