@@ -2504,6 +2504,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.modulateNotes) {
       this.charSvc.modulateNotes(ability.modulateNotes);
     }
+    if (ability.spendsNotes) {
+      const notes = this.charSvc.getNotes();
+      if (notes.length > 0) {
+        const ppRank = this.charSvc.talentRank('perfect_pitch');
+        const keepNotes = ppRank > 0 && Math.random() * 100 < ppRank * 10;
+        if (!keepNotes) {
+          this.charSvc.clearNotes();
+        }
+      }
+    }
     if (ability.inflictsEffects) {
       const scaledEffects = ability.inflictsEffects.map((eff: any) => ({
         ...eff,
