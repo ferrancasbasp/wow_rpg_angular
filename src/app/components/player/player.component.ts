@@ -2011,7 +2011,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const actionCost = ability.castType === 'instant' ? 1 : 2;
+    const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
       return;
@@ -2366,7 +2366,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const actionCost = ability.castType === 'instant' ? 1 : 2;
+    const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
       return;

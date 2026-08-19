@@ -118,6 +118,7 @@ export interface Ability {
   lastCrit?: boolean;
   multiHit?: number;
   partyBuff?: boolean;
+  noGcd?: boolean;
 }
 
 export interface Talent {
