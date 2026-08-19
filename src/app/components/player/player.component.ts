@@ -2044,6 +2044,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.id === 'mind_blast') {
       critChance += this.charSvc.talentRank('improved_mind_blast') * 10;
     }
+    if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
+      critChance += this.charSvc.talentRank('magic_resistance') * 1;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) roll = Math.round(roll * 1.5);
     if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') roll = Math.round(roll * 1.10);
@@ -2254,6 +2257,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
+      const resonanceRank = this.charSvc.talentRank('resonance');
+      if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
+      if (ability.id === 'vivace') {
+        const ivRank = this.charSvc.talentRank('improved_vivace');
+        if (ivRank > 0) healBonus *= (1 + ivRank * 0.10);
+      }
       let lunarText = '';
       const lhRank = this.charSvc.talentRank('lunar_healing');
       if (lhRank > 0 && Math.random() * 100 < lhRank * 6) {

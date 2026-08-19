@@ -276,18 +276,25 @@ export class CharacterService {
       }
 
       const elemMastery = this.talentRank('elemental_mastery');
-      if (elemMastery > 0) { value *= (1 + elemMastery * 0.01); talentNotes.push(`+${elemMastery}% Maestría`); }
+      if (elemMastery > 0) { value *= (1 + elemMastery * 0.02); talentNotes.push(`+${elemMastery * 2}% Maestría`); }
 
       if (ability.school === 'Escarcha') {
         const fp = this.talentRank('frost_power');
         if (fp > 0) { value *= (1 + fp * 0.02); talentNotes.push(`+${fp * 2}% Escarcha`); }
+        const ifb = this.talentRank('improved_frostbolt');
+        if (ifb > 0 && ability.id === 'frostbolt') { value *= (1 + ifb * 0.10); talentNotes.push(`+${ifb * 10}% Imp Frostbolt`); }
+      }
+
+      if (ability.castType === 'cast') {
+        const cm = this.talentRank('casting_master');
+        if (cm > 0) { value *= (1 + cm * 0.05); talentNotes.push(`+${cm * 5}% Casting Master`); }
       }
 
       let cost = (ability.costPct || 0) * this.baseMana();
       const ef = this.talentRank('elemental_focus');
       if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
-      if (me > 0) cost *= (1 - me * 0.02);
+      if (me > 0) cost *= (1 - me * 0.03);
       if (ability.generatesNote && this.character().classKey === 'bard') {
         const qf = this.talentRank('quick_fingers');
         if (qf > 0) cost *= (1 - qf * 0.04);
@@ -637,12 +644,13 @@ export class CharacterService {
       call_of_thunder: `Crítico de hechizos: +${rank}%`,
       lightning_mastery: `Daño Naturaleza: +${rank * 5}%`,
       storm_power: `Poder de Hechizo: +${rank * 10}%`,
-      elemental_mastery: `Daño todos los hechizos: +${rank}%`,
-      mana_efficiency: `Coste de maná: −${rank * 2}%`,
+      elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
+      mana_efficiency: `Coste de maná: −${rank * 3}%`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
       improved_frost_armor: `Frost Armor: +${rank * 10}%`,
-      improved_blink: `CD Blink: −${rank} turno${rank > 1 ? 's' : ''}`,
-      magic_resistance: `Armadura mágica: +${rank}`,
+      improved_frostbolt: `Daño Frostbolt: +${rank * 10}%`,
+      casting_master: `Daño casteos: +${rank * 5}%`,
+      magic_resistance: `Armadura mágica: +${rank}, Crítico instant: +${rank}%`,
       improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''}`,
       frost_power: `Daño Escarcha: +${rank * 2}%`,
       spell_crit_talent: `Crítico hechizos: +${rank}%`,
@@ -687,6 +695,15 @@ export class CharacterService {
       balance_of_nature: `Poder de hechizo: +${rank * 10}% Espíritu`,
       equinox: `Fases Lunares: +${rank * 15}% daño bonus`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
+      virtuoso: `Poder de hechizo: +${rank * 5}%`,
+      quick_fingers: `Coste generadores: −${rank * 4}%`,
+      resonance: `Curación: +${rank * 5}%`,
+      harmonic_series: `Prob. nota +1 tono: ${rank * 5}%`,
+      improved_vivace: `Vivace: +${rank * 10}% curación`,
+      extended_fermata: `Fermata: +${rank * 5}% mana`,
+      maestro: `Remates: +${rank * 10}% daño/cura`,
+      perfect_pitch: `Prob. no gastar notas: ${rank * 10}%`,
+      grandioso: `Da Capo: +${rank * 5}% poder`,
     };
     return texts[talentId] || '';
   }
