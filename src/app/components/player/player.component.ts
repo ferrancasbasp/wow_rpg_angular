@@ -2433,6 +2433,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'power_word_fortitude') {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_fortitude') * 0.15));
       }
+      if (ability.id === 'da_capo') {
+        const contribution = this.charSvc.noteContribution();
+        const grandiosoRank = this.charSvc.talentRank('grandioso');
+        buffValue = Math.round(buffValue * contribution * (1 + grandiosoRank * 0.05));
+      }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       this.charSvc.character.update(c => ({
         ...c,
