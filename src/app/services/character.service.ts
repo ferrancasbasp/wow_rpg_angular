@@ -102,7 +102,8 @@ export class CharacterService {
     const fromLevel = this.character().level * 0.02;
     const fromTalent = this.talentRank('call_of_thunder') + this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2;
     const fromBuff = this.effectStatBonus('spellCrit');
-    return (5 + fromInt + fromLevel + fromTalent + fromBuff).toFixed(2);
+    const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
+    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin).toFixed(2);
   });
 
   readonly meleeCrit = computed<string>(() => {
@@ -142,6 +143,7 @@ export class CharacterService {
     if (effects) {
       for (const eff of effects) {
         if (eff.type === 'buff' && eff.target === 'armor') total += eff.value;
+        if (eff.type === 'buff' && eff.target === 'moonkin') total += 10;
       }
     }
     return total;
@@ -556,6 +558,12 @@ export class CharacterService {
       if (eff.type === 'debuff' && (eff.target === key || eff.target === 'all_stats')) total -= eff.value;
     }
     return total;
+  }
+
+  hasEffect(target: string): boolean {
+    const effects = this.character().activeEffects;
+    if (!effects) return false;
+    return effects.some(eff => eff.target === target);
   }
 
   getPoisonDamage(): number {
