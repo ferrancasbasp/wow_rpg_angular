@@ -857,7 +857,13 @@ export class CharacterService {
     this.character.update(c => {
       if (!c.activeEffects) c.activeEffects = [];
       const effectWithId = { ...effect, id: effect.id || (Date.now() + Math.random()) };
-      c.activeEffects.push(effectWithId);
+      const existing = c.activeEffects.find(e => e.name === effect.name && e.type === effect.type);
+      if (existing) {
+        existing.duration = effect.duration;
+        existing.value = effect.value;
+      } else {
+        c.activeEffects.push(effectWithId);
+      }
       return { ...c };
     });
   }
