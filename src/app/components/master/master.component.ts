@@ -3,6 +3,7 @@ import { ref, onChildAdded, onChildChanged, onChildRemoved, onValue, off, set, r
 import { FirebaseService } from '../../services/firebase.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc } from '../../models/game.models';
+import { DEBUFF_TYPES } from '../../data/game-data';
 
 interface MonsterAttack {
   name: string;
@@ -342,9 +343,13 @@ interface DamageEvent {
                           [class.dot]="eff.type === 'dot'"
                           [class.debuff]="eff.type === 'debuff'"
                           [class.status]="eff.type === 'status'"
+                          [style.--debuff-color]="DEBUFF_TYPES[eff.debuffType || 'none']?.color || DEBUFF_TYPES['none'].color"
                         >
                           {{ eff.type === 'dot' ? '🩸' : eff.type === 'status' ? '⛔' : '📉' }}
                           {{ eff.name }}
+                          @if (eff.debuffType && eff.debuffType !== 'none') {
+                            <span class="effect-type-tag">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
+                          }
                           @if (eff.value !== undefined && eff.value > 0) { {{ eff.value }} }
                           <span class="effect-dur">{{ eff.duration }}t</span>
                         </span>
@@ -829,21 +834,32 @@ interface DamageEvent {
     }
 
     .monster-effect-chip.dot {
-      background: rgba(192, 57, 43, 0.2);
-      color: #ff7070;
-      border: 1px solid rgba(192, 57, 43, 0.35);
+      background: color-mix(in srgb, var(--debuff-color, #c0392b) 15%, transparent);
+      color: var(--debuff-color, #ff7070);
+      border: 1px solid color-mix(in srgb, var(--debuff-color, #c0392b) 35%, transparent);
     }
 
     .monster-effect-chip.debuff {
-      background: rgba(155, 89, 182, 0.2);
-      color: #b388e0;
-      border: 1px solid rgba(155, 89, 182, 0.35);
+      background: color-mix(in srgb, var(--debuff-color, #9b59b6) 15%, transparent);
+      color: var(--debuff-color, #b388e0);
+      border: 1px solid color-mix(in srgb, var(--debuff-color, #9b59b6) 35%, transparent);
     }
 
     .monster-effect-chip.status {
-      background: rgba(255, 156, 0, 0.2);
-      color: #ffb347;
-      border: 1px solid rgba(255, 156, 0, 0.35);
+      background: color-mix(in srgb, var(--debuff-color, #ff9c00) 15%, transparent);
+      color: var(--debuff-color, #ff9c00);
+      border: 1px solid color-mix(in srgb, var(--debuff-color, #ff9c00) 35%, transparent);
+    }
+
+    .effect-type-tag {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.8;
+      padding: 0 3px;
+      border-radius: 3px;
+      background: color-mix(in srgb, var(--debuff-color, #fff) 20%, transparent);
     }
 
     .effect-dur {
@@ -1319,6 +1335,7 @@ export class MasterComponent implements OnInit {
   dotDuration = signal<number | null>(null);
   xpAmount = signal<number | null>(null);
   selectedDebuffType = signal<string>('none');
+  DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;

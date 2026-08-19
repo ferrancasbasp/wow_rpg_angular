@@ -2131,7 +2131,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           id: ability.id + '_silence',
           name: ability.name + ' (Silencio)',
           isDot: false,
-          inflictsEffects: [{ type: 'debuff', name: 'Silencio', target: 'silenced', value: 0, duration: 2 }],
+          inflictsEffects: [{ type: 'debuff', name: 'Silencio', target: 'silenced', value: 0, duration: 2, debuffType: 'magic' }],
         }, 0, 1, 1);
       } else {
         this.charSvc.showToast(
