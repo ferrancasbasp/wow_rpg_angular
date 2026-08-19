@@ -348,7 +348,7 @@ interface DamageEvent {
                           {{ eff.type === 'dot' ? '🩸' : eff.type === 'status' ? '⛔' : '📉' }}
                           {{ eff.name }}
                           @if (eff.debuffType && eff.debuffType !== 'none') {
-                            <span class="effect-type-tag">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
+                            <span class="effect-type-tag">{{ DEBUFF_TYPES[eff.debuffType]?.label }}</span>
                           }
                           @if (eff.value !== undefined && eff.value > 0) { {{ eff.value }} }
                           <span class="effect-dur">{{ eff.duration }}t</span>
