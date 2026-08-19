@@ -1,5 +1,25 @@
 import { CharacterClass } from '../models/game.models';
 
+/*
+ * MAGE DESIGN — Dos vias de juego:
+ *
+ * 1. CASTERS (sostenible): Fireball, Frostbolt — cast (2 acciones), mas danyo por mana,
+ *    sostenible 7-9 turnos. Talentos: Casting Master (+5%/punto danyo cast), Mana Efficiency (-3%/punto coste).
+ *
+ * 2. INSTANTS (burst): Arcane Missiles, Fire Blast, Arcane Explosion, Cone of Cold — instant (1 accion),
+ *    mas DPS pero coste de mana brutal (~21-27% por turno combo), sostenible 4-5 turnos.
+ *    Talentos: Magic Resistance (+1%/punto crit instant), Improved Fire Blast (CD-1/punto).
+ *
+ * Crossover: Elemental Mastery (+2%/punto danyo global) mejora ambas vias.
+ *            Improved Frostbolt (+10%/punto Frostbolt) especializa Frostbolt.
+ *
+ * Combos:
+ * - Opcion A: Fireball (cast) = ~111-316 danyo/turno, 12-14% mana
+ * - Opcion B: AM + Fire Blast (instant) = ~158-405 danyo/turno, 21-27% mana
+ * - Fire Blast CD3: el combo instant solo cada 3 turnos, el resto toca cast o AM solo
+ *
+ * Movimiento cuesta 1 accion — los instants permiten moverse Y atacar en el mismo turno.
+ */
 export const MAGE: CharacterClass = {
   name: 'Mage',
   color: '#3FC7EB',
