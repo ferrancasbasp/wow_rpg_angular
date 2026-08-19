@@ -328,6 +328,7 @@ export class CharacterService {
       const isPhysical = a.damageType === 'physical';
       const noWeaponScaling = a.dotScales || a.baseDamage === 0 || a.noWeaponScaling;
       const dmgBonus = (isPhysical && !noWeaponScaling) ? (weaponDmg + apBonus) : 0;
+      const spBonus = (!isPhysical && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0)) : 0;
       let minVal: number, maxVal: number;
       if (a.usesWeaponDamage) {
         const base = weaponDmg + apBonus;
@@ -340,8 +341,8 @@ export class CharacterService {
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
       } else {
-        minVal = dmgRange ? (dmgRange.min + dmgBonus) : 0;
-        maxVal = dmgRange ? (dmgRange.max + dmgBonus) : 0;
+        minVal = dmgRange ? (dmgRange.min + dmgBonus + spBonus) : 0;
+        maxVal = dmgRange ? (dmgRange.max + dmgBonus + spBonus) : 0;
       }
       if (a.id === 'cleave') {
         const cleaveBonus = 1 + this.talentRank('improved_cleave') * 0.20;
