@@ -2505,10 +2505,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.modulateNotes(ability.modulateNotes);
     }
     if (ability.inflictsEffects) {
+      const scaledEffects = ability.inflictsEffects.map((eff: any) => ({
+        ...eff,
+        value: ability.currentBuffValue || eff.value,
+      }));
       this.charSvc.sendDamageEvent({
         ...ability,
         name: ability.name + ' (Debuff)',
         isDot: false,
+        inflictsEffects: scaledEffects,
       }, 0, 1, 1);
     }
   }
