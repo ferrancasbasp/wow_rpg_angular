@@ -875,7 +875,10 @@ export class CharacterService {
     const max = this.classConfig()?.comboConfig?.max || 7;
     this.character.update(c => {
       const notes = [...(c.musicalNotes || [])];
-      if (notes.length < max && !notes.includes(noteValue)) notes.push(noteValue);
+      if (notes.length < max && !notes.includes(noteValue)) {
+        notes.push(noteValue);
+        notes.sort((a, b) => a - b);
+      }
       return { ...c, musicalNotes: notes };
     });
   }
