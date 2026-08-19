@@ -328,7 +328,7 @@ export class CharacterService {
       const isPhysical = a.damageType === 'physical';
       const noWeaponScaling = a.dotScales || a.baseDamage === 0 || a.noWeaponScaling;
       const dmgBonus = (isPhysical && !noWeaponScaling) ? (weaponDmg + apBonus) : 0;
-      const spBonus = (!isPhysical && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0)) : 0;
+      const spBonus = (!isPhysical && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0) * (a.type === 'heal' ? 1.5 : 1)) : 0;
       let minVal: number, maxVal: number;
       if (a.usesWeaponDamage) {
         const base = weaponDmg + apBonus;
@@ -370,13 +370,13 @@ export class CharacterService {
         const baseDuration = a.hotDuration || 1;
         hotDuration = baseDuration + this.talentRank('improved_renew');
         const healBonus = 1 + this.talentRank('healing_focus') * 0.02;
-        hotTick = Math.round((minVal + this.spellPower()) * healBonus / baseDuration);
+        hotTick = Math.round(minVal * healBonus / baseDuration);
         hotTotal = hotTick * hotDuration;
       }
       let dotTick = 0, dotDuration = 0, dotTotal = 0;
       if (a.isDot) {
         dotDuration = a.dotDuration || 1;
-        dotTotal = minVal + this.spellPower();
+        dotTotal = minVal;
         if (a.id === 'shadow_word_pain') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_pain') * 0.10));
         }
