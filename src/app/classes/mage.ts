@@ -23,12 +23,13 @@ export const MAGE: CharacterClass = {
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },
 
   talents: [
-    { id: 'elemental_mastery', name: 'Elemental Mastery', icon: '🔥', iconImg: 'img/talents/mage/elemental_mastery.jpg', description: 'Aumenta el daño de todos tus hechizos un 1% por punto.', maxRank: 5, tier: 1, requires: null },
-    { id: 'mana_efficiency', name: 'Arcane Efficiency', icon: '✨', iconImg: 'img/talents/mage/arcane_efficiency.jpg', description: 'Reduce el coste de maná de todos tus hechizos un 2% por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'elemental_mastery', name: 'Elemental Mastery', icon: '🔥', iconImg: 'img/talents/mage/elemental_mastery.jpg', description: 'Aumenta el daño de todos tus hechizos un 2% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'mana_efficiency', name: 'Arcane Efficiency', icon: '✨', iconImg: 'img/talents/mage/arcane_efficiency.jpg', description: 'Reduce el coste de maná de todos tus hechizos un 3% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_frostbolt', name: 'Improved Frostbolt', icon: '❄️', iconImg: '', description: 'Aumenta el daño de Frostbolt un 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'improved_arcane_intellect', name: 'Improved Arcane Intellect', icon: '🧠', iconImg: 'img/talents/mage/improved_arcane_intellect.jpg', description: 'Aumenta el efecto de Arcane Intellect un 15% por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'improved_frost_armor', name: 'Improved Frost Armor', icon: '🧊', iconImg: 'img/talents/mage/improved_frost_armor.jpg', description: 'Aumenta el efecto de Frost Armor un 10% por punto.', maxRank: 3, tier: 2, requires: null },
-    { id: 'improved_blink', name: 'Improved Blink', icon: '💨', iconImg: 'img/talents/mage/improved_blink.jpg', description: 'Reduce el cooldown de Blink 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
-    { id: 'magic_resistance', name: 'Magic Resistance', icon: '🛡️', iconImg: 'img/talents/mage/magic_resistance.jpg', description: 'Aumenta tu armadura mágica +1 por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'casting_master', name: 'Casting Master', icon: '📜', iconImg: '', description: 'Aumenta el daño de todos tus hechizos con tiempo de lanzamiento un 5% por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'magic_resistance', name: 'Magic Resistance', icon: '🛡️', iconImg: 'img/talents/mage/magic_resistance.jpg', description: 'Aumenta tu armadura mágica +1 por punto y tu probabilidad de crítico con hechizos instantáneos un 1% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'improved_fire_blast', name: 'Improved Fire Blast', icon: '💥', iconImg: 'img/talents/mage/improved_fire_blast.jpg', description: 'Reduce el cooldown de Fire Blast 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
     { id: 'frost_power', name: 'Frost Power', icon: '❄️', iconImg: 'img/talents/mage/frost_power.jpg', description: 'Aumenta el daño de tus hechizos de Escarcha un 2% por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'spell_crit_talent', name: 'Spell Critical', icon: '🎯', iconImg: 'img/talents/mage/spell_critical.jpg', description: 'Aumenta tu probabilidad de crítico con hechizos un 1% por punto.', maxRank: 3, tier: 3, requires: null },
