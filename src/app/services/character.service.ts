@@ -91,6 +91,8 @@ export class CharacterService {
     if (balanceOfNature > 0) {
       sp += Math.round(this.finalStats().espiritu * 0.10 * balanceOfNature);
     }
+    const virtuoso = this.talentRank('virtuoso');
+    if (virtuoso > 0) sp = Math.round(sp * (1 + virtuoso * 0.05));
     sp += this.effectStatBonus('spellPower');
     return sp;
   });
@@ -286,6 +288,10 @@ export class CharacterService {
       if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.02);
+      if (ability.generatesNote && this.character().classKey === 'bard') {
+        const qf = this.talentRank('quick_fingers');
+        if (qf > 0) cost *= (1 - qf * 0.04);
+      }
 
       if (ability.id === 'wrath') {
         const iw = this.talentRank('improved_wrath');
@@ -740,6 +746,7 @@ export class CharacterService {
         if (cls) {
           parsed.baseStats = { ...cls.baseStats };
           if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
+          if (!parsed.musicalNotes) parsed.musicalNotes = [];
           this.character.set(parsed);
         }
       }
@@ -858,6 +865,45 @@ export class CharacterService {
     this.character.update(c => {
       c.activeEffects = c.activeEffects.filter(e => e.id !== effectId);
       return { ...c };
+    });
+  }
+
+  // ==================== MUSICAL NOTES ====================
+
+  addNote(noteValue: number) {
+    const max = this.classConfig()?.comboConfig?.max || 7;
+    this.character.update(c => {
+      const notes = [...(c.musicalNotes || [])];
+      if (notes.length < max) notes.push(noteValue);
+      return { ...c, musicalNotes: notes };
+    });
+  }
+
+  modulateNotes(amount: number) {
+    this.character.update(c => {
+      const notes = (c.musicalNotes || []).map(n => Math.min(7, n + amount));
+      return { ...c, musicalNotes: notes };
+    });
+  }
+
+  clearNotes() {
+    this.character.update(c => ({ ...c, musicalNotes: [] }));
+  }
+
+  getNotes(): number[] {
+    return this.character().musicalNotes || [];
+  }
+
+  noteContribution(): number {
+    const notes = this.getNotes();
+    return notes.reduce((sum, n) => sum + Math.pow(1.25, n - 1), 0);
+  }
+
+  restoreManaPct(pct: number) {
+    this.character.update(c => {
+      const maxMana = this.resourceMax();
+      const restore = Math.round(maxMana * pct);
+      return { ...c, currentMana: Math.min(maxMana, (c.currentMana || 0) + restore) };
     });
   }
 

@@ -73,6 +73,10 @@ export interface Ability {
   generatesRage?: number;
   generatesCombo?: number;
   spendsCombo?: boolean;
+  generatesNote?: number;
+  spendsNotes?: boolean;
+  modulateNotes?: number;
+  restoresManaPct?: number;
   isDot?: boolean;
   isHot?: boolean;
   dotDuration?: number;
@@ -227,6 +231,7 @@ export interface Character {
   currentRage: number;
   currentEnergy: number;
   comboPoints: number;
+  musicalNotes?: number[];
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;
   equipment: Equipment;

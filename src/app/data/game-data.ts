@@ -1,6 +1,11 @@
 import { Stats, StatKey, EffectType, Equipment, Character } from '../models/game.models';
 import { CharacterClass } from '../models/game.models';
 
+export const NOTE_NAMES = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
+export const NOTE_COLORS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#e91e63'];
+export const NOTE_CONTRIBUTION = (note: number) => Math.pow(1.25, note - 1);
+export const NOTE_TOTAL_CONTRIBUTION = (notes: number[]) => notes.reduce((sum, n) => sum + NOTE_CONTRIBUTION(n), 0);
+
 export const STAT_KEYS: Record<string, StatKey> = {
   'Fuerza': 'fuerza',
   'Agilidad': 'agilidad',

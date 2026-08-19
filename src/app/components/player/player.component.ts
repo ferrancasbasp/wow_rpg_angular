@@ -6,6 +6,7 @@ import { ClassRegistryService } from '../../services/class-registry.service';
 import {
   STAT_KEYS, STAT_ICONS, EFFECT_TYPES, BUFF_DEBUFF_STATS,
   DEBUFF_TYPES, debuffColor,
+  NOTE_NAMES, NOTE_COLORS,
   STATUS_OPTIONS, HOT_DOT_TARGETS, EQUIPMENT_SLOTS, MAX_LEVEL,
   xpForLevel, createDefaultCharacter,
 } from '../../data/game-data';
@@ -86,7 +87,23 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
 
-        @if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
+        @if (charSvc.character().classKey === 'bard') {
+          <div class="combo-inline combo-bard">
+            <span class="combo-label">🎶 Partitura</span>
+            <div class="note-slots">
+              @for (n of noteSlotArray(); track n) {
+                @if (n - 1 < (charSvc.getNotes().length)) {
+                  <div class="note-slot filled" [style.--note-color]="NOTE_COLORS[charSvc.getNotes()[n - 1] - 1]">
+                    {{ NOTE_NAMES[charSvc.getNotes()[n - 1] - 1] }}
+                  </div>
+                } @else {
+                  <div class="note-slot empty">·</div>
+                }
+              }
+            </div>
+            <span class="note-contribution">×{{ charSvc.noteContribution().toFixed(1) }}</span>
+          </div>
+        } @else if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
           <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
             <span class="combo-label">{{
               charSvc.classConfig().comboConfig
@@ -860,6 +877,30 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       clip-path: inset(0 0 0 0);
     }
 
+    .combo-bard { gap: 6px; }
+    .note-slots { display: flex; gap: 3px; }
+    .note-slot {
+      width: 28px; height: 22px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; font-family: 'Cinzel', serif;
+      transition: all 0.3s;
+    }
+    .note-slot.empty {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted); font-size: 14px;
+    }
+    .note-slot.filled {
+      background: color-mix(in srgb, var(--note-color) 20%, var(--bg-dark));
+      border: 1px solid var(--note-color);
+      color: var(--note-color);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--note-color) 30%, transparent), inset 0 1px 0 rgba(255,255,255,0.1);
+      text-shadow: 0 0 4px color-mix(in srgb, var(--note-color) 50%, transparent);
+    }
+    .note-contribution {
+      font-size: 13px; font-weight: 700; color: #9b59b6;
+      text-shadow: 0 0 4px rgba(155,89,182,0.3);
+    }
+
     .effects-section {
       margin-bottom: 20px; background: var(--bg-panel); border: 1px solid var(--gold-dark);
       border-radius: var(--radius); overflow: hidden;
@@ -1411,6 +1452,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   EFFECT_TYPES = EFFECT_TYPES;
   DEBUFF_TYPES = DEBUFF_TYPES;
   debuffColor = debuffColor;
+  NOTE_NAMES = NOTE_NAMES;
+  NOTE_COLORS = NOTE_COLORS;
   STATUS_OPTIONS = STATUS_OPTIONS;
   BUFF_DEBUFF_STATS = BUFF_DEBUFF_STATS;
   HOT_DOT_TARGETS = HOT_DOT_TARGETS;
@@ -1559,6 +1602,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   comboPointArray(max: number): number[] {
     return Array.from({ length: max }, (_, i) => i + 1);
+  }
+
+  noteSlotArray(): number[] {
+    return Array.from({ length: 7 }, (_, i) => i + 1);
   }
 
   actionSlotArray(): number[] {
@@ -2021,6 +2068,24 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
     }
 
+    if (ability.spendsNotes) {
+      const notes = this.charSvc.getNotes();
+      if (notes.length === 0) {
+        this.charSvc.showToast('Sin notas en la partitura');
+        const resourceMax = this.charSvc.resourceMax();
+        const resourceActual = this.charSvc.resourceActual();
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(resourceMax, (c.currentMana || 0) + (ability.scaledCost || 0)),
+        }));
+        return;
+      }
+      const contribution = this.charSvc.noteContribution();
+      const maestroRank = this.charSvc.talentRank('maestro');
+      const maestroMult = 1 + maestroRank * 0.10;
+      roll = Math.round(roll * contribution * maestroMult);
+    }
+
     if (isRage && ability.generatesRage) {
       const baseGen = this.charSvc.getEffectiveRageGen(ability);
       const rageGen = isCrit ? baseGen * 2 : baseGen;
@@ -2101,6 +2166,38 @@ export class PlayerComponent implements OnInit, OnDestroy {
       comboText = ' · ' + comboSpent + ' combo gastados';
     }
 
+    let noteText = '';
+    if (ability.generatesNote) {
+      let noteVal = ability.generatesNote;
+      const hsRank = this.charSvc.talentRank('harmonic_series');
+      if (hsRank > 0 && Math.random() * 100 < hsRank * 5 && noteVal < 7) {
+        noteVal += 1;
+        noteText = ' · ¡' + NOTE_NAMES[noteVal - 1] + '! (Harmonic)';
+      } else {
+        noteText = ' · +' + NOTE_NAMES[noteVal - 1];
+      }
+      this.charSvc.addNote(noteVal);
+      const notes = this.charSvc.getNotes();
+      noteText += ' (' + notes.length + '/7)';
+    }
+    if (ability.modulateNotes) {
+      this.charSvc.modulateNotes(ability.modulateNotes);
+      noteText = ' · Notas +1 tono';
+    }
+    let noteContributionValue = 0;
+    if (ability.spendsNotes) {
+      noteContributionValue = this.charSvc.noteContribution();
+      const notes = this.charSvc.getNotes();
+      const ppRank = this.charSvc.talentRank('perfect_pitch');
+      const keepNotes = ppRank > 0 && Math.random() * 100 < ppRank * 10;
+      if (!keepNotes) {
+        this.charSvc.clearNotes();
+        noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
+      } else {
+        noteText = ' · ¡Perfect Pitch! Notas conservadas (×' + noteContributionValue.toFixed(1) + ')';
+      }
+    }
+
     if (ability.id === 'slice_and_dice') {
       const sndDuration = comboSpent + this.charSvc.talentRank('improved_slice_and_dice');
       this.charSvc.character.update(c => ({
@@ -2129,7 +2226,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + ability.hotTick + '/turno · ' +
-        ability.hotDuration + 't (' + ability.hotTotal + ' total)' + lunarText +
+        ability.hotDuration + 't (' + ability.hotTotal + ' total)' + lunarText + noteText +
         ' — enviado al Master'
       );
       this.charSvc.sendHealEvent(ability, ability.hotTotal);
@@ -2173,7 +2270,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — enviado al Master'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — enviado al Master'
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -2181,7 +2278,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + ' — enviado al Master'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — enviado al Master'
         );
         this.charSvc.sendHealEvent(ability, roll);
       }
@@ -2214,7 +2311,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.turnDamage.update(d => d + roll);
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + evText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2388,6 +2485,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else {
       this.charSvc.showToast(ability.name + ': Lanzado');
     }
+
+    if (ability.restoresManaPct) {
+      let restorePct = ability.restoresManaPct;
+      const efRank = this.charSvc.talentRank('extended_fermata');
+      if (efRank > 0) restorePct += efRank * 0.05;
+      this.charSvc.restoreManaPct(restorePct);
+      this.charSvc.showToast(ability.name + ': +' + Math.round(restorePct * 100) + '% mana restaurado');
+    }
+    if (ability.generatesNote) {
+      let noteVal = ability.generatesNote;
+      const hsRank = this.charSvc.talentRank('harmonic_series');
+      if (hsRank > 0 && Math.random() * 100 < hsRank * 5 && noteVal < 7) {
+        noteVal += 1;
+      }
+      this.charSvc.addNote(noteVal);
+    }
+    if (ability.modulateNotes) {
+      this.charSvc.modulateNotes(ability.modulateNotes);
+    }
+    if (ability.inflictsEffects) {
+      this.charSvc.sendDamageEvent({
+        ...ability,
+        name: ability.name + ' (Debuff)',
+        isDot: false,
+      }, 0, 1, 1);
+    }
   }
 
   fullRest() {
@@ -2396,7 +2519,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resourceMax = this.charSvc.resourceMax();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      return { ...c, currentHP: maxHP, comboPoints: 0, currentCooldowns: {}, activeEffects: effects };
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
