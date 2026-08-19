@@ -2,13 +2,14 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ref, onChildAdded, onChildChanged, onChildRemoved, onValue, off, set, remove } from 'firebase/database';
 import { FirebaseService } from '../../services/firebase.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
-import { Npc } from '../../models/game.models';
+import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
 
 interface MonsterAttack {
   name: string;
   min: number;
   max: number;
+  inflictsEffects?: NpcAttackEffect[];
 }
 
 interface MonsterEffect {
@@ -17,6 +18,7 @@ interface MonsterEffect {
   value?: number;
   stat?: string;
   duration: number;
+  debuffType?: string;
 }
 
 interface Monster {
@@ -32,6 +34,7 @@ interface Monster {
   attacks?: MonsterAttack[];
   effects?: MonsterEffect[];
   lastAttackAt?: number;
+  isElite?: boolean;
 }
 
 interface DamageEvent {
@@ -299,6 +302,9 @@ interface DamageEvent {
                       [class.dead-name]="monster.currentHP <= 0"
                     >
                       {{ monster.icon ? monster.icon + ' ' : '' }}{{ monster.name }}
+                      @if (monster.isElite) {
+                        <span class="elite-badge">ELITE</span>
+                      }
                       @if (monster.level) {
                         <span class="monster-level">Nv. {{ monster.level }}</span>
                       }
@@ -364,6 +370,9 @@ interface DamageEvent {
                           (click)="$event.stopPropagation(); rollMonsterAttack(monster, attack)"
                         >
                           {{ attack.name }}
+                          @if (attack.inflictsEffects && attack.inflictsEffects.length > 0) {
+                            <span class="attack-effect-indicator">⚡</span>
+                          }
                           <span class="monster-attack-dmg">{{ attack.min }}-{{ attack.max }}</span>
                         </button>
                       }
@@ -817,6 +826,11 @@ interface DamageEvent {
       font-weight: 700;
     }
 
+    .attack-effect-indicator {
+      font-size: 10px;
+      color: #e8d5a3;
+    }
+
     .monster-effects {
       display: flex;
       gap: 4px;
@@ -929,6 +943,24 @@ interface DamageEvent {
       color: var(--text-dim);
       font-weight: 400;
       margin-left: 4px;
+    }
+
+    .elite-badge {
+      font-size: 9px;
+      font-weight: 700;
+      color: #ffd700;
+      background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(218,165,32,0.15) 100%);
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 3px;
+      padding: 1px 5px;
+      margin-left: 4px;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 4px rgba(255,215,0,0.3);
+    }
+
+    .monster-card:has(.elite-badge) {
+      border-color: rgba(255,215,0,0.3);
+      box-shadow: 0 0 8px rgba(255,215,0,0.1);
     }
 
     .monster-stats {
@@ -1336,7 +1368,7 @@ export class MasterComponent implements OnInit {
   xpAmount = signal<number | null>(null);
   selectedDebuffType = signal<string>('none');
   DEBUFF_TYPES = DEBUFF_TYPES;
-  pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string } | null>(null);
+  pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1679,6 +1711,7 @@ export class MasterComponent implements OnInit {
       roll,
       damageType: 'physical',
       sourceName: monster.name + ' - ' + attack.name,
+      inflictsEffects: attack.inflictsEffects || null,
     });
     this.selectedEventId.set(null);
     this.showToast(
@@ -1754,10 +1787,12 @@ export class MasterComponent implements OnInit {
       maxHP: npc.hp,
       currentHP: npc.hp,
       armor: npc.armor,
+      isElite: npc.isElite || false,
       attacks: npc.attacks.map((a) => ({
         name: a.name,
         min: a.minDamage,
         max: a.maxDamage,
+        inflictsEffects: a.inflictsEffects || undefined,
       })),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);
@@ -1874,10 +1909,14 @@ export class MasterComponent implements OnInit {
             amount: atk.roll,
             damageType: atk.damageType,
             sourceName: atk.sourceName,
+            inflictsEffects: atk.inflictsEffects || null,
             timestamp: Date.now(),
           });
-          this.sendLog.update(log => [`${name}: -${atk.roll} (${atk.sourceName})`, ...log].slice(0, 8));
-          this.showToast(`${atk.sourceName}: ${atk.roll} danno → ${name}`);
+          const effText = atk.inflictsEffects && atk.inflictsEffects.length > 0
+            ? ' + ' + atk.inflictsEffects.map(e => e.name).join(', ')
+            : '';
+          this.sendLog.update(log => [`${name}: -${atk.roll} (${atk.sourceName})${effText}`, ...log].slice(0, 8));
+          this.showToast(`${atk.sourceName}: ${atk.roll} danno${effText} → ${name}`);
           this.pendingMonsterAttack.set(null);
         }
       }

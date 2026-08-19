@@ -33,6 +33,7 @@ export interface InflictedEffect {
   stat?: string;
   target?: string;
   duration: number;
+  debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
 }
 
 export interface Buff {
@@ -238,10 +239,20 @@ export interface EffectType {
   color: string;
 }
 
+export interface NpcAttackEffect {
+  type: 'dot' | 'debuff' | 'status';
+  name: string;
+  target?: string;
+  value: number;
+  duration: number;
+  debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
+}
+
 export interface NpcAttack {
   name: string;
   minDamage: number;
   maxDamage: number;
+  inflictsEffects?: NpcAttackEffect[];
 }
 
 export interface Npc {
@@ -254,4 +265,5 @@ export interface Npc {
   imageUrl?: string;
   attacks: NpcAttack[];
   description?: string;
+  isElite?: boolean;
 }

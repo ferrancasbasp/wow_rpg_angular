@@ -1485,7 +1485,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
         } else if (event.type === 'monsterAttack') {
           this.hpAction(event.amount, event.damageType || 'physical');
-          this.incomingMasterMsg.set('⚔️ ' + (event.sourceName || 'Enemigo') + ': ' + event.amount + ' danno ' + (event.damageType === 'physical' ? 'fisico' : 'magico'));
+          let effText = '';
+          if (event.inflictsEffects && Array.isArray(event.inflictsEffects)) {
+            for (const eff of event.inflictsEffects) {
+              this.charSvc.addEffect({
+                id: Date.now() + Math.random(),
+                type: eff.type,
+                name: eff.name,
+                target: eff.target || 'hp',
+                value: eff.value || 0,
+                duration: eff.duration,
+                debuffType: eff.debuffType || 'none',
+              });
+            }
+            effText = ' + ' + event.inflictsEffects.map((e: any) => e.name).join(', ');
+          }
+          this.incomingMasterMsg.set('⚔️ ' + (event.sourceName || 'Enemigo') + ': ' + event.amount + ' danno ' + (event.damageType === 'physical' ? 'fisico' : 'magico') + effText);
         } else if (event.type === 'xp') {
           this.addXP(event.amount);
           this.incomingMasterMsg.set('✦ +' + event.amount + ' XP');
