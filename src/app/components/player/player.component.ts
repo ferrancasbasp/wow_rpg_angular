@@ -36,6 +36,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" placeholder="Nombre">
             <div class="char-meta">
               <span class="level-display">Nv {{ charSvc.character().level }}</span>
+              <button class="debug-lvl-btn" (click)="instantLevel25()" title="Debug: subir a nivel 25">⚡25</button>
               <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
                 @for (entry of classEntries; track entry[0]) {
                   <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
@@ -628,6 +629,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .level-display {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--gold);
     }
+
+    .debug-lvl-btn {
+      padding: 1px 6px; font-size: 10px; font-weight: 700; cursor: pointer;
+      background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 3px; color: #ffd700; transition: all 0.2s;
+    }
+    .debug-lvl-btn:hover { background: rgba(255, 215, 0, 0.3); border-color: #ffd700; }
 
     .class-select {
       background: var(--bg-input); border: 1px solid var(--gold-dark); border-radius: 3px;
@@ -1740,6 +1748,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (n >= 1 && n <= MAX_LEVEL) {
       this.charSvc.character.update(c => ({ ...c, level: n, currentXP: 0 }));
     }
+  }
+
+  instantLevel25() {
+    this.charSvc.character.update(c => ({ ...c, level: 25, currentXP: 0 }));
   }
 
   clampLevel() {
