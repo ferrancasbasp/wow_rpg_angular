@@ -10,7 +10,7 @@ export const WARRIOR: CharacterClass = {
     hp: (s, lvl) => 40 + s.aguante * 10 + lvl * 6,
     mana: () => 0,
     spellPower: () => 0,
-    attackPower: (s) => s.fuerza * 2 - 20,
+    attackPower: (s) => s.fuerza * 1.5 - 20,
     manaRegen: () => 0,
   },
 
