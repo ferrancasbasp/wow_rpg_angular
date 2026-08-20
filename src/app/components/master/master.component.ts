@@ -114,37 +114,34 @@ interface DamageEvent {
                   </select>
                 </div>
               </div>
-              <div class="quick-effect-group">
-                <span class="quick-label">DoT</span>
-                <div class="quick-btns">
-                  <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
-                    [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
-                  <input type="number" class="dot-input small" placeholder="Turnos" min="1"
-                    [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
-                  <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
+              <div class="quick-two-col">
+                <div class="quick-effect-group">
+                  <span class="quick-label">DoT</span>
+                  <div class="quick-btns">
+                    <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
+                      [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
+                    <input type="number" class="dot-input small" placeholder="Turnos" min="1"
+                      [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
+                    <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
+                  </div>
+                </div>
+                <div class="quick-effect-group">
+                  <span class="quick-label">Directo</span>
+                  <div class="quick-btns">
+                    <input type="number" class="dot-input" placeholder="Cantidad" min="1"
+                      [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
+                    <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
+                    <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
+                  </div>
                 </div>
               </div>
               <div class="quick-effect-group">
-                <span class="quick-label">Directo</span>
+                <span class="quick-label">XP / Nivel</span>
                 <div class="quick-btns">
-                  <input type="number" class="dot-input" placeholder="Cantidad" min="1"
-                    [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
-                  <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
-                  <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
-                </div>
-              </div>
-              <div class="quick-effect-group">
-                <span class="quick-label">XP</span>
-                <div class="quick-btns">
-                  <input type="number" class="dot-input" placeholder="XP custom" min="1"
+                  <input type="number" class="dot-input" placeholder="XP" min="1"
                     [value]="xpAmount() || ''" (input)="xpAmount.set($any($event.target).valueAsNumber || null)"
                     (keyup.enter)="sendXP()" />
-                  <button class="quick-btn xp-btn" (click)="sendXP()">Enviar</button>
-                </div>
-              </div>
-              <div class="quick-effect-group">
-                <span class="quick-label">Nivel</span>
-                <div class="quick-btns">
+                  <button class="quick-btn xp-btn" (click)="sendXP()">XP</button>
                   <button class="quick-btn xp-btn" (click)="sendLevel(1)">+1 Nivel</button>
                   <button class="quick-btn xp-btn" (click)="sendLevel(2)">+2 Niveles</button>
                 </div>
@@ -164,85 +161,6 @@ interface DamageEvent {
     </div>
 
     <div class="master-layout">
-      <div class="wow-panel">
-        <div class="panel-title">
-          Daño Entrante
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span class="connection-status">
-              <span
-                class="status-dot"
-                [class.connected]="firebaseConnected()"
-                [class.disconnected]="!firebaseConnected()"
-              ></span>
-              {{ firebaseConnected() ? 'Conectado' : 'Sin conexión' }}
-            </span>
-            @if (pendingEvents().length > 0) {
-              <button class="clear-btn" (click)="clearAllEvents()">Limpiar</button>
-            }
-          </div>
-        </div>
-        <div class="panel-body">
-          @if (pendingEvents().length > 0) {
-            <div class="damage-log">
-              @for (event of pendingEvents(); track event.id) {
-                <div
-                  class="damage-event"
-                  [class.selected]="selectedEventId() === event.id"
-                  [class.assigned]="event.assigned"
-                  [class.buff-event]="event.damageType === 'buff'"
-                  (click)="selectEvent(event.id)"
-                >
-                  <span class="damage-event-icon">{{
-                    event.damageType === 'physical'
-                      ? '⚔️'
-                      : event.damageType === 'heal'
-                        ? (event.isHot ? '🩹' : (event.isShield ? '🛡️' : '💚'))
-                        : event.damageType === 'buff'
-                          ? '🌟'
-                          : '✨'
-                  }}</span>
-                  <div class="damage-event-info">
-                    <div class="damage-event-player">{{ event.player }}</div>
-                    <div class="damage-event-detail">
-                      {{ event.ability }} R{{ event.rank }} · Turno {{ event.turn }}
-                      <span
-                        class="damage-type-tag"
-                        [class.magical]="event.damageType === 'magical'"
-                        [class.physical]="event.damageType === 'physical'"
-                        [class.heal-tag]="event.damageType === 'heal'"
-                        [class.buff-tag]="event.damageType === 'buff'"
-                        >{{
-                          event.damageType === 'physical' ? 'Físico' :
-                          event.damageType === 'heal' ? (event.isHot ? 'HoT' : (event.isShield ? 'Escudo' : 'Cura')) :
-                          event.damageType === 'buff' ? 'Buff' : 'Mágico'
-                        }}</span>
-                      @if (event.aoe) {
-                        <span class="damage-type-tag aoe">AOE</span>
-                      }
-                      @if (event.effects) {
-                        <span class="damage-type-tag effect">DoT/Debuff</span>
-                      }
-                    </div>
-                  </div>
-                  <span
-                    class="damage-event-value"
-                    [class.heal-value]="event.damageType === 'heal' || event.damageType === 'buff'"
-                    >{{
-                      event.damageType === 'buff'
-                        ? '+' + event.buffValue + ' ' + (event.buffStat || '')
-                        : event.isHot
-                          ? event.hotTick + '/t · ' + event.hotDuration + 't'
-                          : event.damage
-                    }}</span>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="damage-empty">Esperando daño de los jugadores...</div>
-          }
-        </div>
-      </div>
-
       <div class="wow-panel">
         <div class="panel-title">Monstruos ({{ monsters().length }})</div>
         <div class="panel-body">
@@ -401,6 +319,85 @@ interface DamageEvent {
           }
         </div>
       </div>
+
+      <div class="wow-panel damage-events-panel">
+        <div class="panel-title">
+          Eventos
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="connection-status">
+              <span
+                class="status-dot"
+                [class.connected]="firebaseConnected()"
+                [class.disconnected]="!firebaseConnected()"
+              ></span>
+              {{ firebaseConnected() ? 'On' : 'Off' }}
+            </span>
+            @if (pendingEvents().length > 0) {
+              <button class="clear-btn small" (click)="clearAllEvents()">Limpiar</button>
+            }
+          </div>
+        </div>
+        <div class="panel-body">
+          @if (pendingEvents().length > 0) {
+            <div class="damage-log">
+              @for (event of pendingEvents(); track event.id) {
+                <div
+                  class="damage-event"
+                  [class.selected]="selectedEventId() === event.id"
+                  [class.assigned]="event.assigned"
+                  [class.buff-event]="event.damageType === 'buff'"
+                  (click)="selectEvent(event.id)"
+                >
+                  <span class="damage-event-icon">{{
+                    event.damageType === 'physical'
+                      ? '⚔️'
+                      : event.damageType === 'heal'
+                        ? (event.isHot ? '🩹' : (event.isShield ? '🛡️' : '💚'))
+                        : event.damageType === 'buff'
+                          ? '🌟'
+                          : '✨'
+                  }}</span>
+                  <div class="damage-event-info">
+                    <div class="damage-event-player">{{ event.player }}</div>
+                    <div class="damage-event-detail">
+                      {{ event.ability }} R{{ event.rank }}
+                      <span
+                        class="damage-type-tag"
+                        [class.magical]="event.damageType === 'magical'"
+                        [class.physical]="event.damageType === 'physical'"
+                        [class.heal-tag]="event.damageType === 'heal'"
+                        [class.buff-tag]="event.damageType === 'buff'"
+                        >{{
+                          event.damageType === 'physical' ? 'Fís' :
+                          event.damageType === 'heal' ? (event.isHot ? 'HoT' : (event.isShield ? '🛡' : 'Cura')) :
+                          event.damageType === 'buff' ? 'Buff' : 'Mág'
+                        }}</span>
+                      @if (event.aoe) {
+                        <span class="damage-type-tag aoe">AOE</span>
+                      }
+                      @if (event.effects) {
+                        <span class="damage-type-tag effect">DoT</span>
+                      }
+                    </div>
+                  </div>
+                  <span
+                    class="damage-event-value"
+                    [class.heal-value]="event.damageType === 'heal' || event.damageType === 'buff'"
+                    >{{
+                      event.damageType === 'buff'
+                        ? '+' + event.buffValue
+                        : event.isHot
+                          ? event.hotTick + '/t'
+                          : event.damage
+                    }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="damage-empty">Sin eventos</div>
+          }
+        </div>
+      </div>
     </div>
 
     @if (toastMessage()) {
@@ -441,7 +438,7 @@ interface DamageEvent {
 
     .master-layout {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 320px;
       gap: 20px;
       max-width: 1200px;
       margin: 0 auto;
@@ -499,9 +496,39 @@ interface DamageEvent {
     .damage-log {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 500px;
+      gap: 4px;
+      max-height: 600px;
       overflow-y: auto;
+    }
+
+    .damage-events-panel .panel-body {
+      padding: 8px 10px;
+    }
+
+    .damage-events-panel .damage-event {
+      padding: 6px 8px;
+      gap: 6px;
+    }
+
+    .damage-events-panel .damage-event-icon {
+      font-size: 16px;
+    }
+
+    .damage-events-panel .damage-event-player {
+      font-size: 12px;
+    }
+
+    .damage-events-panel .damage-event-detail {
+      font-size: 11px;
+    }
+
+    .damage-events-panel .damage-event-value {
+      font-size: 18px;
+    }
+
+    .damage-events-panel .damage-empty {
+      padding: 20px 10px;
+      font-size: 12px;
     }
 
     .damage-event {
@@ -1155,10 +1182,16 @@ interface DamageEvent {
     .quick-effects {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       margin-top: 8px;
       border-top: 1px solid var(--gold-dark);
       padding-top: 10px;
+    }
+
+    .quick-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     .quick-effect-group {
