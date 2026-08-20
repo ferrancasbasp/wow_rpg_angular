@@ -2224,20 +2224,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (ability.id === 'slice_and_dice') {
-      const sndDuration = comboSpent + this.charSvc.talentRank('improved_slice_and_dice');
-      this.charSvc.character.update(c => ({
-        ...c,
-        comboPoints: 0,
-        activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== 'Slice and Dice'),
-          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Slice and Dice', target: 'slice_and_dice', value: 0, duration: sndDuration },
-        ],
-      }));
-      this.charSvc.showToast(ability.name + ': +1 accion/turno durante ' + sndDuration + ' turnos · ' + comboSpent + ' combo gastados');
-      this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll: 0, crit: false } }));
-      return;
-    }
 
     if (ability.isHot) {
       let lunarText = '';
@@ -2462,6 +2448,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
     } else if (ability.buff && ability.buff.applySelf) {
+      let sndComboSpent = 0;
+      if (ability.id === 'slice_and_dice') {
+        sndComboSpent = this.charSvc.character().comboPoints || 0;
+        if (sndComboSpent === 0) {
+          this.charSvc.showToast('Sin puntos de combo');
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + (ability.costEnergy || 0)),
+          }));
+          return;
+        }
+      }
       const hpPercentBefore = maxHP > 0 ? hpActual / maxHP : 1;
       let buffValue = ability.currentBuffValue;
       if (ability.id === 'shout') {
@@ -2479,8 +2477,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
         buffValue = Math.round(buffValue * contribution * (1 + grandiosoRank * 0.05));
       }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
+      let sndDuration = ability.currentBuffDuration;
+      if (ability.id === 'slice_and_dice') {
+        sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice');
+      }
       this.charSvc.character.update(c => ({
         ...c,
+        ...(ability.id === 'slice_and_dice' ? { comboPoints: 0 } : {}),
         activeEffects: [
           ...(c.activeEffects || []).filter(e => e.name !== ability.name),
           {
@@ -2489,7 +2492,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             name: ability.name,
             target: ability.buff.isHot ? 'hp' : ability.currentBuffStat,
             value: buffValue,
-            duration: ability.currentBuffDuration,
+            duration: sndDuration,
             isPercent: ability.buff.isPercent || false,
           },
         ],
@@ -2506,10 +2509,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         this.charSvc.character.update(c => ({ ...c, currentHP: newHP }));
       }
+      const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': +' + buffValue +
         (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat +
-        ' — enviado al Master'
+        sndText + ' — enviado al Master'
       );
     } else if (ability.buff) {
       const buffText = '+' + ability.currentBuffValue + ' ' + ability.currentBuffStat +
