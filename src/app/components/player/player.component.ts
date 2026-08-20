@@ -123,21 +123,21 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       <div class="top-side-controls">
         @if (charSvc.character().classKey === 'warrior') {
           <div class="warrior-stance-row">
-            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="charSvc.warriorStance.set('battle')">
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="changeStance('battle')">
               <img src="img/talents/warrior/battle_stance.jpg" class="stance-icon" (error)="onImgErrorSimple($event)"> Battle
             </button>
-            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'fury'" (click)="charSvc.warriorStance.set('fury')">
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'fury'" (click)="changeStance('fury')">
               Fury
             </button>
-            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'protection'" (click)="charSvc.warriorStance.set('protection')">
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'protection'" (click)="changeStance('protection')">
               <img src="img/talents/warrior/protection_stance.jpg" class="stance-icon" (error)="onImgErrorSimple($event)"> Prot
             </button>
           </div>
         }
         @if (charSvc.character().classKey === 'warrior' && charSvc.talentRank('master_of_weapons') > 0) {
           <div class="warrior-weapon-row">
-            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'dualwield'" (click)="charSvc.warriorWeaponMode.set('dualwield')">1H + Off</button>
-            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="charSvc.warriorWeaponMode.set('twohanded')">2H</button>
+            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'dualwield'" (click)="changeWeaponMode('dualwield')">1H + Off</button>
+            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="changeWeaponMode('twohanded')">2H</button>
           </div>
         }
         <div class="turn-damage-box">
@@ -1752,6 +1752,26 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   instantLevel25() {
     this.charSvc.character.update(c => ({ ...c, level: 25, currentXP: 0 }));
+  }
+
+  changeStance(stance: string) {
+    if (this.charSvc.warriorStance() === stance) return;
+    if (!this.charSvc.canAct(1)) {
+      this.charSvc.showToast('Sin acciones disponibles para cambiar de estancia.');
+      return;
+    }
+    this.charSvc.useAction(1);
+    this.charSvc.warriorStance.set(stance);
+  }
+
+  changeWeaponMode(mode: string) {
+    if (this.charSvc.warriorWeaponMode() === mode) return;
+    if (!this.charSvc.canAct(1)) {
+      this.charSvc.showToast('Sin acciones disponibles para cambiar de arma.');
+      return;
+    }
+    this.charSvc.useAction(1);
+    this.charSvc.warriorWeaponMode.set(mode);
   }
 
   clampLevel() {

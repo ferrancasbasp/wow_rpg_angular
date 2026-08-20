@@ -154,6 +154,7 @@ export class CharacterService {
     let total = this.classConfig().magicResist || 0;
     total += this.talentRank('magic_resistance');
     total += this.talentRank('preservation') * 2;
+    total += this.talentRank('anticipation');
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -669,7 +670,7 @@ export class CharacterService {
       clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
       master_of_weapons: `Pasiva: armas 1H + off o 2H equipables`,
       improved_heroic_strike: `Coste Heroic Strike: −${rank} ira`,
-      anticipation: `Armadura: +${rank}`,
+      anticipation: `Armadura física: +${rank}, Armadura mágica: +${rank}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 2} ira`,
       cruelty: `Crítico físico: +${rank}%`,
