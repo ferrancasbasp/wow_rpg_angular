@@ -16,7 +16,7 @@ export const BARD: CharacterClass = {
 
   baseStats: { fuerza: 5, agilidad: 20, intelecto: 20, aguante: 12, espiritu: 10 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.2, agilidad: 1.8, intelecto: 1.8, aguante: 0.8, espiritu: 0.5 },
+  statGrowth: { fuerza: 0.2, agilidad: 1.4, intelecto: 1.4, aguante: 0.7, espiritu: 0.4 },
   armor: 3,
   magicResist: 4,
 

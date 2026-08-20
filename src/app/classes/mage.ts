@@ -36,7 +36,7 @@ export const MAGE: CharacterClass = {
 
   baseStats: { fuerza: 3, agilidad: 3, intelecto: 20, aguante: 14, espiritu: 18 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.05, agilidad: 0.05, intelecto: 1.8, aguante: 0.5, espiritu: 0.9 },
+  statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 2.0, aguante: 0.7, espiritu: 1.1 },
   armor: 0,
   magicResist: 5,
 
