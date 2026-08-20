@@ -78,8 +78,7 @@ interface DamageEvent {
             <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
           }
         </div>
-        <div class="panel-body">
-          @if (knownPlayers().length > 0) {
+        <div class="panel-body">          @if (knownPlayers().length > 0) {
             <div class="player-chips" [class.targeting]="isPlayerTargeting()">
               @for (name of knownPlayers(); track name) {
                 <button
@@ -150,6 +149,19 @@ interface DamageEvent {
           }
         </div>
       </div>
+
+      @if (sendLog().length > 0) {
+        <div class="wow-panel send-log-panel">
+          <div class="panel-title">Log Master</div>
+          <div class="panel-body">
+            <div class="send-log">
+              @for (entry of sendLog(); track $index) {
+                <div class="send-log-entry">{{ entry }}</div>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="master-layout">
@@ -390,19 +402,6 @@ interface DamageEvent {
           }
         </div>
       </div>
-
-      @if (sendLog().length > 0) {
-        <div class="wow-panel send-log-panel">
-          <div class="panel-title">Log Master</div>
-          <div class="panel-body">
-            <div class="send-log">
-              @for (entry of sendLog(); track $index) {
-                <div class="send-log-entry">{{ entry }}</div>
-              }
-            </div>
-          </div>
-        </div>
-      }
     </div>
 
     @if (toastMessage()) {
@@ -1303,6 +1302,15 @@ interface DamageEvent {
     .send-panel-wrap {
       max-width: 1200px;
       margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .send-panel-wrap {
+        grid-template-columns: 1fr;
+      }
     }
 
     .send-panel .panel-body {
