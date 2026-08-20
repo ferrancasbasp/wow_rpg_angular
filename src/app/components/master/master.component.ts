@@ -148,14 +148,6 @@ interface DamageEvent {
               </div>
             </div>
           }
-
-          @if (sendLog().length > 0) {
-            <div class="send-log">
-              @for (entry of sendLog(); track $index) {
-                <div class="send-log-entry">{{ entry }}</div>
-              }
-            </div>
-          }
         </div>
       </div>
     </div>
@@ -398,6 +390,19 @@ interface DamageEvent {
           }
         </div>
       </div>
+
+      @if (sendLog().length > 0) {
+        <div class="wow-panel send-log-panel">
+          <div class="panel-title">Log Master</div>
+          <div class="panel-body">
+            <div class="send-log">
+              @for (entry of sendLog(); track $index) {
+                <div class="send-log-entry">{{ entry }}</div>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     @if (toastMessage()) {
@@ -1362,18 +1367,24 @@ interface DamageEvent {
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
     }
 
+    .send-log-panel .panel-title {
+      font-size: 13px;
+      padding: 6px 10px;
+    }
+
+    .send-log-panel .panel-body {
+      padding: 6px 10px;
+    }
+
     .send-log {
-      margin-top: 6px;
-      max-height: 120px;
+      max-height: 200px;
       overflow-y: auto;
-      border-top: 1px solid var(--gold-dark);
-      padding-top: 6px;
     }
 
     .send-log-entry {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-dim);
-      padding: 2px 0;
+      padding: 1px 0;
     }
   `],
 })
