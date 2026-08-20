@@ -2092,9 +2092,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const dmgBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'damage_boost');
     let boostText = '';
     if (dmgBoost && ability.type === 'damage') {
-      const boostMult = 1 + dmgBoost.value / 100;
-      roll = Math.round(roll * boostMult);
-      boostText = ' · +' + dmgBoost.value + '% daño';
+      roll += dmgBoost.value;
+      boostText = ' · +' + dmgBoost.value + ' daño';
       this.charSvc.character.update(c => ({
         ...c,
         activeEffects: (c.activeEffects || []).filter(e => e !== dmgBoost),
