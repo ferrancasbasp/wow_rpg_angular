@@ -2306,11 +2306,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
+        let darkMendingText = '';
+        if (ability.id === 'dark_mending') {
+          const hpPct = this.charSvc.character().currentHP / this.charSvc.maxHP();
+          if (hpPct < 0.5) {
+            roll = Math.round(roll * 2);
+            darkMendingText = ' · x2 (low HP!)';
+          }
+        }
         roll = Math.round(roll * healBonus);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — enviado al Master'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + ' — enviado al Master'
         );
         this.charSvc.sendHealEvent(ability, roll);
       }
