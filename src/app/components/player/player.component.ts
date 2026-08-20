@@ -2030,6 +2030,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     this.charSvc.useAction(actionCost);
 
+    let unyieldingText = '';
+    if (ability.id === 'basic_attack' && isRage) {
+      const usRank = this.charSvc.talentRank('unyielding_strikes');
+      if (usRank > 0 && Math.random() * 100 < usRank * 4) {
+        this.charSvc.useAction(-1);
+        unyieldingText = ' · ¡Acción gratis!';
+      }
+    }
+
     const clearcast = (isRage || isEnergy) ? false : this.charSvc.checkClearcasting();
 
     if (isRage) {
@@ -2061,7 +2070,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) roll = Math.round(roll * 1.5);
-    if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') roll = Math.round(roll * 1.10);
+    if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') {
+      const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
+      roll = Math.round(roll * battleMult);
+    }
 
     let comboSpent = 0;
     if (ability.spendsCombo) {
@@ -2337,7 +2349,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.turnDamage.update(d => d + roll);
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText + boostText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2345,7 +2357,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (hits > 1 && h > 0) {
           hitRoll = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
           if (isCrit) hitRoll = Math.round(hitRoll * 1.5);
-          if (isRage && this.charSvc.warriorStance() === 'battle') hitRoll = Math.round(hitRoll * 1.10);
+          if (isRage && this.charSvc.warriorStance() === 'battle') {
+            const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
+            hitRoll = Math.round(hitRoll * battleMult);
+          }
           if (poisonDmg > 0 && ability.damageType === 'physical') hitRoll += poisonDmg;
           this.charSvc.turnDamage.update(d => d + hitRoll);
         }

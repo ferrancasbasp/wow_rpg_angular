@@ -109,7 +109,8 @@ export class CharacterService {
   readonly meleeCrit = computed<string>(() => {
     const fromAgi = this.finalStats().agilidad / 20;
     const fromLevel = this.character().level * 0.02;
-    const stanceBonus = this.warriorStance() === 'fury' ? 5 : 0;
+    const impStances = this.talentRank('improved_stances');
+    const stanceBonus = this.warriorStance() === 'fury' ? (5 + impStances * 2) : 0;
     const fromTalent = this.talentRank('cruelty') + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
     return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff).toFixed(2);
@@ -138,7 +139,7 @@ export class CharacterService {
   readonly armorTotal = computed<number>(() => {
     let total = this.classConfig().armor || 0;
     total += this.talentRank('anticipation');
-    if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5;
+    if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 2;
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -675,6 +676,8 @@ export class CharacterService {
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida`,
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 5}% AP, −${rank} ira`,
+      improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 2} armor Protection`,
+      unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis`,
       vitality: `Regen energía: +${rank * 10}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +${rank} energía (+${rank * 2} si crit)`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
