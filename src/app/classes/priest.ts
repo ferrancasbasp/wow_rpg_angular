@@ -16,7 +16,7 @@ export const PRIEST: CharacterClass = {
 
   baseStats: { fuerza: 12, agilidad: 15, intelecto: 22, aguante: 15, espiritu: 25 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 1.8, aguante: 0.5, espiritu: 1.2 },
+  statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 1.8, aguante: 0.5, espiritu: 1.5 },
   armor: 0,
   magicResist: 8,
 
