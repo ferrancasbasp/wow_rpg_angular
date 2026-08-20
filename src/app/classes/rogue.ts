@@ -10,7 +10,7 @@ export const ROGUE: CharacterClass = {
     hp: (s, lvl) => 35 + s.aguante * 9 + lvl * 5,
     mana: () => 0,
     spellPower: () => 0,
-    attackPower: (s) => s.fuerza * 2 + s.agilidad,
+    attackPower: (s) => s.agilidad * 2 + s.fuerza,
     manaRegen: () => 0,
   },
 
