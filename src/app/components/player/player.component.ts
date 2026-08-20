@@ -2177,7 +2177,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let comboText = '';
     if (ability.generatesCombo) {
       let comboGen = ability.generatesCombo;
-      if (['sinister_strike', 'basic_attack'].includes(ability.id)) {
+      if (ability.id === 'sinister_strike') {
         const initChance = this.charSvc.talentRank('initiative') * 15;
         if (Math.random() * 100 < initChance) comboGen += 1;
       }
