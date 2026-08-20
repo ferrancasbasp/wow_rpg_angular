@@ -2500,18 +2500,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': +' + buffValue +
-        (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat
+        (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat +
+        ' — enviado al Master'
       );
-      if (ability.partyBuff) {
-        for (let i = 0; i < 4; i++) {
-          this.charSvc.sendBuffEvent(ability);
-        }
-        this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': +' + buffValue +
-          (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat +
-          ' — aplicado + 4 eventos al Master'
-        );
-      }
     } else if (ability.buff) {
       const buffText = '+' + ability.currentBuffValue + ' ' + ability.currentBuffStat +
         ' (' + ability.currentBuffDuration + ' turnos)';

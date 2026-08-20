@@ -865,7 +865,7 @@ export class CharacterService {
         buffValue: ability.currentBuffValue,
         buffDuration: ability.currentBuffDuration,
         isPercent: ability.buff?.isPercent || false,
-        aoe: false,
+        aoe: !!ability.partyBuff,
         effects: null,
         turn: this.turnNumber(),
         timestamp: Date.now(),
