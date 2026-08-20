@@ -337,7 +337,7 @@ export class CharacterService {
       const isPhysical = a.damageType === 'physical';
       const noWeaponScaling = a.dotScales || a.baseDamage === 0 || a.noWeaponScaling;
       const dmgBonus = (isPhysical && !noWeaponScaling) ? (weaponDmg + apBonus) : 0;
-      const spBonus = (!isPhysical && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0) * (a.type === 'heal' ? 1.5 : 1)) : 0;
+      const spBonus = ((!isPhysical || a.spellPowerRatio) && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0) * (a.type === 'heal' ? 1.5 : 1)) : 0;
       let minVal: number, maxVal: number;
       if (a.usesWeaponDamage) {
         const base = weaponDmg + apBonus;
