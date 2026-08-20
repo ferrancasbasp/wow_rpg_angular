@@ -2089,6 +2089,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       roll = Math.round(roll * contribution * maestroMult);
     }
 
+    const dmgBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'damage_boost');
+    let boostText = '';
+    if (dmgBoost && ability.type === 'damage') {
+      const boostMult = 1 + dmgBoost.value / 100;
+      roll = Math.round(roll * boostMult);
+      boostText = ' · +' + dmgBoost.value + '% daño';
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: (c.activeEffects || []).filter(e => e !== dmgBoost),
+      }));
+    }
+
     if (isRage && ability.generatesRage) {
       const baseGen = this.charSvc.getEffectiveRageGen(ability);
       const rageGen = isCrit ? baseGen * 2 : baseGen;
@@ -2320,7 +2332,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.turnDamage.update(d => d + roll);
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText + boostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
