@@ -234,7 +234,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                <div class="ability-info">
                  <div class="ability-name">{{ ability.name }}</div>
                  <div class="ability-school">
-                   {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
+                   {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
                    @if (ability.requiresStealth) {<span class="ability-req-tag"> · Sigilo</span>}
                    @if (ability.requiresBehind) {<span class="ability-req-tag"> · Detras</span>}
                  </div>
@@ -329,7 +329,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                  <div class="ability-info">
                    <div class="ability-name">{{ ability.name }}</div>
                    <div class="ability-school">
-                     {{ ability.school }} · {{ ability.castType === 'instant' ? 'Inst.' : 'Cast.' }}
+                     {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
                    </div>
                    <div class="ability-stats">
                      @if (ability.currentBuffValue) {
