@@ -1172,19 +1172,28 @@ interface DamageEvent {
     }
 
     .all-chip {
-      background: linear-gradient(135deg, #4a1a1a, #6a2a2a);
-      border-color: #8b2e2e;
-      color: #e07070;
+      background: var(--bg-input);
+      border: 1px dashed var(--gold-dark);
+      color: var(--text-muted);
       font-weight: 700;
+      letter-spacing: 0.05em;
     }
     .all-chip.active {
-      background: linear-gradient(135deg, #8b2e2e, #c0392b);
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
       color: #fff;
-      border-color: #c0392b;
+      border: 2px solid #ff6b6b;
+      border-style: solid;
+      box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+      animation: all-pulse 1.5s ease-in-out infinite;
     }
     .all-chip:hover {
       border-color: #c0392b;
-      color: #ff9090;
+      color: #ff7070;
+    }
+
+    @keyframes all-pulse {
+      0%, 100% { box-shadow: 0 0 6px rgba(231, 76, 60, 0.4); }
+      50% { box-shadow: 0 0 14px rgba(231, 76, 60, 0.7); }
     }
 
     @keyframes pulse-glow {
