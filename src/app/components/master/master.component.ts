@@ -84,16 +84,21 @@ interface DamageEvent {
                 <button
                   class="player-chip"
                   [class.targeting-chip]="isPlayerTargeting()"
-                  [class.active]="sendTargetName() === name"
+                  [class.active]="sendTargetName() === name && !sendAll()"
                   (click)="onPlayerChipClick(name)"
                 >{{ name }}</button>
               }
+              <button
+                class="player-chip all-chip"
+                [class.active]="sendAll()"
+                (click)="sendAll.set(!sendAll())"
+              >All</button>
             </div>
           } @else {
             <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
           }
 
-          @if (!isPlayerTargeting() && sendTargetName()) {
+          @if (!isPlayerTargeting() && (sendTargetName() || sendAll())) {
             <div class="quick-effects">
               <div class="quick-effect-group">
                 <span class="quick-label">Debuffs</span>
@@ -210,11 +215,6 @@ interface DamageEvent {
 
           @if (monsters().length > 0) {
             <div class="monster-list">
-              @if (selectedEventId() && !getEvent(selectedEventId()!)?.aoe) {
-                <button class="assign-all-btn" (click)="assignDamageToAll()">
-                  ⚔️ Asignar a todos ({{ monsters().filter(m => m.currentHP > 0).length }})
-                </button>
-              }
               @for (monster of monsters(); track monster.id) {
                 <div
                   class="monster-card"
@@ -650,26 +650,6 @@ interface DamageEvent {
       display: flex;
       flex-direction: column;
       gap: 10px;
-    }
-
-    .assign-all-btn {
-      padding: 8px 12px;
-      font-family: 'Cinzel', serif;
-      font-size: 13px;
-      font-weight: 600;
-      background: linear-gradient(135deg, #4a1a1a, #6a2a2a);
-      border: 1px solid #8b2e2e;
-      border-radius: var(--radius);
-      color: #e07070;
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: center;
-    }
-    .assign-all-btn:hover {
-      background: linear-gradient(135deg, #6a2a2a, #8a3a3a);
-      border-color: #c0392b;
-      color: #ff9090;
-      box-shadow: 0 0 8px rgba(192, 57, 43, 0.3);
     }
 
     .monster-card {
@@ -1191,6 +1171,22 @@ interface DamageEvent {
       transform: scale(1.05);
     }
 
+    .all-chip {
+      background: linear-gradient(135deg, #4a1a1a, #6a2a2a);
+      border-color: #8b2e2e;
+      color: #e07070;
+      font-weight: 700;
+    }
+    .all-chip.active {
+      background: linear-gradient(135deg, #8b2e2e, #c0392b);
+      color: #fff;
+      border-color: #c0392b;
+    }
+    .all-chip:hover {
+      border-color: #c0392b;
+      color: #ff9090;
+    }
+
     @keyframes pulse-glow {
       0%, 100% { box-shadow: 0 0 0 0 rgba(95, 168, 95, 0.4); }
       50% { box-shadow: 0 0 8px 2px rgba(95, 168, 95, 0.3); }
@@ -1436,6 +1432,7 @@ export class MasterComponent implements OnInit {
   monsterIdCounter = signal(1);
   selectedNpc = signal('');
   sendTargetName = signal('');
+  sendAll = signal(false);
   sendAmount = signal<number | null>(null);
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
@@ -1599,37 +1596,6 @@ export class MasterComponent implements OnInit {
       return;
     }
     this.applySingleDamage(monster, event);
-  }
-
-  assignDamageToAll() {
-    const eventId = this.selectedEventId();
-    if (eventId === null) return;
-    const event = this.getEvent(eventId);
-    if (!event || event.assigned) return;
-    if (event.aoe) {
-      this.applyAoeDamage(event);
-      return;
-    }
-    const alive = this.monsters().filter(m => m.currentHP > 0);
-    if (alive.length === 0) {
-      this.showToast('No hay monstruos vivos');
-      return;
-    }
-    const summary: string[] = [];
-    for (const monster of alive) {
-      let damage = event.damage;
-      const reductionText = this.getReductionText(monster, event);
-      damage = this.applyReduction(monster, event, damage);
-      monster.currentHP = Math.max(0, monster.currentHP - damage);
-      if (event.effects) {
-        this.applyEffectsToMonster(monster, event.effects);
-      }
-      summary.push(monster.name + ': -' + damage);
-    }
-    this.markEventAssigned(event);
-    this.selectedEventId.set(null);
-    this.saveMonsters();
-    this.showToast('All: ' + summary.join(' · '));
   }
 
   applySingleDamage(monster: Monster, event: DamageEvent) {
@@ -2059,81 +2025,102 @@ export class MasterComponent implements OnInit {
     this.dmgInput.update((d) => ({ ...d, [monsterId]: value }));
   }
 
+  getSendTargets(): string[] {
+    if (this.sendAll()) return [...this.knownPlayers()];
+    const t = this.sendTargetName().trim();
+    return t ? [t] : [];
+  }
+
   quickSendDebuff(name: string, targetStat: string, value: number, duration: number) {
-    const target = this.sendTargetName().trim();
-    if (!target) { this.showToast('Selecciona un jugador'); return; }
-    this.firebase.pushData('playerEvents', {
-      target,
-      type: 'buff',
-      effect: { type: 'debuff', name, target: targetStat, value, duration, debuffType: this.selectedDebuffType() },
-      timestamp: Date.now(),
-    });
-    this.sendLog.update(log => [`${target}: ${name} (${duration}t)`, ...log].slice(0, 8));
-    this.showToast(`${name} → ${target}`);
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'buff',
+        effect: { type: 'debuff', name, target: targetStat, value, duration, debuffType: this.selectedDebuffType() },
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: ${name} (${duration}t)`, ...log].slice(0, 8));
+    this.showToast(`${name} → ${label}`);
   }
 
   quickSendDot() {
-    const target = this.sendTargetName().trim();
-    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
     const dmg = this.dotAmount();
     const dur = this.dotDuration() || 3;
     if (!dmg || dmg <= 0) { this.showToast('Introduce danno/turno'); return; }
-    this.firebase.pushData('playerEvents', {
-      target,
-      type: 'buff',
-      effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur, debuffType: this.selectedDebuffType() },
-      timestamp: Date.now(),
-    });
-    this.sendLog.update(log => [`${target}: DoT ${dmg}/t · ${dur}t`, ...log].slice(0, 8));
-    this.showToast(`DoT ${dmg}/t · ${dur}t → ${target}`);
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'buff',
+        effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur, debuffType: this.selectedDebuffType() },
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: DoT ${dmg}/t · ${dur}t`, ...log].slice(0, 8));
+    this.showToast(`DoT ${dmg}/t · ${dur}t → ${label}`);
     this.dotAmount.set(null);
     this.dotDuration.set(null);
   }
 
   quickSendDirect(type: 'heal' | 'damage') {
-    const target = this.sendTargetName().trim();
-    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
     const amount = this.sendAmount();
     if (!amount || amount <= 0) { this.showToast('Introduce una cantidad'); return; }
-    this.firebase.pushData('playerEvents', {
-      target,
-      type,
-      amount,
-      timestamp: Date.now(),
-    });
-    const label = type === 'heal' ? '+' + amount : '-' + amount;
-    this.sendLog.update(log => [`${target}: ${label} HP`, ...log].slice(0, 8));
-    this.showToast(`${label} HP → ${target}`);
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type,
+        amount,
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    const hpLabel = type === 'heal' ? '+' + amount : '-' + amount;
+    this.sendLog.update(log => [`${label}: ${hpLabel} HP`, ...log].slice(0, 8));
+    this.showToast(`${hpLabel} HP → ${label}`);
     this.sendAmount.set(null);
   }
 
   sendXP() {
-    const target = this.sendTargetName().trim();
-    if (!target) { this.showToast('Selecciona un jugador'); return; }
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
     const amount = this.xpAmount();
     if (!amount || amount <= 0) { this.showToast('Introduce XP'); return; }
-    this.firebase.pushData('playerEvents', {
-      target,
-      type: 'xp',
-      amount,
-      timestamp: Date.now(),
-    });
-    this.sendLog.update(log => [`${target}: +${amount} XP`, ...log].slice(0, 8));
-    this.showToast(`+${amount} XP → ${target}`);
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'xp',
+        amount,
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: +${amount} XP`, ...log].slice(0, 8));
+    this.showToast(`+${amount} XP → ${label}`);
     this.xpAmount.set(null);
   }
 
   sendLevel(levels: number) {
-    const target = this.sendTargetName().trim();
-    if (!target) { this.showToast('Selecciona un jugador'); return; }
-    this.firebase.pushData('playerEvents', {
-      target,
-      type: 'levelup',
-      amount: levels,
-      timestamp: Date.now(),
-    });
-    this.sendLog.update(log => [`${target}: +${levels} nivel(es)`, ...log].slice(0, 8));
-    this.showToast(`+${levels} nivel(es) → ${target}`);
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'levelup',
+        amount: levels,
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: +${levels} nivel(es)`, ...log].slice(0, 8));
+    this.showToast(`+${levels} nivel(es) → ${label}`);
   }
 
   assignToPlayer(event: DamageEvent) {
