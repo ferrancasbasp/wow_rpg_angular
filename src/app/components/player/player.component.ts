@@ -2326,7 +2326,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         let darkMendingText = '';
         if (ability.id === 'dark_mending') {
-          const hpPct = this.charSvc.character().currentHP / this.charSvc.maxHP();
+          const hpPct = (this.charSvc.character().currentHP ?? this.charSvc.maxHP()) / this.charSvc.maxHP();
           if (hpPct < 0.5) {
             roll = Math.round(roll * 2);
             darkMendingText = ' · x2 (low HP!)';

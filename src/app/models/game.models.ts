@@ -119,6 +119,8 @@ export interface Ability {
   multiHit?: number;
   partyBuff?: boolean;
   noGcd?: boolean;
+  rageGain?: number;
+  healthCostPct?: number;
 }
 
 export interface Talent {
