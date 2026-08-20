@@ -535,8 +535,11 @@ export class CharacterService {
 
   getEffectiveRageGain(ability: any): number {
     let gain = (ability as any).rageGain || 0;
-    if (ability.id === 'bloodrage') gain += this.talentRank('improved_bloodrage') * 3;
     return gain;
+  }
+
+  getBloodrageTickRage(): number {
+    return 3 + this.talentRank('improved_bloodrage') * 5;
   }
 
   gearStatBonus(key: string): number {
@@ -666,7 +669,7 @@ export class CharacterService {
       master_of_weapons: `Pasiva: armas 1H + off o 2H equipables`,
       improved_heroic_strike: `Coste Heroic Strike: −${rank} ira`,
       anticipation: `Armadura: +${rank}`,
-      improved_bloodrage: `Bloodrage: +${rank * 3} ira`,
+      improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 2} ira`,
       cruelty: `Crítico físico: +${rank}%`,
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida`,
@@ -967,6 +970,10 @@ export class CharacterService {
         }
       }
       if (c.activeEffects) {
+        const bloodrageBuff = c.activeEffects.find(e => e.target === 'bloodrage');
+        if (bloodrageBuff && c.currentRage !== undefined) {
+          c.currentRage = Math.min(this.resourceMax(), c.currentRage + this.getBloodrageTickRage());
+        }
         c.activeEffects = c.activeEffects.map(e => ({ ...e, duration: e.duration - 1 })).filter(e => e.duration > 0);
       }
       return { ...c };
