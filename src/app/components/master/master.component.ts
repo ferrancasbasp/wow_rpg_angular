@@ -210,6 +210,11 @@ interface DamageEvent {
 
           @if (monsters().length > 0) {
             <div class="monster-list">
+              @if (selectedEventId() && !getEvent(selectedEventId()!)?.aoe) {
+                <button class="assign-all-btn" (click)="assignDamageToAll()">
+                  ⚔️ Asignar a todos ({{ monsters().filter(m => m.currentHP > 0).length }})
+                </button>
+              }
               @for (monster of monsters(); track monster.id) {
                 <div
                   class="monster-card"
@@ -645,6 +650,26 @@ interface DamageEvent {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .assign-all-btn {
+      padding: 8px 12px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4a1a1a, #6a2a2a);
+      border: 1px solid #8b2e2e;
+      border-radius: var(--radius);
+      color: #e07070;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .assign-all-btn:hover {
+      background: linear-gradient(135deg, #6a2a2a, #8a3a3a);
+      border-color: #c0392b;
+      color: #ff9090;
+      box-shadow: 0 0 8px rgba(192, 57, 43, 0.3);
     }
 
     .monster-card {
@@ -1574,6 +1599,37 @@ export class MasterComponent implements OnInit {
       return;
     }
     this.applySingleDamage(monster, event);
+  }
+
+  assignDamageToAll() {
+    const eventId = this.selectedEventId();
+    if (eventId === null) return;
+    const event = this.getEvent(eventId);
+    if (!event || event.assigned) return;
+    if (event.aoe) {
+      this.applyAoeDamage(event);
+      return;
+    }
+    const alive = this.monsters().filter(m => m.currentHP > 0);
+    if (alive.length === 0) {
+      this.showToast('No hay monstruos vivos');
+      return;
+    }
+    const summary: string[] = [];
+    for (const monster of alive) {
+      let damage = event.damage;
+      const reductionText = this.getReductionText(monster, event);
+      damage = this.applyReduction(monster, event, damage);
+      monster.currentHP = Math.max(0, monster.currentHP - damage);
+      if (event.effects) {
+        this.applyEffectsToMonster(monster, event.effects);
+      }
+      summary.push(monster.name + ': -' + damage);
+    }
+    this.markEventAssigned(event);
+    this.selectedEventId.set(null);
+    this.saveMonsters();
+    this.showToast('All: ' + summary.join(' · '));
   }
 
   applySingleDamage(monster: Monster, event: DamageEvent) {
