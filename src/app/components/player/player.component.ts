@@ -89,47 +89,49 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
         </div>
 
         @if (charSvc.character().classKey === 'warlock') {
-          <div class="combo-inline combo-warlock">
-            <span class="combo-label">🔮 Shards</span>
-            <div class="shard-pips">
-              @for (n of shardArray(); track n) {
-                <div class="shard-pip" [class.active]="n <= (charSvc.character().soulShards || 0)"></div>
-              }
-            </div>
-          </div>
-          @if (charSvc.activePetData()) {
-            <div class="pet-inline">
-              @if (charSvc.activePetData()!.iconImg) {
-                <img [src]="charSvc.activePetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
-              } @else {
-                <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
-              }
-              <div class="pet-bars-inline">
-                <div class="resource-track pet-hp-track">
-                  <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
-                </div>
-                <div class="resource-track pet-mana-track">
-                  <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
-                </div>
+          <div class="warlock-bottom-row">
+            <div class="combo-inline combo-warlock">
+              <span class="combo-label">🔮 Shards</span>
+              <div class="shard-pips">
+                @for (n of shardArray(); track n) {
+                  <div class="shard-pip" [class.active]="n <= (charSvc.character().soulShards || 0)"></div>
+                }
               </div>
-              @if (charSvc.unlockedPetAbilities().length > 0) {
-                <div class="pet-abilities-inline">
-                  @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
-                    <button class="pet-ability-icon-btn"
-                            [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
-                            [title]="ab.name + ' — ' + ab.description + ' (' + ab.scaledCost + ' mana pet)'"
-                            (click)="castPetAbility(ab)">
-                      @if (ab.iconImg) {
-                        <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
-                      } @else {
-                        {{ ab.icon }}
-                      }
-                    </button>
-                  }
-                </div>
-              }
             </div>
-          }
+            @if (charSvc.activePetData()) {
+              <div class="pet-inline">
+                @if (charSvc.activePetData()!.iconImg) {
+                  <img [src]="charSvc.activePetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+                } @else {
+                  <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
+                }
+                <div class="pet-bars-inline">
+                  <div class="resource-track pet-hp-track">
+                    <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
+                  </div>
+                  <div class="resource-track pet-mana-track">
+                    <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
+                  </div>
+                </div>
+                @if (charSvc.unlockedPetAbilities().length > 0) {
+                  <div class="pet-abilities-inline">
+                    @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
+                      <button class="pet-ability-icon-btn"
+                              [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
+                              [title]="ab.name + ' — ' + ab.description + ' (' + ab.scaledCost + ' mana pet)'"
+                              (click)="castPetAbility(ab)">
+                        @if (ab.iconImg) {
+                          <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
+                        } @else {
+                          {{ ab.icon }}
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
         } @else if (charSvc.character().classKey === 'bard') {
           <div class="combo-inline combo-bard">
             <span class="combo-label">🎶 Partitura</span>
@@ -1338,8 +1340,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-top: 4px;
-      margin-left: auto;
     }
     .pet-icon-sm { font-size: 16px; }
     .pet-icon-img-sm {
@@ -1390,6 +1390,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
     .combo-warlock {
       gap: 6px;
+    }
+    .warlock-bottom-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: nowrap;
     }
     .shard-pips {
       display: flex;
