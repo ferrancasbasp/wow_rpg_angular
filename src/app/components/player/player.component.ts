@@ -2789,7 +2789,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
       const manaGained = ability.currentBuffValue;
-      const healthLost = Math.round(manaGained * 0.5);
+      const healthLost = manaGained;
       this.charSvc.character.update(c => ({
         ...c,
         currentHP: Math.max(1, (c.currentHP || 0) - healthLost),
