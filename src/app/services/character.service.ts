@@ -892,7 +892,7 @@ export class CharacterService {
     }
   }
 
-  sendBuffEvent(ability: any) {
+  sendBuffEvent(ability: any, buffValueOverride?: number) {
     this.registerPlayer();
     try {
       this.firebase.pushData('damageEvents', {
@@ -902,10 +902,10 @@ export class CharacterService {
         damage: 0,
         damageType: 'buff',
         buffStat: ability.currentBuffStat,
-        buffValue: ability.currentBuffValue,
+        buffValue: buffValueOverride ?? ability.currentBuffValue,
         buffDuration: ability.currentBuffDuration,
         isPercent: ability.buff?.isPercent || false,
-        aoe: !!ability.partyBuff,
+        aoe: !!ability.partyBuff || !!ability.aoe,
         effects: null,
         turn: this.turnNumber(),
         timestamp: Date.now(),

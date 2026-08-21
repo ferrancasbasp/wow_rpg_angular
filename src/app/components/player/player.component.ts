@@ -2721,6 +2721,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (ability.spendsNotes) {
+      const notes = this.charSvc.getNotes();
+      if (notes.length === 0) {
+        this.charSvc.showToast('Sin notas en la partitura');
+        return;
+      }
+    }
+
     this.charSvc.useAction(actionCost);
 
     if (isRage) {
@@ -2827,11 +2835,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'power_word_fortitude') {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_fortitude') * 0.15));
       }
-      if (ability.id === 'da_capo') {
-        const contribution = this.charSvc.noteContribution();
-        const grandiosoRank = this.charSvc.talentRank('grandioso');
-        buffValue = Math.round(buffValue * contribution * (1 + grandiosoRank * 0.05));
-      }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
       if (ability.id === 'slice_and_dice') {
@@ -2872,9 +2875,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sndText + ' — enviado al Master'
       );
     } else if (ability.buff) {
-      const buffText = '+' + ability.currentBuffValue + ' ' + ability.currentBuffStat +
+      let buffValue = ability.currentBuffValue;
+      if (ability.id === 'da_capo') {
+        const contribution = this.charSvc.noteContribution();
+        const grandiosoRank = this.charSvc.talentRank('grandioso');
+        buffValue = Math.round(buffValue * contribution * (1 + grandiosoRank * 0.05));
+      }
+      const buffText = '+' + buffValue + ' ' + ability.currentBuffStat +
         ' (' + ability.currentBuffDuration + ' turnos)';
-      this.charSvc.sendBuffEvent(ability);
+      this.charSvc.sendBuffEvent(ability, buffValue);
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — enviado al Master'
       );
