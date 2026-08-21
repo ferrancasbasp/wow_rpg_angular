@@ -2091,6 +2091,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (petAttack) {
       this.charSvc.addTurnDamage(petAttack.damage);
       this.charSvc.showToast(`👹 ${petAttack.name}: ${petAttack.damage} danyo de ${petAttack.school}`);
+      this.firebase.pushData('damageEvents', {
+        player: this.charSvc.character().name || 'Jugador',
+        ability: petAttack.name + ' (Pet)',
+        rank: 1,
+        damage: petAttack.damage,
+        damageType: 'magical',
+        aoe: false,
+        effects: null,
+        turn: oldTurn,
+        timestamp: Date.now(),
+        assigned: false,
+      });
     }
 
     this.charSvc.nextTurn();
