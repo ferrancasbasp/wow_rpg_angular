@@ -2507,13 +2507,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let noteText = '';
     if (ability.generatesNote) {
       let noteVal = ability.generatesNote;
-      const hsRank = this.charSvc.talentRank('harmonic_series');
-      if (hsRank > 0 && Math.random() * 100 < hsRank * 5 && noteVal < 7) {
-        noteVal += 1;
-        noteText = ' · ¡' + NOTE_NAMES[noteVal - 1] + '! (Harmonic)';
-      } else {
-        noteText = ' · +' + NOTE_NAMES[noteVal - 1];
-      }
+      noteText = ' · +' + NOTE_NAMES[noteVal - 1];
       this.charSvc.addNote(noteVal);
       const notes = this.charSvc.getNotes();
       noteText += ' (' + notes.length + '/7)';
@@ -2897,24 +2891,60 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — enviado al Master'
       );
+      if (ability.id === 'crescendo') {
+        const icRank = this.charSvc.talentRank('improved_crescendo');
+        if (icRank > 0) {
+          const selfBuffValue = Math.round(buffValue * icRank * 0.10);
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== 'Crescendo (Self)'),
+              {
+                id: Date.now() + Math.random(),
+                type: 'buff' as const,
+                name: 'Crescendo (Self)',
+                target: 'damage_boost',
+                value: selfBuffValue,
+                duration: ability.currentBuffDuration,
+                isPercent: false,
+              },
+            ],
+          }));
+          this.charSvc.showToast('Improved Crescendo: +' + selfBuffValue + ' dano (self)');
+        }
+      }
     } else {
       this.charSvc.showToast(ability.name + ': Lanzado');
     }
 
     if (ability.restoresManaPct && !ability.healthCostPct) {
-      let restorePct = ability.restoresManaPct;
-      const efRank = this.charSvc.talentRank('extended_fermata');
-      if (efRank > 0) restorePct += efRank * 0.05;
-      this.charSvc.restoreManaPct(restorePct);
-      this.charSvc.showToast(ability.name + ': +' + Math.round(restorePct * 100) + '% mana restaurado');
+      this.charSvc.restoreManaPct(ability.restoresManaPct);
+      this.charSvc.showToast(ability.name + ': +' + Math.round(ability.restoresManaPct * 100) + '% mana restaurado');
+      if (ability.id === 'fermata') {
+        const ifRank = this.charSvc.talentRank('improved_fermata');
+        if (ifRank > 0) {
+          const armorGain = ifRank * 14;
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== 'Improved Fermata'),
+              {
+                id: Date.now() + Math.random(),
+                type: 'buff' as const,
+                name: 'Improved Fermata',
+                target: 'armor',
+                value: armorGain,
+                duration: 4,
+                isPercent: false,
+              },
+            ],
+          }));
+          this.charSvc.showToast('Improved Fermata: +' + armorGain + ' armadura (4t)');
+        }
+      }
     }
     if (ability.generatesNote) {
-      let noteVal = ability.generatesNote;
-      const hsRank = this.charSvc.talentRank('harmonic_series');
-      if (hsRank > 0 && Math.random() * 100 < hsRank * 5 && noteVal < 7) {
-        noteVal += 1;
-      }
-      this.charSvc.addNote(noteVal);
+      this.charSvc.addNote(ability.generatesNote);
     }
     if (ability.modulateNotes) {
       this.charSvc.modulateNotes(ability.modulateNotes);
