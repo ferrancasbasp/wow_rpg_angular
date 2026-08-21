@@ -29,11 +29,11 @@ export const DRUID: CharacterClass = {
   },
 
   talents: [
-    { id: 'improved_mark_of_the_wild', name: 'Improved Mark of the Wild', icon: '🐾', iconImg: 'img/talents/druid/mark_of_the_wild.jpg', description: 'Aumenta el efecto de Mark of the Wild un 15% por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'improved_wrath', name: 'Improved Wrath', icon: '☀️', iconImg: 'img/talents/druid/wrath.jpg', description: 'Aumenta el daño de Wrath un 3% por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'improved_mark_of_the_wild', name: 'Improved Mark of the Wild', icon: '🐾', iconImg: 'img/abilities/druid/mark_of_the_wild.jpg', description: 'Aumenta el efecto de Mark of the Wild un 15% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_wrath', name: 'Improved Wrath', icon: '☀️', iconImg: 'img/abilities/druid/wrath.jpg', description: 'Aumenta el daño de Wrath un 3% por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'lunar_healing', name: 'Lunar Healing', icon: '🌙', iconImg: 'img/talents/druid/lunar_healing.jpg', description: 'Tus hechizos de curación tienen un 10% de probabilidad por punto de otorgarte una Fase Lunar.', maxRank: 4, tier: 1, requires: null },
-    { id: 'improved_moonfire', name: 'Improved Moonfire', icon: '🌙', iconImg: 'img/talents/druid/moonfire.jpg', description: 'Aumenta el daño de Moonfire un 10% por punto.', maxRank: 3, tier: 2, requires: null },
-    { id: 'improved_rejuvenation', name: 'Improved Rejuvenation', icon: '🍃', iconImg: 'img/talents/druid/rejuvenation.jpg', description: 'Aumenta la curación de Rejuvenation un 7% por punto.', maxRank: 2, tier: 2, requires: null },
+    { id: 'improved_moonfire', name: 'Improved Moonfire', icon: '🌙', iconImg: 'img/abilities/druid/moonfire.jpg', description: 'Aumenta el daño de Moonfire un 10% por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'improved_rejuvenation', name: 'Improved Rejuvenation', icon: '🍃', iconImg: 'img/abilities/druid/rejuvenation.jpg', description: 'Aumenta la curación de Rejuvenation un 7% por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'natures_remains', name: "Nature's Remains", icon: '🍂', iconImg: 'img/talents/druid/natures_remains.jpg', description: 'Reduce el coste de maná de Wrath y Moonfire un 5% por punto.', maxRank: 4, tier: 2, requires: null },
     { id: 'balance_of_nature', name: 'Balance of Nature', icon: '⚖️', iconImg: 'img/talents/druid/balance_of_nature.jpg', description: 'Aumenta tu poder de hechizo en un 10% de tu Espíritu por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'equinox', name: 'Equinox', icon: '🌗', iconImg: 'img/talents/druid/equinox.jpg', description: 'Aumenta el daño bonus que aportan las Fases Lunares un 15% por punto. Hurricane recibe el bonus a un 50% de eficacia.', maxRank: 3, tier: 3, requires: null },
