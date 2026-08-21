@@ -280,7 +280,7 @@ export const WARLOCK: CharacterClass = {
       id: 'blood_pact',
       name: 'Blood Pact',
       icon: '🩸',
-      iconImg: 'img/abilities/warlock/Spell_Shadow_ImprovedVampiricEmbrace.jpg',
+      iconImg: 'img/abilities/warlock/Spell_Shadow_BloodBoil.jpg',
       school: 'Oscuro',
       type: 'utility',
       requiredLevel: 8,
