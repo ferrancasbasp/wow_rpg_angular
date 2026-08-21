@@ -419,7 +419,7 @@ export class CharacterService {
     const resType = this.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
-    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
+    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;

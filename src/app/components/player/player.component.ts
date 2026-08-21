@@ -132,12 +132,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       <div class="top-side-controls">
         @if (charSvc.availablePets().length > 0) {
           <div class="pet-panel">
-            <select class="pet-select" [value]="charSvc.character().activePet?.petId || ''" (change)="onPetChange($event)">
-              <option value="">— Sin pet —</option>
-              @for (pet of charSvc.availablePets(); track pet.id) {
-                <option [value]="pet.id">{{ pet.icon }} {{ pet.name }}</option>
-              }
-            </select>
             @if (charSvc.activePetData()) {
               <div class="pet-bars">
                 <div class="pet-info-row">
@@ -1311,20 +1305,6 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       gap: 3px;
       width: 130px;
     }
-    .pet-select {
-      background: var(--bg-input);
-      border: 1px solid rgba(138, 115, 68, 0.4);
-      border-radius: 4px;
-      color: var(--text-main);
-      font-size: 11px;
-      padding: 2px 4px;
-      font-family: 'EB Garamond', serif;
-      cursor: pointer;
-    }
-    .pet-select:focus {
-      outline: none;
-      border-color: var(--gold-light);
-    }
     .pet-bars {
       display: flex;
       flex-direction: column;
@@ -1953,15 +1933,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.selectClass(classKey);
     this.charSvc.turnNumber.set(1);
     this.charSvc.showToast('Clase cambiada a ' + this.charSvc.classConfig().name);
-  }
-
-  onPetChange(event: Event) {
-    const petId = (event.target as HTMLSelectElement).value;
-    if (petId) {
-      this.charSvc.summonPet(petId);
-    } else {
-      this.charSvc.dismissPet();
-    }
   }
 
   castPetAbility(ability: any) {
@@ -2712,6 +2683,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
+    } else if (ability.isPetSummon) {
+      this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.buff && ability.buff.applySelf) {
       let sndComboSpent = 0;
       if (ability.id === 'slice_and_dice') {
