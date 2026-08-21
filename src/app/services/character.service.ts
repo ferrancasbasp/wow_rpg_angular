@@ -783,6 +783,7 @@ export class CharacterService {
         if (cls) {
           parsed.baseStats = { ...cls.baseStats };
           if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
+          if (parsed.soulShards === undefined) parsed.soulShards = 0;
           if (!parsed.musicalNotes) parsed.musicalNotes = [];
           this.character.set(parsed);
         }
@@ -1123,5 +1124,26 @@ export class CharacterService {
         currentMana: this.petMaxMana(),
       } : null,
     }));
+  }
+
+  getShards(): number {
+    return this.character().soulShards || 0;
+  }
+
+  addShard(amount: number) {
+    this.character.update(c => ({
+      ...c,
+      soulShards: Math.min(10, (c.soulShards || 0) + amount),
+    }));
+  }
+
+  spendShards(amount: number): boolean {
+    const current = this.character().soulShards || 0;
+    if (current < amount) return false;
+    this.character.update(c => ({
+      ...c,
+      soulShards: current - amount,
+    }));
+    return true;
   }
 }

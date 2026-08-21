@@ -88,34 +88,16 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
 
-        @if (charSvc.availablePets().length > 0) {
-          <div class="pet-section">
-            <select class="pet-select" [value]="charSvc.character().activePet?.petId || ''" (change)="onPetChange($event)">
-              <option value="">— Sin pet —</option>
-              @for (pet of charSvc.availablePets(); track pet.id) {
-                <option [value]="pet.id">{{ pet.icon }} {{ pet.name }}</option>
+        @if (charSvc.character().classKey === 'warlock') {
+          <div class="combo-inline combo-warlock">
+            <span class="combo-label">🔮 Shards</span>
+            <div class="shard-pips">
+              @for (n of shardArray(); track n) {
+                <div class="shard-pip" [class.active]="n <= (charSvc.character().soulShards || 0)"></div>
               }
-            </select>
-            @if (charSvc.activePetData()) {
-              <div class="pet-bars">
-                <div class="pet-info-row">
-                  <span class="pet-icon">{{ charSvc.activePetData()!.icon }}</span>
-                  <span class="pet-name">{{ charSvc.activePetData()!.name }}</span>
-                </div>
-                <div class="resource-track pet-hp-track">
-                  <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
-                  <div class="resource-text pet-text">{{ charSvc.petHP() }}/{{ charSvc.petMaxHP() }}</div>
-                </div>
-                <div class="resource-track pet-mana-track">
-                  <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
-                  <div class="resource-text pet-text">{{ charSvc.petMana() }}/{{ charSvc.petMaxMana() }}</div>
-                </div>
-              </div>
-            }
+            </div>
           </div>
-        }
-
-        @if (charSvc.character().classKey === 'bard') {
+        } @else if (charSvc.character().classKey === 'bard') {
           <div class="combo-inline combo-bard">
             <span class="combo-label">🎶 Partitura</span>
             <div class="note-slots">
@@ -148,6 +130,32 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       </div>
 
       <div class="top-side-controls">
+        @if (charSvc.availablePets().length > 0) {
+          <div class="pet-panel">
+            <select class="pet-select" [value]="charSvc.character().activePet?.petId || ''" (change)="onPetChange($event)">
+              <option value="">— Sin pet —</option>
+              @for (pet of charSvc.availablePets(); track pet.id) {
+                <option [value]="pet.id">{{ pet.icon }} {{ pet.name }}</option>
+              }
+            </select>
+            @if (charSvc.activePetData()) {
+              <div class="pet-bars">
+                <div class="pet-info-row">
+                  <span class="pet-icon">{{ charSvc.activePetData()!.icon }}</span>
+                  <span class="pet-name">{{ charSvc.activePetData()!.name }}</span>
+                </div>
+                <div class="resource-track pet-hp-track">
+                  <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
+                  <div class="resource-text pet-text">{{ charSvc.petHP() }}/{{ charSvc.petMaxHP() }}</div>
+                </div>
+                <div class="resource-track pet-mana-track">
+                  <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
+                  <div class="resource-text pet-text">{{ charSvc.petMana() }}/{{ charSvc.petMaxMana() }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
         @if (charSvc.character().classKey === 'warrior') {
           <div class="warrior-stance-row">
             <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="changeStance('battle')">
@@ -1284,13 +1292,19 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       flex-direction: column;
       gap: 4px;
     }
+    .pet-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      width: 130px;
+    }
     .pet-select {
       background: var(--bg-input);
       border: 1px solid rgba(138, 115, 68, 0.4);
       border-radius: 4px;
       color: var(--text-main);
-      font-size: 12px;
-      padding: 3px 6px;
+      font-size: 11px;
+      padding: 2px 4px;
       font-family: 'EB Garamond', serif;
       cursor: pointer;
     }
@@ -1301,8 +1315,8 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .pet-bars {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      padding: 4px 6px;
+      gap: 2px;
+      padding: 3px 5px;
       background: rgba(139, 45, 240, 0.08);
       border: 1px solid rgba(139, 45, 240, 0.25);
       border-radius: 4px;
@@ -1310,24 +1324,48 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .pet-info-row {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
-    .pet-icon { font-size: 14px; }
+    .pet-icon { font-size: 12px; }
     .pet-name {
-      font-size: 11px;
+      font-size: 10px;
       color: #c79bef;
       font-family: 'EB Garamond', serif;
       font-weight: 600;
     }
     .pet-hp-track, .pet-mana-track {
-      height: 8px !important;
-      border-radius: 4px;
+      height: 6px !important;
+      border-radius: 3px;
     }
     .pet-text {
-      font-size: 9px !important;
+      font-size: 8px !important;
     }
     .pet-mana-track .resource-fill.mana {
       background: linear-gradient(180deg, #5599dd, #3377bb);
+    }
+
+    .combo-warlock {
+      gap: 6px;
+    }
+    .shard-pips {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      max-width: 200px;
+    }
+    .shard-pip {
+      width: 10px;
+      height: 10px;
+      transform: rotate(45deg);
+      border: 1px solid rgba(139, 45, 240, 0.3);
+      background: rgba(20, 10, 30, 0.5);
+      border-radius: 1px;
+      transition: all 0.2s ease;
+    }
+    .shard-pip.active {
+      background: linear-gradient(135deg, #b347ff, #7a1cc7);
+      border-color: #d488ff;
+      box-shadow: 0 0 4px rgba(139, 45, 240, 0.6);
     }
     .xp-mini-track {
       height: 10px;
@@ -1693,6 +1731,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   noteSlotArray(): number[] {
     return Array.from({ length: 7 }, (_, i) => i + 1);
+  }
+
+  shardArray(): number[] {
+    return Array.from({ length: 10 }, (_, i) => i + 1);
   }
 
   actionSlotArray(): number[] {
@@ -2210,6 +2252,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
     }
 
+    if (ability.spendsShards) {
+      const shards = this.charSvc.getShards();
+      if (shards < 3) {
+        this.charSvc.showToast('Necesitas 3 Soul Shards');
+        const resourceMax = this.charSvc.resourceMax();
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(resourceMax, (c.currentMana || 0) + (ability.scaledCost || 0)),
+        }));
+        return;
+      }
+      this.charSvc.spendShards(3);
+    }
+
     if (ability.spendsNotes) {
       const notes = this.charSvc.getNotes();
       if (notes.length === 0) {
@@ -2317,6 +2373,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (ability.spendsCombo) {
       comboText = ' · ' + comboSpent + ' combo gastados';
+    }
+
+    let shardText = '';
+    if (ability.generatesShard) {
+      this.charSvc.addShard(ability.generatesShard);
+      shardText = ' · +' + ability.generatesShard + ' 🔮 (' + this.charSvc.getShards() + '/10)';
+    }
+    if (ability.spendsShards) {
+      shardText = ' · 3 🔮 consumidos';
     }
 
     let noteText = '';
@@ -2464,7 +2529,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.turnDamage.update(d => d + roll);
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2704,7 +2769,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resourceMax = this.charSvc.resourceMax();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
+      return { ...c, currentHP: maxHP, comboPoints: 0, soulShards: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));

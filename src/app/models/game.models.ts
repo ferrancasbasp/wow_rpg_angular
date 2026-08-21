@@ -75,6 +75,8 @@ export interface Ability {
   spendsCombo?: boolean;
   generatesNote?: number;
   spendsNotes?: boolean;
+  generatesShard?: number;
+  spendsShards?: boolean;
   modulateNotes?: number;
   restoresManaPct?: number;
   isDot?: boolean;
@@ -257,6 +259,7 @@ export interface Character {
   currentEnergy: number;
   comboPoints: number;
   musicalNotes?: number[];
+  soulShards?: number;
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;
   equipment: Equipment;

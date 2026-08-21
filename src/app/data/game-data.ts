@@ -143,6 +143,8 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
       equipment.mainHand = { name: 'Maza de Chamán', bonus: { ...emptyBonus }, weaponDamage: 4 };
     } else if (cls.name === 'Druid Balance') {
       equipment.mainHand = { name: 'Bastón Druida', bonus: { ...emptyBonus, espiritu: 2 }, weaponDamage: 4 };
+    } else if (cls.name === 'Warlock') {
+      equipment.mainHand = { name: 'Bastón Oscuro', bonus: { ...emptyBonus, intelecto: 2 }, weaponDamage: 4 };
     }
   }
 
@@ -158,6 +160,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     currentRage: 0,
     currentEnergy: 100,
     comboPoints: 0,
+    soulShards: 0,
     trainedRanks: {},
     currentCooldowns: {},
     equipment,
