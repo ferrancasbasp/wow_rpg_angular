@@ -393,7 +393,11 @@ export class CharacterService {
         const baseDuration = a.hotDuration || 1;
         hotDuration = baseDuration + this.talentRank('improved_renew');
         const healBonus = 1 + this.talentRank('healing_focus') * 0.02;
-        hotTick = Math.round(minVal * healBonus / baseDuration);
+        let rejuvBonus = 1;
+        if (a.id === 'rejuvenation') {
+          rejuvBonus = 1 + this.talentRank('improved_rejuvenation') * 0.07;
+        }
+        hotTick = Math.round(minVal * healBonus * rejuvBonus / baseDuration);
         hotTotal = hotTick * hotDuration;
       }
       let dotTick = 0, dotDuration = 0, dotTotal = 0;
