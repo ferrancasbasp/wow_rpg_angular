@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ref, onChildAdded, onChildChanged, onChildRemoved, onValue, off, set, remove } from 'firebase/database';
 import { FirebaseService } from '../../services/firebase.service';
+import { TranslationService } from '../../services/translation.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
@@ -64,6 +65,9 @@ interface DamageEvent {
   template: `
     <div class="app-header">
       <div class="app-title">Master Screen</div>
+      <button class="lang-toggle-btn" (click)="trSvc.toggleLang()" [title]="trSvc.lang() === 'es' ? 'Switch to English' : 'Cambiar a Español'">
+        {{ trSvc.lang() === 'es' ? '🇬🇧 EN' : '🇪🇸 ES' }}
+      </button>
     </div>
 
     <div class="send-panel-wrap">
@@ -463,7 +467,17 @@ interface DamageEvent {
       grid-column: 1 / -1;
       text-align: center;
       margin-bottom: 8px;
+      position: relative;
     }
+
+    .lang-toggle-btn {
+      position: absolute; top: 8px; right: 8px;
+      padding: 4px 10px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+      background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
+      border: 1px solid var(--gold-dark); border-radius: 4px; color: var(--gold-light);
+      cursor: pointer; transition: var(--transition); letter-spacing: 0.03em;
+    }
+    .lang-toggle-btn:hover { border-color: var(--gold); color: var(--gold); }
 
     .app-title {
       font-family: 'Cinzel', serif;
@@ -1428,6 +1442,7 @@ interface DamageEvent {
 })
 export class MasterComponent implements OnInit {
   private firebase = inject(FirebaseService);
+  trSvc = inject(TranslationService);
 
   pendingEvents = signal<DamageEvent[]>([]);
   monsters = signal<Monster[]>([]);

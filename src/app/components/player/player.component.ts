@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CharacterService } from '../../services/character.service';
 import { FirebaseService } from '../../services/firebase.service';
+import { TranslationService } from '../../services/translation.service';
 import { onChildAdded, ref, off } from 'firebase/database';
 import { ClassRegistryService } from '../../services/class-registry.service';
 import {
@@ -165,6 +166,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       </div>
 
       <div class="top-side-controls">
+        <button class="lang-toggle-btn" (click)="trSvc.toggleLang()" [title]="trSvc.lang() === 'es' ? 'Switch to English' : 'Cambiar a Español'">
+          {{ trSvc.lang() === 'es' ? '🇬🇧 EN' : '🇪🇸 ES' }}
+        </button>
         @if (charSvc.character().classKey === 'warrior') {
           <div class="warrior-stance-row">
             <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="changeStance('battle')">
@@ -1457,6 +1461,14 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 220px;
     }
 
+    .lang-toggle-btn {
+      align-self: flex-end; padding: 4px 10px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+      background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
+      border: 1px solid var(--gold-dark); border-radius: 4px; color: var(--gold-light);
+      cursor: pointer; transition: var(--transition); letter-spacing: 0.03em; width: fit-content;
+    }
+    .lang-toggle-btn:hover { border-color: var(--gold); color: var(--gold); }
+
     .warrior-stance-row, .warrior-weapon-row { display: flex; gap: 4px; }
     .stance-btn, .weapon-mode-btn {
       flex: 1; padding: 6px 8px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
@@ -1619,6 +1631,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 })
 export class PlayerComponent implements OnInit, OnDestroy {
   charSvc = inject(CharacterService);
+  trSvc = inject(TranslationService);
   private firebase = inject(FirebaseService);
   private classRegistry = inject(ClassRegistryService);
 
