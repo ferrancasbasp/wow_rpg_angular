@@ -153,6 +153,19 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                   <div class="resource-text pet-text">{{ charSvc.petMana() }}/{{ charSvc.petMaxMana() }}</div>
                 </div>
               </div>
+              @if (charSvc.unlockedPetAbilities().length > 0) {
+                <div class="pet-abilities">
+                  @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
+                    <button class="pet-ability-btn"
+                            [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
+                            [title]="ab.description + ' (Coste: ' + ab.scaledCost + ' mana pet)'"
+                            (click)="castPetAbility(ab)">
+                      <span>{{ ab.icon }}</span>
+                      <span class="pet-ability-name">{{ ab.name }}</span>
+                    </button>
+                  }
+                </div>
+              }
             }
           </div>
         }
@@ -1343,6 +1356,37 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .pet-mana-track .resource-fill.mana {
       background: linear-gradient(180deg, #5599dd, #3377bb);
     }
+    .pet-abilities {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .pet-ability-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      background: rgba(139, 45, 240, 0.15);
+      border: 1px solid rgba(139, 45, 240, 0.35);
+      border-radius: 4px;
+      color: #c79bef;
+      font-size: 11px;
+      font-family: 'EB Garamond', serif;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .pet-ability-btn:hover:not(:disabled) {
+      background: rgba(139, 45, 240, 0.3);
+      border-color: #b347ff;
+      color: #fff;
+    }
+    .pet-ability-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .pet-ability-name {
+      font-weight: 600;
+    }
 
     .combo-warlock {
       gap: 6px;
@@ -1917,6 +1961,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(petId);
     } else {
       this.charSvc.dismissPet();
+    }
+  }
+
+  castPetAbility(ability: any) {
+    if (!this.charSvc.canAct(1)) {
+      this.charSvc.showToast('Sin acciones disponibles');
+      return;
+    }
+    const success = this.charSvc.castPetAbility(ability);
+    if (success) {
+      this.charSvc.useAction(1);
+      const cd = this.charSvc.getEffectiveCooldown(ability);
+      if (cd > 0) {
+        this.charSvc.character.update(c => {
+          if (!c.currentCooldowns) c.currentCooldowns = {};
+          c.currentCooldowns[ability.id] = cd;
+          return { ...c };
+        });
+      }
+      if (ability.partyBuff) {
+        this.charSvc.sendBuffEvent(ability);
+      }
+      this.charSvc.showToast(
+        ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
+        ' +' + ability.currentBuffValue + ' (' + ability.currentBuffDuration + 't) — enviado al Master'
+      );
     }
   }
 

@@ -123,6 +123,8 @@ export interface Ability {
   noGcd?: boolean;
   rageGain?: number;
   healthCostPct?: number;
+  isPetSummon?: string;
+  petAbility?: string;
 }
 
 export interface Talent {

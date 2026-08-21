@@ -337,7 +337,7 @@ export class CharacterService {
   readonly unlockedAbilities = computed<Ability[]>(() => {
     const weaponDmg = this.totalWeaponDamage();
     const apBonus = Math.round(this.attackPower() / 7);
-    return this.computedAbilities().filter(a => a.type !== 'utility' && this.trainedRank(a.id) > 0).map(a => {
+    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
       const rank = this.trainedRank(a.id);
       const dmgRange = a.damageRanges?.find(dr => dr.rank === rank);
       const isPhysical = a.damageType === 'physical';
@@ -419,7 +419,7 @@ export class CharacterService {
     const resType = this.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
-    return this.classConfig().abilities.filter(a => a.type === 'utility' && this.trainedRank(a.id) > 0).map(a => {
+    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
@@ -458,6 +458,26 @@ export class CharacterService {
   });
 
   readonly canTrain = computed<boolean>(() => this.trainableAbilities().length > 0);
+
+  readonly unlockedPetAbilities = computed<Ability[]>(() => {
+    const c = this.character();
+    if (!c.activePet) return [];
+    const cls = this.classConfig();
+    return cls.abilities.filter(a => a.petAbility && a.petAbility === c.activePet!.petId && this.trainedRank(a.id) > 0).map(a => {
+      const rank = this.trainedRank(a.id);
+      const buffRank = a.buffRanks?.find(br => br.rank === rank);
+      const buffValue = buffRank ? buffRank.value : 0;
+      const petManaCost = Math.round(this.petMaxMana() * 0.15);
+      return {
+        ...a,
+        currentRank: rank,
+        scaledCost: petManaCost,
+        currentBuffValue: buffValue,
+        currentBuffDuration: a.buff ? a.buff.duration : 1,
+        currentBuffStat: a.buff ? a.buff.stat : '',
+      };
+    });
+  });
 
   // ==================== HELPER METHODS ====================
 
@@ -1014,7 +1034,10 @@ export class CharacterService {
   availablePets = computed<Pet[]>(() => {
     const cls = this.classConfig();
     if (!cls.pets) return [];
-    return cls.pets.filter(p => this.character().level >= p.requiredLevel);
+    return cls.pets.filter(p => {
+      const summonAbility = cls.abilities.find(a => a.isPetSummon === p.id);
+      return summonAbility && this.trainedRank(summonAbility.id) > 0;
+    });
   });
 
   activePetData = computed<Pet | null>(() => {
@@ -1144,6 +1167,39 @@ export class CharacterService {
       ...c,
       soulShards: current - amount,
     }));
+    return true;
+  }
+
+  castPetAbility(ability: any): boolean {
+    const c = this.character();
+    if (!c.activePet) return false;
+    const petMaxMana = this.petMaxMana();
+    const manaCost = Math.round(petMaxMana * 0.15);
+    if (c.activePet.currentMana < manaCost) {
+      this.showToast('La pet no tiene mana suficiente');
+      return false;
+    }
+    this.character.update(ch => ({
+      ...ch,
+      activePet: ch.activePet ? {
+        ...ch.activePet,
+        currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
+      } : null,
+    }));
+    if (ability.buff && ability.currentBuffValue) {
+      this.character.update(c => ({
+        ...c,
+        activeEffects: [...(c.activeEffects || []), {
+          id: Date.now(),
+          type: 'buff',
+          name: ability.name,
+          target: ability.currentBuffStat,
+          value: ability.currentBuffValue,
+          duration: ability.currentBuffDuration,
+          isPercent: false,
+        }],
+      }));
+    }
     return true;
   }
 }
