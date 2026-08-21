@@ -1693,7 +1693,29 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const event = snapshot.val();
         const myName = (this.charSvc.character().name || '').trim().toLowerCase();
         const targetName = (event?.target || '').trim().toLowerCase();
-        if (!myName || !targetName || myName !== targetName) return;
+        if (!myName || !targetName) return;
+
+        const activePet = this.charSvc.activePetData();
+        const petName = activePet ? (myName + ' — ' + activePet.name.toLowerCase()) : '';
+        const isPetTarget = petName && targetName === petName;
+
+        if (!isPetTarget && myName !== targetName) return;
+
+        if (isPetTarget) {
+          if (event.type === 'heal') {
+            this.charSvc.character.update(c => ({
+              ...c,
+              activePet: c.activePet ? { ...c.activePet, currentHP: Math.min(this.charSvc.petMaxHP(), c.activePet.currentHP + event.amount) } : null,
+            }));
+            this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + event.amount + ' HP (pet)');
+          } else if (event.type === 'damage' || event.type === 'monsterAttack') {
+            this.charSvc.petTakeDamage(event.amount);
+            this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' danyo (pet)');
+          }
+          this.firebase.removeData('playerEvents/' + snapshot.key);
+          setTimeout(() => this.incomingMasterMsg.set(''), 4000);
+          return;
+        }
 
         if (event.type === 'heal') {
           this.charSvc.adjustHP(event.amount);
