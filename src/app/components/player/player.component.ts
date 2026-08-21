@@ -2398,9 +2398,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
       const contribution = this.charSvc.noteContribution();
-      const maestroRank = this.charSvc.talentRank('maestro');
-      const maestroMult = 1 + maestroRank * 0.10;
-      roll = Math.round(roll * contribution * maestroMult);
+      roll = Math.round(roll * contribution);
     }
 
     const dmgBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'damage_boost');
@@ -2527,6 +2525,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
       } else {
         noteText = ' · ¡Perfect Pitch! Notas conservadas (×' + noteContributionValue.toFixed(1) + ')';
+      }
+      const maestroRank = this.charSvc.talentRank('maestro');
+      if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+        this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
+        noteText += ' · ¡Maestro! +1 accion';
       }
     }
 
@@ -2956,6 +2959,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const keepNotes = ppRank > 0 && Math.random() * 100 < ppRank * 10;
         if (!keepNotes) {
           this.charSvc.clearNotes();
+        }
+        const maestroRank = this.charSvc.talentRank('maestro');
+        if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+          this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
+          this.charSvc.showToast('¡Maestro! +1 accion devuelta');
         }
       }
     }

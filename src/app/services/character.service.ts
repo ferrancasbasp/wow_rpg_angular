@@ -754,7 +754,7 @@ export class CharacterService {
       improved_crescendo: `Crescendo self-buff: ${rank * 10}% del valor enviado`,
       improved_vivace: `Vivace: +${rank * 10}% curación`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
-      maestro: `Remates: +${rank * 10}% daño/cura`,
+      maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
       perfect_pitch: `Prob. no gastar notas: ${rank * 10}%`,
       grandioso: `Da Capo: +${rank * 5}% poder`,
     };

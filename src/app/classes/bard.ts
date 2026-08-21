@@ -41,7 +41,7 @@ export const BARD: CharacterClass = {
     { id: 'improved_crescendo', name: 'Improved Crescendo', icon: '📈', iconImg: 'img/abilities/bard/crescendo.jpg', description: 'Al lanzar Crescendo, tambien recibes un buff de dano equivalente al 10% del valor enviado por punto.', maxRank: 5, tier: 2, requires: null, branch: 0 },
     { id: 'improved_vivace', name: 'Improved Vivace', icon: '✨', iconImg: '', description: 'Aumenta la curacion de Vivace un 10% por punto.', maxRank: 3, tier: 2, requires: null, branch: 1 },
     { id: 'improved_fermata', name: 'Improved Fermata', icon: '⏸️', iconImg: 'img/abilities/bard/fermata.jpg', description: 'Tras lanzar Fermata, aumentas tu armadura fisica en 14 por punto.', maxRank: 3, tier: 2, requires: null, branch: 1 },
-    { id: 'maestro', name: 'Maestro', icon: '👑', iconImg: '', description: 'Los remates hacen un 10% mas de dano/curacion por punto.', maxRank: 3, tier: 3, requires: null, branch: 2 },
+    { id: 'maestro', name: 'Maestro', icon: '👑', iconImg: '', description: 'Los remates tienen un 15% de probabilidad por punto de devolverte un punto de accion.', maxRank: 3, tier: 3, requires: null, branch: 2 },
     { id: 'perfect_pitch', name: 'Perfect Pitch', icon: '🎯', iconImg: '', description: '10% de probabilidad por punto de que un remate no consuma las notas.', maxRank: 2, tier: 3, requires: null, branch: 2 },
     { id: 'grandioso', name: 'Grandioso', icon: '🌟', iconImg: '', description: 'Aumenta el buff de Da Capo un 5% por punto.', maxRank: 3, tier: 3, requires: null, branch: 2 },
   ],
