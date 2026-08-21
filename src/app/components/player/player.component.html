@@ -1,0 +1,584 @@
+    <div class="top-bar-row">
+      <div class="resource-section">
+        <div class="char-header-row">
+          <div class="class-icon">
+            @if (charSvc.classConfig().iconImg) {
+              <img [src]="charSvc.classConfig().iconImg" class="class-icon-img" (error)="onImgError($event)">
+              <span style="display:none">{{ charSvc.classConfig().icon }}</span>
+            } @else {
+              <span>{{ charSvc.classConfig().icon }}</span>
+            }
+          </div>
+          <div class="header-info">
+            <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" [placeholder]="trSvc.t('nombre')">
+            <div class="char-meta">
+              <span class="level-display">Nv {{ charSvc.character().level }}</span>
+              <button class="debug-lvl-btn" (click)="instantLevel25()" title="Debug: subir a nivel 25">⚡25</button>
+              <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
+                @for (entry of classEntries; track entry[0]) {
+                  <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="quick-icons">
+            <button class="quick-icon-btn" (click)="showStatsModal.set(true)" title="Atributos">
+              <span>📊</span>
+            </button>
+            <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
+              <span>🛡️</span>
+            </button>
+            <button class="quick-icon-btn talent-btn" [class.has-points]="charSvc.availableTalentPoints() > 0"
+                    (click)="showTalentModal.set(true)" title="Talentos">
+              <span>🌟</span>
+              @if (charSvc.availableTalentPoints() > 0) {
+                <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        <div class="compact-bars">
+          <div class="resource-track compact-hp">
+            <div class="resource-fill hp" [style.width]="charSvc.hpPercent() + '%'"></div>
+            @if (shieldValue() > 0) {
+              <div class="resource-fill shield" [style.width]="shieldPercent() + '%'"></div>
+            }
+            <div class="resource-text">{{ charSvc.hpActual() }} / {{ charSvc.maxHP() }}</div>
+          </div>
+          <div class="resource-track compact-resource">
+            <div class="resource-fill"
+                 [class.mana]="charSvc.resourceConfig().type === 'mana'"
+                 [class.rage]="charSvc.resourceConfig().type === 'rage'"
+                 [class.energy]="charSvc.resourceConfig().type === 'energy'"
+                 [style.width]="charSvc.resourcePercent() + '%'"
+                 [style.background]="resourceBarBackground()">
+            </div>
+            <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
+          </div>
+        </div>
+
+        <div class="xp-mini-bar">
+          <div class="xp-mini-track">
+            <div class="xp-mini-fill" [style.width]="charSvc.xpProgressPercent() + '%'" [class.xp-levelup-anim]="levelUpFlash()"></div>
+            <div class="xp-mini-text">{{ charSvc.xpProgressPercent() }}%</div>
+          </div>
+        </div>
+
+        @if (charSvc.character().classKey === 'warlock') {
+          <div class="warlock-bottom-row">
+            <div class="combo-inline combo-warlock">
+              <span class="combo-label">🔮 Shards</span>
+              <div class="shard-pips">
+                @for (n of shardArray(); track n) {
+                  <div class="shard-pip" [class.active]="n <= (charSvc.character().soulShards || 0)"></div>
+                }
+              </div>
+            </div>
+            @if (charSvc.activePetData()) {
+              <div class="pet-inline">
+                @if (charSvc.activePetData()!.iconImg) {
+                  <img [src]="charSvc.activePetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+                } @else {
+                  <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
+                }
+                <div class="pet-bars-inline">
+                  <div class="resource-track pet-hp-track">
+                    <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
+                  </div>
+                  <div class="resource-track pet-mana-track">
+                    <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
+                  </div>
+                </div>
+                @if (charSvc.unlockedPetAbilities().length > 0) {
+                  <div class="pet-abilities-inline">
+                    @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
+                      <button class="pet-ability-icon-btn"
+                              [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
+                              [title]="ab.name + ' — ' + trSvc.tDesc(ab.id, ab.description, charSvc.character().classKey) + ' (' + ab.scaledCost + ' mana pet)'"
+                              (click)="castPetAbility(ab)">
+                        @if (ab.iconImg) {
+                          <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
+                        } @else {
+                          {{ ab.icon }}
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @else if (charSvc.character().classKey === 'bard') {
+          <div class="combo-inline combo-bard">
+            <span class="combo-label">🎶 Partitura</span>
+            <div class="note-slots">
+              @for (n of noteSlotArray(); track n) {
+                @if (n - 1 < (charSvc.getNotes().length)) {
+                  <div class="note-slot filled" [style.--note-color]="NOTE_COLORS[charSvc.getNotes()[n - 1] - 1]">
+                    {{ NOTE_NAMES[charSvc.getNotes()[n - 1] - 1] }}
+                  </div>
+                } @else {
+                  <div class="note-slot empty">·</div>
+                }
+              }
+            </div>
+            <span class="note-contribution">×{{ charSvc.noteContribution().toFixed(1) }}</span>
+          </div>
+        } @else if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
+          <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
+            <span class="combo-label">{{
+              charSvc.classConfig().comboConfig
+                ? (charSvc.classConfig().comboConfig!.icon + ' ' + charSvc.classConfig().comboConfig!.label)
+                : 'Combo Points'
+            }}</span>
+            <div class="combo-points">
+              @for (n of comboPointArray(charSvc.classConfig().comboConfig?.max || 5); track n) {
+                <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="top-side-controls">
+        <button class="lang-toggle-btn" (click)="trSvc.toggleLang()" [title]="trSvc.lang() === 'es' ? 'Switch to English' : 'Cambiar a Español'">
+          {{ trSvc.lang() === 'es' ? '🇬🇧 EN' : '🇪🇸 ES' }}
+        </button>
+        @if (charSvc.character().classKey === 'warrior') {
+          <div class="warrior-stance-row">
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="changeStance('battle')">
+              <img src="img/talents/warrior/battle_stance.jpg" class="stance-icon" (error)="onImgErrorSimple($event)"> Battle
+            </button>
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'fury'" (click)="changeStance('fury')">
+              Fury
+            </button>
+            <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'protection'" (click)="changeStance('protection')">
+              <img src="img/talents/warrior/protection_stance.jpg" class="stance-icon" (error)="onImgErrorSimple($event)"> Prot
+            </button>
+          </div>
+        }
+        @if (charSvc.character().classKey === 'warrior' && charSvc.talentRank('master_of_weapons') > 0) {
+          <div class="warrior-weapon-row">
+            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'dualwield'" (click)="changeWeaponMode('dualwield')">1H + Off</button>
+            <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="changeWeaponMode('twohanded')">2H</button>
+          </div>
+        }
+        <div class="turn-damage-box">
+          <span class="turn-damage-label">{{ trSvc.t('danyo') }} {{ trSvc.t('turno_actual') }}</span>
+          <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
+        </div>
+        <div class="turn-btn-row">
+          <button class="action-btn end-turn-btn" (click)="endTurn()">{{ trSvc.t('finalizar_turno') }} ({{ charSvc.turnNumber() }})</button>
+          <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
+        </div>
+        <div class="action-slots-row">
+          <span class="action-slots-label">{{ trSvc.t('acciones') }}</span>
+          <div class="action-slots">
+            @for (n of actionSlotArray(); track n) {
+              <div class="action-slot" [class.spent]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
+                @if (n <= charSvc.actionsUsed()) {
+                  <span class="spent-icon">·</span>
+                } @else {
+                  <span>⚡</span>
+                }
+              </div>
+            }
+          </div>
+          <button class="move-btn" (click)="moveAction()" [disabled]="!charSvc.canAct(1)"
+                  title="Mover — gasta 1 accion instantanea">
+            <span>🥾</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="effects-section">
+      <div class="effects-header">
+        <span class="effects-title">{{ trSvc.t('efectos') }}</span>
+        @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
+          <span class="effects-count">{{ charSvc.character().activeEffects.length }}</span>
+        }
+      </div>
+      <div class="effects-body">
+        @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
+          <div class="effects-active-list">
+            @for (eff of charSvc.character().activeEffects; track eff.id) {
+              <div class="effect-chip" [style.--eff-color]="debuffColor(eff)">
+                <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
+                <span class="effect-name">{{ eff.name }}</span>
+                @if (eff.debuffType && eff.debuffType !== 'none') {
+                  <span class="effect-debuff-type" [style.color]="DEBUFF_TYPES[eff.debuffType].color">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
+                }
+                <span class="effect-value">{{ effectValueText(eff) }}</span>
+                <span class="effect-duration">{{ eff.duration }}t</span>
+                <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="effects-empty">{{ trSvc.t('no_active_effects') }}</div>
+        }
+      </div>
+    </div>
+
+    <div class="main-grid">
+
+      <div class="wow-panel">
+        <div class="panel-title">Habilidades
+          <button class="train-btn" (click)="trainAll()" [disabled]="!charSvc.canTrain()"
+                  [class.train-available]="charSvc.canTrain()">
+            Entrenar@if (charSvc.canTrain()) { ({{ charSvc.trainableAbilities().length }}) }
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="ability-grid">
+          @for (ability of charSvc.unlockedAbilities(); track ability.id) {
+            <div class="ability-card"
+                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0)"
+                 [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
+              <div class="ability-icon castable"
+                   [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                   [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
+                   (click)="castSpell(ability)">
+                 @if (ability.iconImg) {
+                   <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
+                   <span style="display:none">{{ ability.icon }}</span>
+                 } @else {
+                   <span>{{ ability.icon }}</span>
+                 }
+                 @if (ability.currentRank! > 1) {
+                   <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
+                 }
+                 @if (charSvc.getCooldown(ability.id) > 0) {
+                   <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
+                 }
+               </div>
+               <div class="ability-info">
+                 <div class="ability-name">{{ ability.name }}</div>
+                 <div class="ability-school">
+                   {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
+                   @if (ability.requiresStealth) {<span class="ability-req-tag"> · Sigilo</span>}
+                   @if (ability.requiresBehind) {<span class="ability-req-tag"> · Detras</span>}
+                 </div>
+                 <div class="ability-stats">
+                   @if (ability.type === 'damage' && !ability.isDot) {
+                     <span class="ability-stat dmg">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                   }
+                   @if (ability.isDot) {
+                     <span class="ability-stat dmg">{{ ability.dotTick }}/t · {{ ability.dotDuration }}t</span>
+                   }
+                   @if (ability.type === 'heal' && !ability.isHot) {
+                     <span class="ability-stat heal">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                   }
+                   @if (ability.isHot) {
+                     <span class="ability-stat heal">{{ ability.hotTick }}/t · {{ ability.hotDuration }}t</span>
+                   }
+                    @if (charSvc.resourceConfig().type === 'rage') {
+                      <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
+                    } @else if (charSvc.resourceConfig().type === 'energy') {
+                      <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
+                    } @else {
+                      <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                    }
+                    @if (ability.generatesShard) {
+                      <span class="ability-stat shard-gen">+{{ ability.generatesShard }}<span class="shard-mini"></span></span>
+                    }
+                    @if (ability.spendsShards) {
+                      <span class="ability-stat shard-cost">-{{ ability.shardCost || 3 }}<span class="shard-mini"></span></span>
+                    }
+                 </div>
+               </div>
+               <div class="ability-cast-col">
+                 @if (abilityRolls()[ability.id]) {
+                   <span class="ability-roll-text" [class.crit-roll]="abilityRolls()[ability.id].crit">
+                     {{ ability.type === 'heal' ? '+' : '-' }}{{ abilityRolls()[ability.id].roll }}{{ abilityRolls()[ability.id].crit ? '!' : '' }}
+                   </span>
+                 }
+              </div>
+            </div>
+          }
+          </div>
+
+          @if (charSvc.trainableAbilities().length > 0) {
+            <div class="locked-abilities-section">
+              <div class="locked-abilities-title">{{ trSvc.t('available_train') }}</div>
+              @for (ability of charSvc.trainableAbilities(); track ability.id) {
+                <div class="locked-ability trainable">
+                  <span class="locked-ability-icon">{{ ability.icon }}</span>
+                  <span class="locked-ability-name">{{ ability.name }}</span>
+                  <span class="locked-ability-req">{{ trSvc.t('rank') }} {{ charSvc.trainedRank(ability.id) + 1 }} → {{ charSvc.maxAvailableRank(ability) }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          @if (lockedAbilities().length > 0) {
+            <div class="locked-abilities-section">
+              <div class="locked-abilities-title">{{ trSvc.t('locked_level') }}</div>
+              @for (ability of lockedAbilities(); track ability.id) {
+                <div class="locked-ability">
+                  <span class="locked-ability-icon">{{ ability.icon }}</span>
+                  <span class="locked-ability-name">{{ ability.name }}</span>
+                  <span class="locked-ability-req">{{ trSvc.t('level') }} {{ ability.requiredLevel }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (charSvc.unlockedUtility().length > 0) {
+        <div class="wow-panel">
+          <div class="panel-title">{{ trSvc.t('utility') }}</div>
+          <div class="panel-body">
+            <div class="ability-grid">
+            @for (ability of charSvc.unlockedUtility(); track ability.id) {
+              <div class="ability-card"
+                   [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0)"
+                   [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
+                <div class="ability-icon castable"
+                     [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
+                     [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                     [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
+                     (click)="castUtility(ability)">
+                   @if (ability.iconImg) {
+                     <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
+                     <span style="display:none">{{ ability.icon }}</span>
+                   } @else {
+                     <span>{{ ability.icon }}</span>
+                   }
+                   @if (ability.currentRank > 1) {
+                     <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
+                   }
+                   @if (charSvc.getCooldown(ability.id) > 0) {
+                     <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
+                   }
+                 </div>
+                 <div class="ability-info">
+                   <div class="ability-name">{{ ability.name }}</div>
+                   <div class="ability-school">
+                     {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
+                   </div>
+                   <div class="ability-stats">
+                     @if (ability.currentBuffValue) {
+                       <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
+                     }
+                     @if (charSvc.resourceConfig().type === 'rage') {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
+                     } @else if (charSvc.resourceConfig().type === 'energy') {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
+                     } @else {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                     }
+                   </div>
+                 </div>
+                 <div class="ability-cast-col">
+                </div>
+              </div>
+            }
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn" (click)="saveChar()">{{ trSvc.t('save') }}</button>
+      <button class="action-btn" (click)="loadChar()">{{ trSvc.t('load') }}</button>
+      <button class="action-btn" (click)="openExport()">{{ trSvc.t('export_json') }}</button>
+      <button class="action-btn danger" (click)="resetCharacter()">{{ trSvc.t('reset') }}</button>
+    </div>
+
+    @if (showStatsModal()) {
+      <div class="modal-overlay" (click)="showStatsModal.set(false)">
+        <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">{{ trSvc.t('attributes') }}</div>
+          <div class="stats-modal-body">
+            @for (entry of statEntries; track entry[1]) {
+              <div class="stat-row">
+                <div class="stat-label">
+                  <span class="stat-icon">{{ STAT_ICONS[entry[1]] }}</span>
+                  {{ entry[0] }}
+                </div>
+                <div class="stat-value-group">
+                  <span class="stat-base-val">{{ charSvc.character().baseStats[entry[1]] }}</span>
+                  @if (levelStatBonus(entry[1]) > 0) {
+                    <span class="stat-level-bonus">+{{ levelStatBonus(entry[1]) }}</span>
+                  }
+                  <span class="stat-final">{{ charSvc.finalStats()[entry[1]] }}</span>
+                  @if (statBonus(entry[1]) > 0) {
+                    <span class="stat-bonus">+{{ statBonus(entry[1]) }}</span>
+                  }
+                </div>
+              </div>
+            }
+            <div class="derived-stats">
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('spell_power_label') }}</span><span class="derived-value">{{ charSvc.spellPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('spell_crit_label') }}</span><span class="derived-value">{{ charSvc.spellCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('attack_power_label') }}</span><span class="derived-value">{{ charSvc.attackPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('melee_crit_label') }}</span><span class="derived-value">{{ charSvc.meleeCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('mana_regen_label') }}</span><span class="derived-value">{{ charSvc.manaRegen() }}/5s</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('armor_phys') }}</span><span class="derived-value">{{ charSvc.armorTotal() }} (-{{ charSvc.physReduction() }}%)</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('armor_magic') }}</span><span class="derived-value">{{ charSvc.magicResistTotal() }} (-{{ charSvc.magicReduction() }}%)</span></div>
+              @if (charSvc.evasion() > 5) {
+                <div class="derived-row"><span class="derived-label">{{ trSvc.t('evasion') }}</span><span class="derived-value">{{ charSvc.evasion() }}%</span></div>
+              }
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showStatsModal.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showEquipment()) {
+      <div class="modal-overlay" (click)="showEquipment.set(false)">
+        <div class="modal-content equip-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">{{ trSvc.t('equipment') }}</div>
+          <div class="equip-modal-body">
+            @for (slot of visibleEquipmentSlots(); track slot.key) {
+              <div class="equip-slot">
+                <div class="equip-slot-header">
+                  <span class="equip-slot-icon">{{ slot.icon }}</span>
+                  <span class="equip-slot-label">{{ slot.label }}</span>
+                </div>
+                <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
+                       class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
+                <div class="equip-bonus-grid">
+                  @for (entry of statEntries; track entry[1]) {
+                    <div class="equip-bonus-cell">
+                      <span class="equip-bonus-label">{{ STAT_ICONS[entry[1]] }}</span>
+                      <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
+                             (input)="onEquipBonusInput($event, slot.key, entry[1])"
+                             class="equip-bonus-input" min="0" placeholder="0">
+                    </div>
+                  }
+                </div>
+                @if (slot.extraFields) {
+                  <div class="equip-extra-fields">
+                    @for (field of slot.extraFields; track field.key) {
+                      <div class="equip-bonus-cell">
+                        <span class="equip-bonus-label">{{ field.icon }}</span>
+                        <span class="equip-extra-label">{{ field.label }}</span>
+                        <input type="number" [value]="getEquipExtra(slot.key, field.key)"
+                               (input)="onEquipExtraInput($event, slot.key, field.key)"
+                               class="equip-bonus-input" min="0" placeholder="0">
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showEquipment.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showExportModal()) {
+      <div class="modal-overlay" (click)="showExportModal.set(false)">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-title">{{ trSvc.t('export_sheet') }}</div>
+          <textarea class="modal-textarea" readonly [value]="exportedJson()"></textarea>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="copyJson()">{{ trSvc.t('copy') }}</button>
+            <button class="action-btn" (click)="downloadJson()">{{ trSvc.t('download') }}</button>
+            <button class="action-btn" (click)="showExportModal.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTalentModal()) {
+      <div class="modal-overlay" (click)="showTalentModal.set(false)">
+        <div class="modal-content talent-modal" (click)="$event.stopPropagation()">
+          <div class="talent-modal-header">
+            <div class="modal-title">{{ trSvc.t('talent_tree') }} — {{ charSvc.classConfig().name }}</div>
+            <div class="tp-badge" [class.has-points]="charSvc.availableTalentPoints() > 0">
+              <span>{{ trSvc.t('available_pts') }}</span>
+              <span class="tp-value">{{ charSvc.availableTalentPoints() }}</span>
+            </div>
+          </div>
+          <div class="talent-modal-layout">
+            <div class="talent-modal-tree">
+              <div class="wow-talent-list">
+                @for (tier of charSvc.tiers(); track tier) {
+                  <div class="wow-tier-row" [class.tier-locked]="!charSvc.tierUnlocked(tier)">
+                    <div class="wow-tier-label">
+                      {{ charSvc.tierLabel(tier) }}
+                      @if (!charSvc.tierUnlocked(tier)) {
+                        <span class="tier-lock-hint"> (requires 5 in tier {{ tier - 1 }})</span>
+                      }
+                    </div>
+                    <div class="wow-tier-nodes">
+                      @for (talent of charSvc.talentsByTier(tier); track talent.id) {
+                        <div class="wow-node" [class]="charSvc.talentNodeClass(talent)"
+                             (click)="charSvc.addTalentPoint(talent.id)"
+                             (contextmenu)="onTalentRightClick($event, talent.id)"
+                             (mouseenter)="hoveredTalent.set(talent)"
+                             (mouseleave)="hoveredTalent.set(null)">
+                          <div class="wow-node-icon">
+                            @if (talent.iconImg) {
+                              <img [src]="talent.iconImg" (error)="onTalentImgError($event)">
+                              <span style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:28px;">{{ talent.icon }}</span>
+                            } @else {
+                              <span class="wow-node-emoji">{{ talent.icon }}</span>
+                            }
+                            <span class="wow-node-rank">{{ charSvc.talentRank(talent.id) }}/{{ talent.maxRank }}</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="talent-info-panel">
+              @if (hoveredTalent()) {
+                <div class="talent-info-name">{{ hoveredTalent().name }}</div>
+                <div class="talent-info-rank">{{ trSvc.t('rank') }} {{ charSvc.talentRank(hoveredTalent().id) }} {{ trSvc.t('of') }} {{ hoveredTalent().maxRank }}</div>
+                <div class="talent-info-desc">{{ trSvc.tTalentDesc(hoveredTalent().id, hoveredTalent().description, charSvc.character().classKey) }}</div>
+                @if (charSvc.getTalentEffectText(hoveredTalent().id)) {
+                  <div class="talent-info-effect">{{ charSvc.getTalentEffectText(hoveredTalent().id) }}</div>
+                }
+                @if (hoveredTalent().requires) {
+                  <div class="talent-info-req">
+                    Requiere: {{ getTalentName(hoveredTalent().requires.id) }} ({{ hoveredTalent().requires.points }} pts)
+                    <span [style.color]="charSvc.prereqMet(hoveredTalent()) ? 'var(--success)' : 'var(--danger)'">
+                      {{ charSvc.prereqMet(hoveredTalent()) ? '✓' : '✗' }}
+                    </span>
+                  </div>
+                }
+                <div class="talent-info-hint">{{ trSvc.t('click_add_right_remove') }}</div>
+              } @else {
+                <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
+              }
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="action-btn danger" (click)="resetTalents()">{{ trSvc.t('reset_talents') }}</button>
+            <button class="action-btn" (click)="showTalentModal.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (charSvc.toastMessage()) {
+      <div class="toast">{{ charSvc.toastMessage() }}</div>
+    }
+    @if (incomingMasterMsg()) {
+      <div class="toast master-msg">{{ incomingMasterMsg() }}</div>
+    }
+    @if (charSvc.petSwapWarning()) {
+      <div class="pet-swap-warning">
+        <span>⚠️ Cambiar de pet? {{ charSvc.petSwapWarning() }}</span>
+        <button class="pet-swap-confirm" (click)="charSvc.confirmPetSwap()">{{ trSvc.t('yes_btn') }}</button>
+        <button class="pet-swap-cancel" (click)="charSvc.cancelPetSwap()">{{ trSvc.t('no_btn') }}</button>
+      </div>
+    }
