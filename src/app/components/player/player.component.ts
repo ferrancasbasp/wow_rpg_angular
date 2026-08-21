@@ -2297,6 +2297,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
       return;
     }
+
+    if (ability.spendsShards) {
+      const shardCost = ability.shardCost || 3;
+      if (this.charSvc.getShards() < shardCost) {
+        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
+        return;
+      }
+    }
+
     this.charSvc.useAction(actionCost);
 
     let unyieldingText = '';
@@ -2366,16 +2375,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
-      const shards = this.charSvc.getShards();
-      if (shards < shardCost) {
-        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
-        const resourceMax = this.charSvc.resourceMax();
-        this.charSvc.character.update(c => ({
-          ...c,
-          currentMana: Math.min(resourceMax, (c.currentMana || 0) + (ability.scaledCost || 0)),
-        }));
-        return;
-      }
       this.charSvc.spendShards(shardCost);
     }
 
