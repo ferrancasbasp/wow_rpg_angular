@@ -2717,6 +2717,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
       return;
     }
+
+    if (ability.spendsShards) {
+      const shardCost = ability.shardCost || 3;
+      if (this.charSvc.getShards() < shardCost) {
+        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
+        return;
+      }
+    }
+
     this.charSvc.useAction(actionCost);
 
     if (isRage) {
@@ -2784,6 +2793,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
     } else if (ability.isPetSummon) {
+      if (ability.spendsShards) {
+        this.charSvc.spendShards(ability.shardCost || 1);
+      }
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
