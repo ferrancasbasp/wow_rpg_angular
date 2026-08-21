@@ -2540,7 +2540,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.isHot) {
       let lunarText = '';
       const lhRank = this.charSvc.talentRank('lunar_healing');
-      if (lhRank > 0 && Math.random() * 100 < lhRank * 6) {
+      if (lhRank > 0 && Math.random() * 100 < lhRank * 10) {
         const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
         this.charSvc.character.update(c => ({
           ...c,
@@ -2586,7 +2586,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       let lunarText = '';
       const lhRank = this.charSvc.talentRank('lunar_healing');
-      if (lhRank > 0 && Math.random() * 100 < lhRank * 6) {
+      if (lhRank > 0 && Math.random() * 100 < lhRank * 10) {
         const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
         this.charSvc.character.update(c => ({
           ...c,
