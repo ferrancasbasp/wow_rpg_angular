@@ -77,6 +77,7 @@ export interface Ability {
   spendsNotes?: boolean;
   generatesShard?: number;
   spendsShards?: boolean;
+  shardCost?: number;
   modulateNotes?: number;
   restoresManaPct?: number;
   isDot?: boolean;

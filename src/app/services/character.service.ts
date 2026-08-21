@@ -98,6 +98,14 @@ export class CharacterService {
     const virtuoso = this.talentRank('virtuoso');
     if (virtuoso > 0) sp = Math.round(sp * (1 + virtuoso * 0.05));
     sp += this.effectStatBonus('spellPower');
+    const effects = this.character().activeEffects;
+    if (effects) {
+      for (const eff of effects) {
+        if (eff.type === 'buff' && eff.target === 'spellPower' && eff.isPercent) {
+          sp = Math.round(sp * (1 + eff.value / 100));
+        }
+      }
+    }
     return sp;
   });
 

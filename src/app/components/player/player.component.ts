@@ -2256,9 +2256,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     if (ability.spendsShards) {
+      const shardCost = ability.shardCost || 3;
       const shards = this.charSvc.getShards();
-      if (shards < 3) {
-        this.charSvc.showToast('Necesitas 3 Soul Shards');
+      if (shards < shardCost) {
+        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
         const resourceMax = this.charSvc.resourceMax();
         this.charSvc.character.update(c => ({
           ...c,
@@ -2266,7 +2267,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         return;
       }
-      this.charSvc.spendShards(3);
+      this.charSvc.spendShards(shardCost);
     }
 
     if (ability.spendsNotes) {
@@ -2384,7 +2385,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       shardText = ' · +' + ability.generatesShard + ' 🔮 (' + this.charSvc.getShards() + '/10)';
     }
     if (ability.spendsShards) {
-      shardText = ' · 3 🔮 consumidos';
+      const shardCost = ability.shardCost || 3;
+      shardText = ' · ' + shardCost + ' 🔮 consumidos';
     }
 
     let noteText = '';
@@ -2636,12 +2638,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentHP: Math.max(1, hpActual - healthLost),
       }));
       if (ability.rageGain && isRage) {
-        const rageGain = this.charSvc.getEffectiveRageGain(ability);
+        const rageGain = this.charSvc.getEffectiveRageGen(ability);
         this.charSvc.character.update(c => ({
           ...c,
           currentRage: Math.min(resourceMax, (c.currentRage || 0) + rageGain),
         }));
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida · +' + rageGain + ' ira');
+      } else if (ability.restoresManaPct) {
+        const manaGained = Math.round(this.charSvc.maxMana() * ability.restoresManaPct);
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGained),
+        }));
+        this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
       } else {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
@@ -2728,7 +2737,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(ability.name + ': Lanzado');
     }
 
-    if (ability.restoresManaPct) {
+    if (ability.restoresManaPct && !ability.healthCostPct) {
       let restorePct = ability.restoresManaPct;
       const efRank = this.charSvc.talentRank('extended_fermata');
       if (efRank > 0) restorePct += efRank * 0.05;
