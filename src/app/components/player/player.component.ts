@@ -285,13 +285,19 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                    @if (ability.isHot) {
                      <span class="ability-stat heal">{{ ability.hotTick }}/t · {{ ability.hotDuration }}t</span>
                    }
-                   @if (charSvc.resourceConfig().type === 'rage') {
-                     <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
-                   } @else if (charSvc.resourceConfig().type === 'energy') {
-                     <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
-                   } @else {
-                     <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                   }
+                    @if (charSvc.resourceConfig().type === 'rage') {
+                      <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
+                    } @else if (charSvc.resourceConfig().type === 'energy') {
+                      <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
+                    } @else {
+                      <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                    }
+                    @if (ability.generatesShard) {
+                      <span class="ability-stat shard-gen">+{{ ability.generatesShard }}💎</span>
+                    }
+                    @if (ability.spendsShards) {
+                      <span class="ability-stat shard-cost">-{{ ability.shardCost || 3 }}💎</span>
+                    }
                  </div>
                </div>
                <div class="ability-cast-col">
@@ -1089,6 +1095,8 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .ability-stat.heal { color: var(--success); }
     .ability-stat.cost { color: var(--mana); }
     .ability-stat.bonus { color: var(--gold); font-size: 10px; }
+    .ability-stat.shard-gen { color: #b347ff; }
+    .ability-stat.shard-cost { color: #ff6b6b; }
 
     .ability-card.ability-locked { opacity: 0.5; }
 
@@ -2579,9 +2587,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       }
       this.charSvc.turnDamage.update(d => d + roll);
+      let lifestealText = '';
+      if (ability.lifestealPct) {
+        const heal = Math.round(roll * ability.lifestealPct);
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + heal),
+        }));
+        lifestealText = ' · +' + heal + ' vida';
+      }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + lifestealText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

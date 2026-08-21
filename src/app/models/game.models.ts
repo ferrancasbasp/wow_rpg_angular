@@ -127,6 +127,7 @@ export interface Ability {
   isPetSummon?: string;
   petAbility?: string;
   destroysPet?: boolean;
+  lifestealPct?: number;
 }
 
 export interface Talent {
