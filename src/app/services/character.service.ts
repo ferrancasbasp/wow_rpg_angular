@@ -728,7 +728,7 @@ export class CharacterService {
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 2}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
-      beligerance: `Basic Attack: +${rank * 7}% Smite como sagrado`,
+      beligerance: `Basic Attack: +${rank * 20}% Espiritu como danyo`,
       evangelism: `Swap holy/shadow: +${rank * 3}% siguiente spell`,
       improved_shield: `PW: Shield: +${rank * 10}% absorción`,
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,

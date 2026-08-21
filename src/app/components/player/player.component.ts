@@ -2641,12 +2641,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
         const belRank = this.charSvc.talentRank('beligerance');
         if (belRank > 0) {
-          const smite = this.charSvc.classConfig().abilities.find(a => a.id === 'smite');
-          if (smite && ability.currentMin) {
-            const smiteAvg = (ability.currentMin + ability.currentMax) / 2;
-            const holyDmg = Math.round(smiteAvg * belRank * 0.07);
-            roll += holyDmg;
-          }
+          const spirit = this.charSvc.character().espiritu || 0;
+          const spiritDmg = Math.round(spirit * belRank * 0.20);
+          roll += spiritDmg;
         }
         const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
         if (ebaRank > 0 && isEnergy) {
