@@ -4,7 +4,7 @@ export const WARLOCK: CharacterClass = {
   name: 'Warlock',
   color: '#8B2DF0',
   icon: '😈',
-  iconImg: '',
+  iconImg: 'img/classes/warlock.jpg',
 
   formulas: {
     hp: (s, lvl) => 30 + s.aguante * 9 + lvl * 5,
