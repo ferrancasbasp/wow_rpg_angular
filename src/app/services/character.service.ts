@@ -137,6 +137,7 @@ export class CharacterService {
   readonly evasion = computed<number>(() => {
     let total = 5;
     total += this.effectStatBonus('evasion');
+    total += this.talentRank('quick_fingers') * 2;
     return Math.min(95, total);
   });
 
@@ -311,11 +312,6 @@ export class CharacterService {
       if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.03);
-      if (ability.generatesNote && this.character().classKey === 'bard') {
-        const qf = this.talentRank('quick_fingers');
-        if (qf > 0) cost *= (1 - qf * 0.04);
-      }
-
       if (ability.id === 'wrath') {
         const iw = this.talentRank('improved_wrath');
         if (iw > 0) { value *= (1 + iw * 0.03); talentNotes.push(`+${iw * 3}% Imp Wrath`); }
@@ -747,7 +743,7 @@ export class CharacterService {
       equinox: `Fases Lunares: +${rank * 15}% daño bonus`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
       virtuoso: `Poder de hechizo: +${rank * 5}%`,
-      quick_fingers: `Coste generadores: −${rank * 4}%`,
+      quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
       harmonic_series: `Prob. nota +1 tono: ${rank * 5}%`,
       improved_vivace: `Vivace: +${rank * 10}% curación`,

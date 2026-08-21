@@ -36,7 +36,7 @@ export const BARD: CharacterClass = {
 
   talents: [
     { id: 'virtuoso', name: 'Virtuoso', icon: '🎻', iconImg: '', description: 'Aumenta tu poder de hechizo un 5% por punto.', maxRank: 5, tier: 1, requires: null, branch: 0 },
-    { id: 'quick_fingers', name: 'Quick Fingers', icon: '✋', iconImg: '', description: 'Reduce el coste de maná de los generadores un 4% por punto.', maxRank: 5, tier: 1, requires: null, branch: 0 },
+    { id: 'quick_fingers', name: 'Quick Fingers', icon: '✋', iconImg: '', description: 'Aumenta tu probabilidad de esquivar un 2% por punto.', maxRank: 5, tier: 1, requires: null, branch: 0 },
     { id: 'resonance', name: 'Resonance', icon: '🔔', iconImg: '', description: 'Aumenta la curación de todas tus habilidades un 5% por punto.', maxRank: 5, tier: 1, requires: null, branch: 1 },
     { id: 'harmonic_series', name: 'Harmonic Series', icon: '📈', iconImg: '', description: '5% de probabilidad por punto de generar una nota un tono mas alta de lo normal.', maxRank: 3, tier: 2, requires: null, branch: 0 },
     { id: 'improved_vivace', name: 'Improved Vivace', icon: '✨', iconImg: '', description: 'Aumenta la curacion de Vivace un 10% por punto.', maxRank: 3, tier: 2, requires: null, branch: 1 },
