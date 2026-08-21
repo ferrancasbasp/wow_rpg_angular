@@ -1092,7 +1092,41 @@ export class CharacterService {
     return Math.round((this.petMana() / max) * 100);
   });
 
+  readonly petSwapWarning = signal<string | null>(null);
+
   summonPet(petId: string) {
+    const cls = this.classConfig();
+    if (!cls.pets) return;
+    const pet = cls.pets.find(p => p.id === petId);
+    if (!pet) return;
+    const currentPet = this.character().activePet;
+    if (currentPet && currentPet.petId !== petId) {
+      const currentPetData = cls.pets.find(p => p.id === currentPet.petId);
+      this.petSwapWarning.set((currentPetData?.name || 'Pet') + ' → ' + pet.name);
+      this.pendingPetSwap.set(petId);
+      return;
+    }
+    this.doSummonPet(petId);
+  }
+
+  pendingPetSwap = signal<string | null>(null);
+
+  confirmPetSwap() {
+    const pending = this.pendingPetSwap();
+    if (pending) {
+      this.petSwapWarning.set(null);
+      this.pendingPetSwap.set(null);
+      this.dismissPet();
+      this.doSummonPet(pending);
+    }
+  }
+
+  cancelPetSwap() {
+    this.petSwapWarning.set(null);
+    this.pendingPetSwap.set(null);
+  }
+
+  private doSummonPet(petId: string) {
     const cls = this.classConfig();
     if (!cls.pets) return;
     const pet = cls.pets.find(p => p.id === petId);
@@ -1228,18 +1262,36 @@ export class CharacterService {
       } : null,
     }));
     if (ability.buff && ability.currentBuffValue) {
-      this.character.update(c => ({
-        ...c,
-        activeEffects: [...(c.activeEffects || []), {
-          id: Date.now(),
-          type: 'buff',
-          name: ability.name,
-          target: ability.currentBuffStat,
-          value: ability.currentBuffValue,
-          duration: ability.currentBuffDuration,
-          isPercent: false,
-        }],
-      }));
+      if (ability.currentBuffStat === 'shield') {
+        this.character.update(c => ({
+          ...c,
+          activeEffects: [...(c.activeEffects || []), {
+            id: Date.now(),
+            type: 'buff',
+            name: ability.name,
+            target: 'shield',
+            value: ability.currentBuffValue,
+            duration: ability.currentBuffDuration,
+            isPercent: false,
+          }],
+        }));
+      } else {
+        this.character.update(c => ({
+          ...c,
+          activeEffects: [...(c.activeEffects || []), {
+            id: Date.now(),
+            type: 'buff',
+            name: ability.name,
+            target: ability.currentBuffStat,
+            value: ability.currentBuffValue,
+            duration: ability.currentBuffDuration,
+            isPercent: false,
+          }],
+        }));
+      }
+    }
+    if (ability.destroysPet) {
+      this.dismissPet();
     }
     return true;
   }

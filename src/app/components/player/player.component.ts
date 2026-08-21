@@ -579,6 +579,13 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @if (incomingMasterMsg()) {
       <div class="toast master-msg">{{ incomingMasterMsg() }}</div>
     }
+    @if (charSvc.petSwapWarning()) {
+      <div class="pet-swap-warning">
+        <span>⚠️ Cambiar de pet? {{ charSvc.petSwapWarning() }}</span>
+        <button class="pet-swap-confirm" (click)="charSvc.confirmPetSwap()">Si</button>
+        <button class="pet-swap-cancel" (click)="charSvc.cancelPetSwap()">No</button>
+      </div>
+    }
   `,
   styles: [`
     :host {
@@ -1242,6 +1249,23 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       border-color: #b8860b;
       bottom: 70px;
     }
+    .pet-swap-warning {
+      position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+      padding: 14px 20px; background: linear-gradient(135deg, #2a0a0a, #3a1515);
+      border: 2px solid #c0392b; border-radius: var(--radius);
+      color: #ffcc66; font-family: 'Cinzel', serif; font-size: 13px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 0 12px rgba(192, 57, 43, 0.3);
+      z-index: 210; animation: toast-in 0.3s ease;
+    }
+    .pet-swap-confirm, .pet-swap-cancel {
+      padding: 4px 12px; border: 1px solid var(--gold-dark); border-radius: 4px;
+      background: var(--bg-input); color: var(--gold-light); cursor: pointer;
+      font-family: 'Cinzel', serif; font-size: 12px;
+    }
+    .pet-swap-confirm { border-color: #c0392b; color: #ff7070; }
+    .pet-swap-confirm:hover { background: #c0392b; color: #fff; }
+    .pet-swap-cancel:hover { background: var(--gold-dark); color: #fff; }
 
     .resource-section {
       flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;
@@ -1916,10 +1940,33 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.partyBuff) {
         this.charSvc.sendBuffEvent(ability);
       }
-      this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
-        ' +' + ability.currentBuffValue + ' (' + ability.currentBuffDuration + 't) — enviado al Master'
-      );
+      if (ability.id === 'shadow_kiss') {
+        const rank = ability.currentRank || 1;
+        const dmg = ability.currentBuffValue || 40;
+        this.charSvc.addTurnDamage(dmg);
+        this.firebase.pushData('damageEvents', {
+          player: this.charSvc.character().name || 'Jugador',
+          ability: ability.name,
+          rank: rank,
+          damage: dmg,
+          damageType: 'magical',
+          aoe: false,
+          effects: ability.inflictsEffects || null,
+          turn: this.charSvc.turnNumber(),
+          timestamp: Date.now(),
+          assigned: false,
+        });
+        this.charSvc.showToast(
+          ability.name + ' R' + rank + ': ' + dmg + ' danyo oscuro — enviado al Master'
+        );
+      } else if (ability.currentBuffValue) {
+        this.charSvc.showToast(
+          ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
+          ' +' + ability.currentBuffValue + ' (' + ability.currentBuffDuration + 't) — enviado al Master'
+        );
+      } else {
+        this.charSvc.showToast(ability.name + ' — Lanzado');
+      }
     }
   }
 
