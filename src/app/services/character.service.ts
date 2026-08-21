@@ -95,8 +95,6 @@ export class CharacterService {
     if (balanceOfNature > 0) {
       sp += Math.round(this.finalStats().espiritu * 0.10 * balanceOfNature);
     }
-    const virtuoso = this.talentRank('virtuoso');
-    if (virtuoso > 0) sp = Math.round(sp * (1 + virtuoso * 0.05));
     sp += this.effectStatBonus('spellPower');
     const effects = this.character().activeEffects;
     if (effects) {
@@ -312,6 +310,14 @@ export class CharacterService {
       if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.03);
+      if (ability.id === 'staccato') {
+        const isRank = this.talentRank('improved_staccato');
+        if (isRank > 0) {
+          value *= (1 + isRank * 0.05);
+          cost *= (1 - isRank * 0.10);
+          talentNotes.push(`+${isRank * 5}% Imp Staccato`);
+        }
+      }
       if (ability.id === 'wrath') {
         const iw = this.talentRank('improved_wrath');
         if (iw > 0) { value *= (1 + iw * 0.03); talentNotes.push(`+${iw * 3}% Imp Wrath`); }
@@ -742,7 +748,7 @@ export class CharacterService {
       balance_of_nature: `Poder de hechizo: +${rank * 10}% Espíritu`,
       equinox: `Fases Lunares: +${rank * 15}% daño bonus`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
-      virtuoso: `Poder de hechizo: +${rank * 5}%`,
+      improved_staccato: `Staccato: +${rank * 5}% danyo, −${rank * 10}% mana`,
       quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
       harmonic_series: `Prob. nota +1 tono: ${rank * 5}%`,
