@@ -321,11 +321,11 @@ export const WARLOCK: CharacterClass = {
       costPct: 0,
       castType: 'instant',
       cooldown: 3,
-      description: 'La succubo lanza un beso oscuro que causa danyo y aplica un debuff al objetivo. Cuesta mana de la pet.',
+      description: 'La succubo lanza un beso oscuro que causa danyo y reduce el danyo del objetivo un 15% durante 2 turnos. Cuesta mana de la pet.',
       petAbility: 'succubus',
       buff: null,
       buffRanks: [{ rank: 1, level: 16, value: 40, costPct: 0 }, { rank: 2, level: 22, value: 60, costPct: 0 }],
-      inflictsEffects: [{ type: 'debuff', name: 'Seduction', stat: 'damage', value: 0.15, duration: 2, debuffType: 'magic' }],
+      inflictsEffects: [{ type: 'debuff', name: 'Seduction', stat: 'damage', value: 15, duration: 2, debuffType: 'magic' }],
     },
   ],
 
