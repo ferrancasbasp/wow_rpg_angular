@@ -237,10 +237,9 @@ export const WARLOCK: CharacterClass = {
       castType: 'instant',
       cooldown: 0,
       noGcd: true,
-      description: 'Sacrifica 12% de vida maxima para recuperar 25% de mana maximo. No gasta accion.',
+      description: 'Sacrifica vida para recuperar mana. No gasta accion.',
       buff: null,
-      healthCostPct: 0.12,
-      restoresManaPct: 0.25,
+      buffRanks: [{ rank: 1, level: 2, value: 40, costPct: 0 }, { rank: 2, level: 10, value: 80, costPct: 0 }, { rank: 3, level: 18, value: 140, costPct: 0 }, { rank: 4, level: 24, value: 200, costPct: 0 }],
     },
     {
       id: 'healthstone',

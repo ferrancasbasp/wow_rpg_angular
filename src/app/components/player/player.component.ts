@@ -2787,6 +2787,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
+    } else if (ability.id === 'life_tap') {
+      const manaGained = ability.currentBuffValue;
+      const healthLost = Math.round(manaGained * 0.5);
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentHP: Math.max(1, (c.currentHP || 0) - healthLost),
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGained),
+      }));
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
       let sndComboSpent = 0;
       if (ability.id === 'slice_and_dice') {
