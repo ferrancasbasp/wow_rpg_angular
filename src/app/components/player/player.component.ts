@@ -34,7 +34,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             }
           </div>
           <div class="header-info">
-            <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" placeholder="Nombre">
+            <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" [placeholder]="trSvc.t('nombre')">
             <div class="char-meta">
               <span class="level-display">Nv {{ charSvc.character().level }}</span>
               <button class="debug-lvl-btn" (click)="instantLevel25()" title="Debug: subir a nivel 25">⚡25</button>
@@ -189,15 +189,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         }
         <div class="turn-damage-box">
-          <span class="turn-damage-label">Dano del Turno</span>
+          <span class="turn-damage-label">{{ trSvc.t('danyo') }} {{ trSvc.t('turno_actual') }}</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
         <div class="turn-btn-row">
-          <button class="action-btn end-turn-btn" (click)="endTurn()">Fin de Turno ({{ charSvc.turnNumber() }})</button>
+          <button class="action-btn end-turn-btn" (click)="endTurn()">{{ trSvc.t('finalizar_turno') }} ({{ charSvc.turnNumber() }})</button>
           <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
         </div>
         <div class="action-slots-row">
-          <span class="action-slots-label">Acciones</span>
+          <span class="action-slots-label">{{ trSvc.t('acciones') }}</span>
           <div class="action-slots">
             @for (n of actionSlotArray(); track n) {
               <div class="action-slot" [class.spent]="n <= charSvc.actionsUsed()" [class.snD]="n === 3 && charSvc.maxActions() === 3">
@@ -219,7 +219,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
     <div class="effects-section">
       <div class="effects-header">
-        <span class="effects-title">Efectos Activos</span>
+        <span class="effects-title">{{ trSvc.t('efectos') }}</span>
         @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
           <span class="effects-count">{{ charSvc.character().activeEffects.length }}</span>
         }
@@ -241,7 +241,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             }
           </div>
         } @else {
-          <div class="effects-empty">Sin efectos activos</div>
+          <div class="effects-empty">{{ trSvc.t('no_active_effects') }}</div>
         }
       </div>
     </div>
@@ -327,12 +327,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
           @if (charSvc.trainableAbilities().length > 0) {
             <div class="locked-abilities-section">
-              <div class="locked-abilities-title">Disponibles para entrenar</div>
+              <div class="locked-abilities-title">{{ trSvc.t('available_train') }}</div>
               @for (ability of charSvc.trainableAbilities(); track ability.id) {
                 <div class="locked-ability trainable">
                   <span class="locked-ability-icon">{{ ability.icon }}</span>
                   <span class="locked-ability-name">{{ ability.name }}</span>
-                  <span class="locked-ability-req">Rango {{ charSvc.trainedRank(ability.id) + 1 }} → {{ charSvc.maxAvailableRank(ability) }}</span>
+                  <span class="locked-ability-req">{{ trSvc.t('rank') }} {{ charSvc.trainedRank(ability.id) + 1 }} → {{ charSvc.maxAvailableRank(ability) }}</span>
                 </div>
               }
             </div>
@@ -340,12 +340,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
           @if (lockedAbilities().length > 0) {
             <div class="locked-abilities-section">
-              <div class="locked-abilities-title">Bloqueadas (nivel insuficiente)</div>
+              <div class="locked-abilities-title">{{ trSvc.t('locked_level') }}</div>
               @for (ability of lockedAbilities(); track ability.id) {
                 <div class="locked-ability">
                   <span class="locked-ability-icon">{{ ability.icon }}</span>
                   <span class="locked-ability-name">{{ ability.name }}</span>
-                  <span class="locked-ability-req">Nivel {{ ability.requiredLevel }}</span>
+                  <span class="locked-ability-req">{{ trSvc.t('level') }} {{ ability.requiredLevel }}</span>
                 </div>
               }
             </div>
@@ -355,7 +355,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
 
       @if (charSvc.unlockedUtility().length > 0) {
         <div class="wow-panel">
-          <div class="panel-title">Utilidad</div>
+          <div class="panel-title">{{ trSvc.t('utility') }}</div>
           <div class="panel-body">
             <div class="ability-grid">
             @for (ability of charSvc.unlockedUtility(); track ability.id) {
@@ -410,16 +410,16 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     </div>
 
     <div class="action-bar">
-      <button class="action-btn" (click)="saveChar()">Guardar</button>
-      <button class="action-btn" (click)="loadChar()">Cargar</button>
-      <button class="action-btn" (click)="openExport()">Exportar JSON</button>
-      <button class="action-btn danger" (click)="resetCharacter()">Reiniciar</button>
+      <button class="action-btn" (click)="saveChar()">{{ trSvc.t('save') }}</button>
+      <button class="action-btn" (click)="loadChar()">{{ trSvc.t('load') }}</button>
+      <button class="action-btn" (click)="openExport()">{{ trSvc.t('export_json') }}</button>
+      <button class="action-btn danger" (click)="resetCharacter()">{{ trSvc.t('reset') }}</button>
     </div>
 
     @if (showStatsModal()) {
       <div class="modal-overlay" (click)="showStatsModal.set(false)">
         <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
-          <div class="modal-title">Atributos</div>
+          <div class="modal-title">{{ trSvc.t('attributes') }}</div>
           <div class="stats-modal-body">
             @for (entry of statEntries; track entry[1]) {
               <div class="stat-row">
@@ -440,20 +440,20 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               </div>
             }
             <div class="derived-stats">
-              <div class="derived-row"><span class="derived-label">Poder de Hechizo</span><span class="derived-value">{{ charSvc.spellPower() }}</span></div>
-              <div class="derived-row"><span class="derived-label">Prob. Critico Hechizo</span><span class="derived-value">{{ charSvc.spellCrit() }}%</span></div>
-              <div class="derived-row"><span class="derived-label">Poder de Ataque</span><span class="derived-value">{{ charSvc.attackPower() }}</span></div>
-              <div class="derived-row"><span class="derived-label">Prob. Critico Fisico</span><span class="derived-value">{{ charSvc.meleeCrit() }}%</span></div>
-              <div class="derived-row"><span class="derived-label">Regen. de Mana</span><span class="derived-value">{{ charSvc.manaRegen() }}/5s</span></div>
-              <div class="derived-row"><span class="derived-label">Armadura Fisica</span><span class="derived-value">{{ charSvc.armorTotal() }} (-{{ charSvc.physReduction() }}%)</span></div>
-              <div class="derived-row"><span class="derived-label">Armadura Magica</span><span class="derived-value">{{ charSvc.magicResistTotal() }} (-{{ charSvc.magicReduction() }}%)</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('spell_power_label') }}</span><span class="derived-value">{{ charSvc.spellPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('spell_crit_label') }}</span><span class="derived-value">{{ charSvc.spellCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('attack_power_label') }}</span><span class="derived-value">{{ charSvc.attackPower() }}</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('melee_crit_label') }}</span><span class="derived-value">{{ charSvc.meleeCrit() }}%</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('mana_regen_label') }}</span><span class="derived-value">{{ charSvc.manaRegen() }}/5s</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('armor_phys') }}</span><span class="derived-value">{{ charSvc.armorTotal() }} (-{{ charSvc.physReduction() }}%)</span></div>
+              <div class="derived-row"><span class="derived-label">{{ trSvc.t('armor_magic') }}</span><span class="derived-value">{{ charSvc.magicResistTotal() }} (-{{ charSvc.magicReduction() }}%)</span></div>
               @if (charSvc.evasion() > 5) {
-                <div class="derived-row"><span class="derived-label">Evasion</span><span class="derived-value">{{ charSvc.evasion() }}%</span></div>
+                <div class="derived-row"><span class="derived-label">{{ trSvc.t('evasion') }}</span><span class="derived-value">{{ charSvc.evasion() }}%</span></div>
               }
             </div>
           </div>
           <div class="modal-actions">
-            <button class="action-btn" (click)="showStatsModal.set(false)">Cerrar</button>
+            <button class="action-btn" (click)="showStatsModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
@@ -462,7 +462,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @if (showEquipment()) {
       <div class="modal-overlay" (click)="showEquipment.set(false)">
         <div class="modal-content equip-modal" (click)="$event.stopPropagation()">
-          <div class="modal-title">Equipo</div>
+          <div class="modal-title">{{ trSvc.t('equipment') }}</div>
           <div class="equip-modal-body">
             @for (slot of visibleEquipmentSlots(); track slot.key) {
               <div class="equip-slot">
@@ -471,7 +471,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                   <span class="equip-slot-label">{{ slot.label }}</span>
                 </div>
                 <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
-                       class="equip-name-input" placeholder="Sin equipar">
+                       class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
                 <div class="equip-bonus-grid">
                   @for (entry of statEntries; track entry[1]) {
                     <div class="equip-bonus-cell">
@@ -499,7 +499,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             }
           </div>
           <div class="modal-actions">
-            <button class="action-btn" (click)="showEquipment.set(false)">Cerrar</button>
+            <button class="action-btn" (click)="showEquipment.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
@@ -508,12 +508,12 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @if (showExportModal()) {
       <div class="modal-overlay" (click)="showExportModal.set(false)">
         <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-title">Exportar Ficha (JSON)</div>
+          <div class="modal-title">{{ trSvc.t('export_sheet') }}</div>
           <textarea class="modal-textarea" readonly [value]="exportedJson()"></textarea>
           <div class="modal-actions">
-            <button class="action-btn" (click)="copyJson()">Copiar</button>
-            <button class="action-btn" (click)="downloadJson()">Descargar</button>
-            <button class="action-btn" (click)="showExportModal.set(false)">Cerrar</button>
+            <button class="action-btn" (click)="copyJson()">{{ trSvc.t('copy') }}</button>
+            <button class="action-btn" (click)="downloadJson()">{{ trSvc.t('download') }}</button>
+            <button class="action-btn" (click)="showExportModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
@@ -523,9 +523,9 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       <div class="modal-overlay" (click)="showTalentModal.set(false)">
         <div class="modal-content talent-modal" (click)="$event.stopPropagation()">
           <div class="talent-modal-header">
-            <div class="modal-title">Arbol de Talentos — {{ charSvc.classConfig().name }}</div>
+            <div class="modal-title">{{ trSvc.t('talent_tree') }} — {{ charSvc.classConfig().name }}</div>
             <div class="tp-badge" [class.has-points]="charSvc.availableTalentPoints() > 0">
-              <span>Disponibles</span>
+              <span>{{ trSvc.t('available_pts') }}</span>
               <span class="tp-value">{{ charSvc.availableTalentPoints() }}</span>
             </div>
           </div>
@@ -566,7 +566,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
             <div class="talent-info-panel">
               @if (hoveredTalent()) {
                 <div class="talent-info-name">{{ hoveredTalent().name }}</div>
-                <div class="talent-info-rank">Rango {{ charSvc.talentRank(hoveredTalent().id) }} de {{ hoveredTalent().maxRank }}</div>
+                <div class="talent-info-rank">{{ trSvc.t('rank') }} {{ charSvc.talentRank(hoveredTalent().id) }} {{ trSvc.t('of') }} {{ hoveredTalent().maxRank }}</div>
                 <div class="talent-info-desc">{{ hoveredTalent().description }}</div>
                 @if (charSvc.getTalentEffectText(hoveredTalent().id)) {
                   <div class="talent-info-effect">{{ charSvc.getTalentEffectText(hoveredTalent().id) }}</div>
@@ -579,15 +579,15 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                     </span>
                   </div>
                 }
-                <div class="talent-info-hint">Click: anadir · Click derecho: quitar</div>
+                <div class="talent-info-hint">{{ trSvc.t('click_add_right_remove') }}</div>
               } @else {
-                <div class="talent-info-empty">Pasa el raton sobre un talento para ver su informacion.</div>
+                <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
               }
             </div>
           </div>
           <div class="modal-actions">
-            <button class="action-btn danger" (click)="resetTalents()">Resetear Talentos</button>
-            <button class="action-btn" (click)="showTalentModal.set(false)">Cerrar</button>
+            <button class="action-btn danger" (click)="resetTalents()">{{ trSvc.t('reset_talents') }}</button>
+            <button class="action-btn" (click)="showTalentModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
@@ -602,8 +602,8 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     @if (charSvc.petSwapWarning()) {
       <div class="pet-swap-warning">
         <span>⚠️ Cambiar de pet? {{ charSvc.petSwapWarning() }}</span>
-        <button class="pet-swap-confirm" (click)="charSvc.confirmPetSwap()">Si</button>
-        <button class="pet-swap-cancel" (click)="charSvc.cancelPetSwap()">No</button>
+        <button class="pet-swap-confirm" (click)="charSvc.confirmPetSwap()">{{ trSvc.t('yes_btn') }}</button>
+        <button class="pet-swap-cancel" (click)="charSvc.cancelPetSwap()">{{ trSvc.t('no_btn') }}</button>
       </div>
     }
   `,
