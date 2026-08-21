@@ -2645,7 +2645,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
         const belRank = this.charSvc.talentRank('beligerance');
         if (belRank > 0) {
-          const spirit = this.charSvc.character().espiritu || 0;
+          const spirit = this.charSvc.finalStats().espiritu || 0;
           const spiritDmg = Math.round(spirit * belRank * 0.10);
           roll += spiritDmg;
         }
