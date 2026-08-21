@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect } from '../models/game.models';
+import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet } from '../models/game.models';
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, STORAGE_KEY, EQUIPMENT_SLOTS } from '../data/game-data';
@@ -14,6 +14,10 @@ export class CharacterService {
   readonly turnNumber = signal(1);
   readonly turnDamage = signal(0);
   readonly actionsUsed = signal(0);
+
+  addTurnDamage(amount: number) {
+    this.turnDamage.update(n => n + amount);
+  }
 
   maxActions = computed<number>(() => {
     const effects = this.character().activeEffects || [];
@@ -1004,5 +1008,120 @@ export class CharacterService {
         return { ...c };
       });
     }
+  }
+
+  availablePets = computed<Pet[]>(() => {
+    const cls = this.classConfig();
+    if (!cls.pets) return [];
+    return cls.pets.filter(p => this.character().level >= p.requiredLevel);
+  });
+
+  activePetData = computed<Pet | null>(() => {
+    const c = this.character();
+    if (!c.activePet) return null;
+    const cls = this.classConfig();
+    if (!cls.pets) return null;
+    return cls.pets.find(p => p.id === c.activePet!.petId) || null;
+  });
+
+  petMaxHP = computed<number>(() => {
+    const pet = this.activePetData();
+    if (!pet) return 0;
+    return Math.round(this.maxHP() * pet.hpPct);
+  });
+
+  petMaxMana = computed<number>(() => {
+    const pet = this.activePetData();
+    if (!pet) return 0;
+    return Math.round(this.maxMana() * pet.manaPct);
+  });
+
+  petHP = computed<number>(() => {
+    const c = this.character();
+    if (!c.activePet) return 0;
+    return c.activePet.currentHP;
+  });
+
+  petMana = computed<number>(() => {
+    const c = this.character();
+    if (!c.activePet) return 0;
+    return c.activePet.currentMana;
+  });
+
+  petHPPercent = computed<number>(() => {
+    const max = this.petMaxHP();
+    if (max === 0) return 0;
+    return Math.round((this.petHP() / max) * 100);
+  });
+
+  petManaPercent = computed<number>(() => {
+    const max = this.petMaxMana();
+    if (max === 0) return 0;
+    return Math.round((this.petMana() / max) * 100);
+  });
+
+  summonPet(petId: string) {
+    const cls = this.classConfig();
+    if (!cls.pets) return;
+    const pet = cls.pets.find(p => p.id === petId);
+    if (!pet) return;
+    this.character.update(c => ({
+      ...c,
+      activePet: {
+        petId,
+        currentHP: Math.round(this.maxHP() * pet.hpPct),
+        currentMana: Math.round(this.maxMana() * pet.manaPct),
+      },
+    }));
+    this.showToast(`${pet.icon} ${pet.name} invocado!`);
+  }
+
+  dismissPet() {
+    this.character.update(c => ({ ...c, activePet: null }));
+    this.showToast('Pet desinvocada');
+  }
+
+  petAttack(): { damage: number; name: string; school: string; manaCost: number } | null {
+    const pet = this.activePetData();
+    const c = this.character();
+    if (!pet || !c.activePet) return null;
+    if (c.activePet.currentMana < Math.round(this.petMaxMana() * pet.manaCostPct)) return null;
+
+    const damage = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
+    const manaCost = Math.round(this.petMaxMana() * pet.manaCostPct);
+
+    this.character.update(ch => ({
+      ...ch,
+      activePet: ch.activePet ? {
+        ...ch.activePet,
+        currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
+      } : null,
+    }));
+
+    return { damage, name: pet.attackName, school: pet.attackSchool, manaCost };
+  }
+
+  petTakeDamage(amount: number) {
+    this.character.update(c => {
+      if (!c.activePet) return c;
+      const newHP = Math.max(0, c.activePet.currentHP - amount);
+      return {
+        ...c,
+        activePet: newHP <= 0 ? null : { ...c.activePet, currentHP: newHP },
+      };
+    });
+  }
+
+  petRest() {
+    const pet = this.activePetData();
+    if (!pet) return;
+    this.character.update(c => ({
+      ...c,
+      activePet: c.activePet ? {
+        ...c.activePet,
+        currentHP: this.petMaxHP(),
+        currentMana: this.petMaxMana(),
+      } : null,
+    }));
   }
 }

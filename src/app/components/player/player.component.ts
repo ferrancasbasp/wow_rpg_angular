@@ -88,6 +88,33 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
         </div>
 
+        @if (charSvc.availablePets().length > 0) {
+          <div class="pet-section">
+            <select class="pet-select" [value]="charSvc.character().activePet?.petId || ''" (change)="onPetChange($event)">
+              <option value="">— Sin pet —</option>
+              @for (pet of charSvc.availablePets(); track pet.id) {
+                <option [value]="pet.id">{{ pet.icon }} {{ pet.name }}</option>
+              }
+            </select>
+            @if (charSvc.activePetData()) {
+              <div class="pet-bars">
+                <div class="pet-info-row">
+                  <span class="pet-icon">{{ charSvc.activePetData()!.icon }}</span>
+                  <span class="pet-name">{{ charSvc.activePetData()!.name }}</span>
+                </div>
+                <div class="resource-track pet-hp-track">
+                  <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
+                  <div class="resource-text pet-text">{{ charSvc.petHP() }}/{{ charSvc.petMaxHP() }}</div>
+                </div>
+                <div class="resource-track pet-mana-track">
+                  <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
+                  <div class="resource-text pet-text">{{ charSvc.petMana() }}/{{ charSvc.petMaxMana() }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
         @if (charSvc.character().classKey === 'bard') {
           <div class="combo-inline combo-bard">
             <span class="combo-label">🎶 Partitura</span>
@@ -1250,6 +1277,58 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     }
     .xp-bottom-bar { margin-top: 20px; }
     .xp-mini-bar { margin-top: 6px; }
+
+    .pet-section {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pet-select {
+      background: var(--bg-input);
+      border: 1px solid rgba(138, 115, 68, 0.4);
+      border-radius: 4px;
+      color: var(--text-main);
+      font-size: 12px;
+      padding: 3px 6px;
+      font-family: 'EB Garamond', serif;
+      cursor: pointer;
+    }
+    .pet-select:focus {
+      outline: none;
+      border-color: var(--gold-light);
+    }
+    .pet-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 4px 6px;
+      background: rgba(139, 45, 240, 0.08);
+      border: 1px solid rgba(139, 45, 240, 0.25);
+      border-radius: 4px;
+    }
+    .pet-info-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pet-icon { font-size: 14px; }
+    .pet-name {
+      font-size: 11px;
+      color: #c79bef;
+      font-family: 'EB Garamond', serif;
+      font-weight: 600;
+    }
+    .pet-hp-track, .pet-mana-track {
+      height: 8px !important;
+      border-radius: 4px;
+    }
+    .pet-text {
+      font-size: 9px !important;
+    }
+    .pet-mana-track .resource-fill.mana {
+      background: linear-gradient(180deg, #5599dd, #3377bb);
+    }
     .xp-mini-track {
       height: 10px;
       background: var(--bg-input);
@@ -1790,6 +1869,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('Clase cambiada a ' + this.charSvc.classConfig().name);
   }
 
+  onPetChange(event: Event) {
+    const petId = (event.target as HTMLSelectElement).value;
+    if (petId) {
+      this.charSvc.summonPet(petId);
+    } else {
+      this.charSvc.dismissPet();
+    }
+  }
+
   addXP(amount: number) {
     if (amount <= 0) return;
     if (this.charSvc.character().level >= MAX_LEVEL) {
@@ -1844,6 +1932,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
     this.processEffects();
+
+    const petAttack = this.charSvc.petAttack();
+    if (petAttack) {
+      this.charSvc.addTurnDamage(petAttack.damage);
+      this.charSvc.showToast(`👹 ${petAttack.name}: ${petAttack.damage} danyo de ${petAttack.school}`);
+    }
+
     this.charSvc.nextTurn();
     const resType = this.charSvc.resourceConfig().type;
     if (resType === 'rage') {
@@ -2624,6 +2719,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.turnNumber.set(1);
     this.charSvc.turnDamage.set(0);
     this.charSvc.actionsUsed.set(0);
+    this.charSvc.petRest();
   }
 
   resetCharacter() {

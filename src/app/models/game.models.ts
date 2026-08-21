@@ -191,6 +191,7 @@ export interface CharacterClass {
   abilities: Ability[];
   stances?: Stance[];
   talentBranches?: TalentBranch[];
+  pets?: Pet[];
 }
 
 export interface EquipmentItem {
@@ -222,6 +223,27 @@ export interface ActiveEffect {
   debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
 }
 
+export interface Pet {
+  id: string;
+  name: string;
+  icon: string;
+  iconImg: string;
+  requiredLevel: number;
+  hpPct: number;
+  manaPct: number;
+  attackName: string;
+  attackMin: number;
+  attackMax: number;
+  attackSchool: string;
+  manaCostPct: number;
+}
+
+export interface ActivePet {
+  petId: string;
+  currentHP: number;
+  currentMana: number;
+}
+
 export interface Character {
   name: string;
   classKey: string;
@@ -239,6 +261,7 @@ export interface Character {
   currentCooldowns: Record<string, number>;
   equipment: Equipment;
   activeEffects: ActiveEffect[];
+  activePet?: ActivePet | null;
 }
 
 export interface EffectType {

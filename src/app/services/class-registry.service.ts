@@ -7,6 +7,7 @@ import { PRIEST } from '../classes/priest';
 import { SHAMAN } from '../classes/shaman';
 import { DRUID } from '../classes/druid';
 import { BARD } from '../classes/bard';
+import { WARLOCK } from '../classes/warlock';
 
 @Injectable({ providedIn: 'root' })
 export class ClassRegistryService {
@@ -18,6 +19,7 @@ export class ClassRegistryService {
     shaman: SHAMAN,
     druid: DRUID,
     bard: BARD,
+    warlock: WARLOCK,
   };
 
   getAll(): Record<string, CharacterClass> {
