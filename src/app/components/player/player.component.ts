@@ -2881,7 +2881,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resourceMax = this.charSvc.resourceMax();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      return { ...c, currentHP: maxHP, comboPoints: 0, soulShards: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
