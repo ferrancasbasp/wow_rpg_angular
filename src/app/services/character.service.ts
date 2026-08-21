@@ -150,8 +150,8 @@ export class CharacterService {
 
   readonly armorTotal = computed<number>(() => {
     let total = this.classConfig().armor || 0;
-    total += this.talentRank('anticipation');
-    if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 2;
+    total += this.talentRank('anticipation') * 2;
+    if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 4;
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -166,7 +166,7 @@ export class CharacterService {
     let total = this.classConfig().magicResist || 0;
     total += this.talentRank('magic_resistance');
     total += this.talentRank('preservation') * 2;
-    total += this.talentRank('anticipation');
+    total += this.talentRank('anticipation') * 2;
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -702,14 +702,14 @@ export class CharacterService {
       clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
       master_of_weapons: `Pasiva: armas 1H + off o 2H equipables`,
       improved_heroic_strike: `Coste Heroic Strike: −${rank} ira`,
-      anticipation: `Armadura física: +${rank}, Armadura mágica: +${rank}`,
+      anticipation: `Armadura física: +${rank * 2}, Armadura mágica: +${rank * 2}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 2} ira`,
       cruelty: `Crítico físico: +${rank}%`,
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida`,
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 5}% AP, −${rank} ira`,
-      improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 2} armor Protection`,
+      improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 4} armor Protection`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis`,
       vitality: `Regen energía: +${rank * 10}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +${rank} energía (+${rank * 2} si crit)`,
