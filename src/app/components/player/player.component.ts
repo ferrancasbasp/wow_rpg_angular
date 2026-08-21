@@ -2518,14 +2518,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsNotes) {
       noteContributionValue = this.charSvc.noteContribution();
       const notes = this.charSvc.getNotes();
-      const ppRank = this.charSvc.talentRank('perfect_pitch');
-      const keepNotes = ppRank > 0 && Math.random() * 100 < ppRank * 10;
-      if (!keepNotes) {
-        this.charSvc.clearNotes();
-        noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
-      } else {
-        noteText = ' · ¡Perfect Pitch! Notas conservadas (×' + noteContributionValue.toFixed(1) + ')';
-      }
+      this.charSvc.clearNotes();
+      noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
       const maestroRank = this.charSvc.talentRank('maestro');
       if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
         this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
@@ -2885,8 +2879,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let buffValue = ability.currentBuffValue;
       if (ability.id === 'da_capo') {
         const contribution = this.charSvc.noteContribution();
-        const grandiosoRank = this.charSvc.talentRank('grandioso');
-        buffValue = Math.round(buffValue * contribution * (1 + grandiosoRank * 0.05));
+        buffValue = Math.round(buffValue * contribution);
       }
       const buffText = '+' + buffValue + ' ' + ability.currentBuffStat +
         ' (' + ability.currentBuffDuration + ' turnos)';
@@ -2955,11 +2948,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsNotes) {
       const notes = this.charSvc.getNotes();
       if (notes.length > 0) {
-        const ppRank = this.charSvc.talentRank('perfect_pitch');
-        const keepNotes = ppRank > 0 && Math.random() * 100 < ppRank * 10;
-        if (!keepNotes) {
-          this.charSvc.clearNotes();
-        }
+        this.charSvc.clearNotes();
         const maestroRank = this.charSvc.talentRank('maestro');
         if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
           this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
@@ -2968,9 +2957,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
     if (ability.inflictsEffects) {
+      const idRank = this.charSvc.talentRank('improved_diminuendo');
       const scaledEffects = ability.inflictsEffects.map((eff: any) => ({
         ...eff,
-        value: ability.currentBuffValue || eff.value,
+        value: ability.id === 'diminuendo' && idRank > 0
+          ? Math.round((ability.currentBuffValue || eff.value) * (1 + idRank * 0.10))
+          : (ability.currentBuffValue || eff.value),
       }));
       this.charSvc.sendDamageEvent({
         ...ability,

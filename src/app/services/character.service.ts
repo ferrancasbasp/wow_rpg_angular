@@ -51,6 +51,10 @@ export class CharacterService {
       result[key] = this.character().baseStats[key] + Math.floor((level - 1) * perLevel);
       result[key] += this.gearStatBonus(key);
       result[key] += this.effectStatBonus(key);
+      if (key === 'agilidad' && this.character().classKey === 'bard') {
+        const ballerino = this.talentRank('ballerino');
+        if (ballerino > 0) result[key] = Math.round(result[key] * (1 + ballerino * 0.02));
+      }
     }
     return result;
   });
@@ -310,6 +314,10 @@ export class CharacterService {
       if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.03);
+      if (ability.type === 'heal' && this.character().classKey === 'bard') {
+        const harmonioso = this.talentRank('harmonioso');
+        if (harmonioso > 0) cost *= (1 - harmonioso * 0.05);
+      }
       if (ability.id === 'staccato') {
         const isRank = this.talentRank('improved_staccato');
         if (isRank > 0) {
@@ -755,8 +763,9 @@ export class CharacterService {
       improved_vivace: `Vivace: +${rank * 10}% curación`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
-      perfect_pitch: `Prob. no gastar notas: ${rank * 10}%`,
-      grandioso: `Da Capo: +${rank * 5}% poder`,
+      improved_diminuendo: `Diminuendo: +${rank * 10}% efectividad`,
+      ballerino: `Agilidad: +${rank * 2}%`,
+      harmonioso: `Curas: −${rank * 5}% mana`,
     };
     return texts[talentId] || '';
   }
