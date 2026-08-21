@@ -2318,6 +2318,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (ability.spendsCombo && (this.charSvc.character().comboPoints || 0) === 0) {
+      this.charSvc.showToast('Sin puntos de combo');
+      return;
+    }
+
     this.charSvc.useAction(actionCost);
 
     let unyieldingText = '';
@@ -2368,16 +2373,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let comboSpent = 0;
     if (ability.spendsCombo) {
       comboSpent = this.charSvc.character().comboPoints || 0;
-      if (comboSpent === 0) {
-        this.charSvc.showToast('Sin puntos de combo');
-        if (isEnergy) {
-          this.charSvc.character.update(c => ({
-            ...c,
-            currentEnergy: Math.min(resourceMax, resourceActual + (ability.costEnergy || 0)),
-          }));
-        }
-        return;
-      }
       const equinoxRank = this.charSvc.talentRank('equinox');
       const fragMult = 1 + equinoxRank * 0.15;
       const aoeMult = ability.aoe ? 0.5 : 1.0;
