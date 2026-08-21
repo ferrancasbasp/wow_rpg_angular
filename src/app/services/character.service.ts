@@ -165,7 +165,7 @@ export class CharacterService {
   readonly magicResistTotal = computed<number>(() => {
     let total = this.classConfig().magicResist || 0;
     total += this.talentRank('magic_resistance');
-    total += this.talentRank('preservation') * 2;
+    total += this.talentRank('preservation') * 5;
     total += this.talentRank('anticipation') * 2;
     const effects = this.character().activeEffects;
     if (effects) {
@@ -734,7 +734,7 @@ export class CharacterService {
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,
       improved_pain: `SW: Pain: +${rank * 10}% daño`,
       holyness: `Regen maná: +${rank * 5}%`,
-      preservation: `Armadura mágica: +${rank * 2}`,
+      preservation: `Armadura mágica: +${rank * 5}`,
       improved_mind_blast: `Mind Blast crit: +${rank * 10}%`,
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
