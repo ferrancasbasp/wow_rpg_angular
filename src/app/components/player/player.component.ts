@@ -119,7 +119,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                     @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
                       <button class="pet-ability-icon-btn"
                               [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
-                              [title]="ab.name + ' — ' + ab.description + ' (' + ab.scaledCost + ' mana pet)'"
+                              [title]="ab.name + ' — ' + trSvc.tDesc(ab.id, ab.description, charSvc.character().classKey) + ' (' + ab.scaledCost + ' mana pet)'"
                               (click)="castPetAbility(ab)">
                         @if (ab.iconImg) {
                           <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
@@ -264,7 +264,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               <div class="ability-icon castable"
                    [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
                    [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
-                   [title]="ability.name + ' — ' + ability.description"
+                   [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                    (click)="castSpell(ability)">
                  @if (ability.iconImg) {
                    <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
@@ -365,7 +365,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                 <div class="ability-icon castable"
                      [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
                      [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
-                     [title]="ability.name + ' — ' + ability.description"
+                     [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                      (click)="castUtility(ability)">
                    @if (ability.iconImg) {
                      <img [src]="ability.iconImg" class="ability-icon-img" (error)="onImgError($event)">
@@ -567,7 +567,7 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
               @if (hoveredTalent()) {
                 <div class="talent-info-name">{{ hoveredTalent().name }}</div>
                 <div class="talent-info-rank">{{ trSvc.t('rank') }} {{ charSvc.talentRank(hoveredTalent().id) }} {{ trSvc.t('of') }} {{ hoveredTalent().maxRank }}</div>
-                <div class="talent-info-desc">{{ hoveredTalent().description }}</div>
+                <div class="talent-info-desc">{{ trSvc.tTalentDesc(hoveredTalent().id, hoveredTalent().description, charSvc.character().classKey) }}</div>
                 @if (charSvc.getTalentEffectText(hoveredTalent().id)) {
                   <div class="talent-info-effect">{{ charSvc.getTalentEffectText(hoveredTalent().id) }}</div>
                 }
@@ -1963,7 +1963,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   changeStance(stance: string) {
     if (this.charSvc.warriorStance() === stance) return;
     if (!this.charSvc.canAct(1)) {
-      this.charSvc.showToast('Sin acciones disponibles para cambiar de estancia.');
+      this.charSvc.showToast(this.trSvc.t('no_actions_stance'));
       return;
     }
     this.charSvc.useAction(1);
@@ -1973,7 +1973,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   changeWeaponMode(mode: string) {
     if (this.charSvc.warriorWeaponMode() === mode) return;
     if (!this.charSvc.canAct(1)) {
-      this.charSvc.showToast('Sin acciones disponibles para cambiar de arma.');
+      this.charSvc.showToast(this.trSvc.t('no_actions_weapon'));
       return;
     }
     this.charSvc.useAction(1);
@@ -1993,12 +1993,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const classKey = (event.target as HTMLSelectElement).value;
     this.charSvc.selectClass(classKey);
     this.charSvc.turnNumber.set(1);
-    this.charSvc.showToast('Clase cambiada a ' + this.charSvc.classConfig().name);
+    this.charSvc.showToast(this.trSvc.t('class_changed') + ' ' + this.charSvc.classConfig().name);
   }
 
   castPetAbility(ability: any) {
     if (!this.charSvc.canAct(1)) {
-      this.charSvc.showToast('Sin acciones disponibles');
+      this.charSvc.showToast(this.trSvc.t('no_actions'));
       return;
     }
     const success = this.charSvc.castPetAbility(ability);
@@ -2040,7 +2040,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ' +' + ability.currentBuffValue + ' (' + ability.currentBuffDuration + 't) — enviado al Master'
         );
       } else {
-        this.charSvc.showToast(ability.name + ' — Lanzado');
+        this.charSvc.showToast(ability.name + ' — ' + this.trSvc.t('cast_spell'));
       }
     }
   }
@@ -2048,7 +2048,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   addXP(amount: number) {
     if (amount <= 0) return;
     if (this.charSvc.character().level >= MAX_LEVEL) {
-      this.charSvc.showToast('Nivel maximo alcanzado');
+      this.charSvc.showToast(this.trSvc.t('max_level'));
       return;
     }
     const char = this.charSvc.character();
@@ -2065,7 +2065,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (levelsGained > 0) {
       this.levelUpFlash.set(true);
       setTimeout(() => this.levelUpFlash.set(false), 800);
-      this.charSvc.showToast('¡Nivel ' + level + '! +' + levelsGained + ' nivel' + (levelsGained > 1 ? 'es' : ''));
+      this.charSvc.showToast(this.trSvc.t('level_up') + ' ' + level + '! +' + levelsGained + ' ' + (levelsGained > 1 ? this.trSvc.t('niveles') : this.trSvc.t('nivel_singular')));
     } else {
       this.charSvc.showToast('+' + amount + ' XP');
     }
@@ -2077,23 +2077,23 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const char = this.charSvc.character();
     const newLevel = Math.min(MAX_LEVEL, char.level + levels);
     if (newLevel === char.level) {
-      this.charSvc.showToast('Nivel maximo alcanzado');
+      this.charSvc.showToast(this.trSvc.t('max_level'));
       return;
     }
     this.charSvc.character.update(c => ({ ...c, level: newLevel, currentXP: 0 }));
     this.levelUpFlash.set(true);
     setTimeout(() => this.levelUpFlash.set(false), 800);
-    this.charSvc.showToast('¡Nivel ' + newLevel + '! +' + levels + ' nivel' + (levels > 1 ? 'es' : ''));
+    this.charSvc.showToast(this.trSvc.t('level_up') + ' ' + newLevel + '! +' + levels + ' ' + (levels > 1 ? this.trSvc.t('niveles') : this.trSvc.t('nivel_singular')));
     this.charSvc.saveToLocalStorage();
   }
 
   moveAction() {
     if (!this.charSvc.canAct(1)) {
-      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
     }
     this.charSvc.useAction(1);
-    this.charSvc.showToast('🥾 Movimiento — 1 accion gastada');
+    this.charSvc.showToast(this.trSvc.t('movement_used'));
   }
 
   endTurn() {
@@ -2121,13 +2121,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.nextTurn();
     const resType = this.charSvc.resourceConfig().type;
     if (resType === 'rage') {
-      this.charSvc.showToast('Fin de turno ' + oldTurn);
+      this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
     } else if (resType === 'energy') {
       const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * 0.10));
-      this.charSvc.showToast('Fin de turno ' + oldTurn + ' · +' + regen + ' energia');
+      this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
     } else {
       const regen = this.charSvc.manaRegen();
-      this.charSvc.showToast('Fin de turno ' + oldTurn + ' · +' + regen + ' mana regenerado');
+      this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('mana_regen_turn'));
     }
   }
 
@@ -2181,7 +2181,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ...c,
         currentHP: Math.min(maxHP, this.charSvc.hpActual() + amount),
       }));
-      this.charSvc.showToast('+' + amount + ' vida');
+      this.charSvc.showToast('+' + amount + ' ' + this.trSvc.t('health_restored'));
       return;
     }
 
@@ -2200,7 +2200,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           },
         ],
       }));
-      this.charSvc.showToast('🛡️ Escudo: ' + amount + ' absorcion');
+      this.charSvc.showToast(this.trSvc.t('shield_absorb_msg') + ' ' + amount + ' ' + this.trSvc.t('absorbed_msg'));
       return;
     }
 
@@ -2218,7 +2218,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }));
           rageText = ' · +' + rageGain + ' ira';
         }
-        this.charSvc.showToast('¡Esquivado!' + rageText);
+        this.charSvc.showToast(this.trSvc.t('evaded') + rageText);
         return;
       }
     }
@@ -2236,7 +2236,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
               ...c,
               activeEffects: (c.activeEffects || []).filter(e => e.target !== 'shield'),
             }));
-            this.charSvc.showToast('🛡️ Escudo absorbido por completo');
+            this.charSvc.showToast(this.trSvc.t('shield_fully_absorbed'));
           } else {
             this.charSvc.character.update(c => ({
               ...c,
@@ -2244,7 +2244,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
                 e.target === 'shield' ? { ...e, value: newShieldValue } : e
               ),
             }));
-            this.charSvc.showToast('🛡️ Escudo absorbe ' + amount + ' (quedan ' + newShieldValue + ')');
+            this.charSvc.showToast(this.trSvc.t('shield_absorbs') + ' ' + amount + ' (' + this.trSvc.t('remaining') + ' ' + newShieldValue + ')');
           }
         } else {
           remaining -= shield.value;
@@ -2283,9 +2283,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         rageText = ' · +' + rageGain + ' ira';
       }
       if (remaining < amount) {
-        this.charSvc.showToast('-' + remaining + ' vida' + rageText);
+        this.charSvc.showToast('-' + remaining + ' ' + this.trSvc.t('life_lost') + rageText);
       } else {
-        this.charSvc.showToast('-' + amount + ' vida' + rageText);
+        this.charSvc.showToast('-' + amount + ' ' + this.trSvc.t('life_lost') + rageText);
       }
     }
   }
@@ -2309,30 +2309,30 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const cd = this.charSvc.getCooldown(ability.id);
 
     if (resourceActual < cost) {
-      this.charSvc.showToast(this.resourceLabel() + ' insuficiente');
+      this.charSvc.showToast(this.resourceLabel() + ' ' + this.trSvc.t('insufficient_resource'));
       return;
     }
     if (cd > 0) {
-      this.charSvc.showToast(ability.name + ' esta en cooldown (' + cd + ' turno' + (cd > 1 ? 's' : '') + ')');
+      this.charSvc.showToast(ability.name + ' ' + this.trSvc.t('on_cd') + ' (' + cd + ' ' + (cd > 1 ? this.trSvc.t('turns') : this.trSvc.t('turn')) + ')');
       return;
     }
 
     const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
-      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
     }
 
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
       if (this.charSvc.getShards() < shardCost) {
-        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
+        this.charSvc.showToast(this.trSvc.t('need_shards') + ' ' + shardCost + ' ' + (shardCost > 1 ? this.trSvc.t('soul_shards_plural') : this.trSvc.t('soul_shard')));
         return;
       }
     }
 
     if (ability.spendsCombo && (this.charSvc.character().comboPoints || 0) === 0) {
-      this.charSvc.showToast('Sin puntos de combo');
+      this.charSvc.showToast(this.trSvc.t('no_combo_pts'));
       return;
     }
 
@@ -2401,7 +2401,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsNotes) {
       const notes = this.charSvc.getNotes();
       if (notes.length === 0) {
-        this.charSvc.showToast('Sin notas en la partitura');
+        this.charSvc.showToast(this.trSvc.t('no_notes_score'));
         const resourceMax = this.charSvc.resourceMax();
         const resourceActual = this.charSvc.resourceActual();
         this.charSvc.character.update(c => ({
@@ -2561,7 +2561,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + hotTick + '/turno · ' +
         ability.hotDuration + 't (' + hotTotal + ' total)' + lunarText + evText + noteText +
-        ' — enviado al Master'
+        ' — ' + this.trSvc.t('sent_to_master')
       );
       this.charSvc.sendHealEvent(ability, hotTotal);
     } else if (ability.isDot) {
@@ -2576,7 +2576,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'garrote' && impGarrote > 0) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + dotTotal + ' total) + Silencio' + evText + ' — aplicalo al enemigo'
+          ability.dotDuration + 't (' + dotTotal + ' total) + Silencio' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
         );
         this.charSvc.sendDamageEvent(ability, 0, 1, 1);
         this.charSvc.sendDamageEvent({
@@ -2589,7 +2589,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + dotTotal + ' total)' + evText + ' — aplicalo al enemigo'
+          ability.dotDuration + 't (' + dotTotal + ' total)' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
         );
         this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
@@ -2617,7 +2617,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — enviado al Master'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -2633,7 +2633,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + ' — enviado al Master'
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
       }
@@ -2713,7 +2713,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const hpActual = this.charSvc.hpActual();
 
     if (cd > 0) {
-      this.charSvc.showToast(ability.name + ' esta en cooldown (' + cd + ' turno' + (cd > 1 ? 's' : '') + ')');
+      this.charSvc.showToast(ability.name + ' ' + this.trSvc.t('on_cd') + ' (' + cd + ' ' + (cd > 1 ? this.trSvc.t('turns') : this.trSvc.t('turn')) + ')');
       return;
     }
     if (ability.blockedStance && this.charSvc.warriorStance() === ability.blockedStance) {
@@ -2723,14 +2723,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
-      this.charSvc.showToast('Sin acciones disponibles. Finaliza el turno.');
+      this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
     }
 
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
       if (this.charSvc.getShards() < shardCost) {
-        this.charSvc.showToast('Necesitas ' + shardCost + ' Soul Shard' + (shardCost > 1 ? 's' : ''));
+        this.charSvc.showToast(this.trSvc.t('need_shards') + ' ' + shardCost + ' ' + (shardCost > 1 ? this.trSvc.t('soul_shards_plural') : this.trSvc.t('soul_shard')));
         return;
       }
     }
@@ -2738,7 +2738,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsNotes) {
       const notes = this.charSvc.getNotes();
       if (notes.length === 0) {
-        this.charSvc.showToast('Sin notas en la partitura');
+        this.charSvc.showToast(this.trSvc.t('no_notes_score'));
         return;
       }
     }
@@ -2747,7 +2747,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (isRage) {
       if (resourceActual < cost) {
-        this.charSvc.showToast('Ira insuficiente');
+        this.charSvc.showToast(this.trSvc.t('ira') + ' ' + this.trSvc.t('insufficient_resource'));
         return;
       }
       this.charSvc.character.update(c => ({
@@ -2756,7 +2756,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     } else if (isEnergy) {
       if (resourceActual < cost) {
-        this.charSvc.showToast('Energia insuficiente');
+        this.charSvc.showToast(this.trSvc.t('energia') + ' ' + this.trSvc.t('insufficient_resource'));
         return;
       }
       this.charSvc.character.update(c => ({
@@ -2765,7 +2765,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     } else {
       if (manaActual < cost) {
-        this.charSvc.showToast('Mana insuficiente');
+        this.charSvc.showToast(this.trSvc.t('mana') + ' ' + this.trSvc.t('insufficient_resource'));
         return;
       }
       const clearcast = this.charSvc.checkClearcasting();
@@ -2830,7 +2830,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'slice_and_dice') {
         sndComboSpent = this.charSvc.character().comboPoints || 0;
         if (sndComboSpent === 0) {
-          this.charSvc.showToast('Sin puntos de combo');
+          this.charSvc.showToast(this.trSvc.t('no_combo_pts'));
           this.charSvc.character.update(c => ({
             ...c,
             currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + (ability.costEnergy || 0)),
@@ -2886,7 +2886,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': +' + buffValue +
         (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat +
-        sndText + ' — enviado al Master'
+        sndText + ' — ' + this.trSvc.t('sent_to_master')
       );
     } else if (ability.buff) {
       let buffValue = ability.currentBuffValue;
@@ -2898,7 +2898,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ' (' + ability.currentBuffDuration + ' turnos)';
       this.charSvc.sendBuffEvent(ability, buffValue);
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — enviado al Master'
+        ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
       );
       if (ability.id === 'crescendo') {
         const icRank = this.charSvc.talentRank('improved_crescendo');

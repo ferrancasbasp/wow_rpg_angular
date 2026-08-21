@@ -74,12 +74,12 @@ interface DamageEvent {
       <div class="wow-panel send-panel">
         <div class="panel-title">
           @if (isPlayerTargeting()) {
-            <span class="targeting-hint">Clicka un jugador para asignar {{ targetingLabel() }}</span>
+            <span class="targeting-hint">{{ trSvc.t('click_assign') }} {{ targetingLabel() }}</span>
           } @else {
             Enviar a Jugadores
           }
           @if (knownPlayers().length > 0) {
-            <button class="clear-btn small" (click)="clearPlayers()">Limpiar</button>
+            <button class="clear-btn small" (click)="clearPlayers()">{{ trSvc.t("clear") }}</button>
           }
         </div>
         <div class="panel-body">          @if (knownPlayers().length > 0) {
@@ -99,26 +99,26 @@ interface DamageEvent {
               >All</button>
             </div>
           } @else {
-            <div class="damage-empty" style="margin-bottom: 8px;">Los jugadores apareceran aqui al realizar acciones</div>
+            <div class="damage-empty" style="margin-bottom: 8px;">{{ trSvc.t('players_appear') }}</div>
           }
 
           @if (!isPlayerTargeting() && (sendTargetName() || sendAll())) {
             <div class="quick-effects">
               <div class="quick-effect-group">
-                <span class="quick-label">Debuffs</span>
+                <span class="quick-label">{{ trSvc.t('debuffs') }}</span>
                 <div class="quick-btns">
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
                 </div>
                 <div class="debuff-type-row">
-                  <span class="debuff-type-label">Tipo:</span>
+                  <span class="debuff-type-label">{{ trSvc.t('type') }}</span>
                   <select class="debuff-type-select" [value]="selectedDebuffType()" (change)="onDebuffTypeChange($event)">
-                    <option value="none">Sin tipo</option>
-                    <option value="disease">Enfermedad</option>
-                    <option value="poison">Veneno</option>
-                    <option value="magic">Mágico</option>
-                    <option value="curse">Maldición</option>
+                    <option value="none">{{ trSvc.t('no_type') }}</option>
+                    <option value="disease">{{ trSvc.t('disease') }}</option>
+                    <option value="poison">{{ trSvc.t('poison_type') }}</option>
+                    <option value="magic">{{ trSvc.t('magic_type') }}</option>
+                    <option value="curse">{{ trSvc.t('curse_type') }}</option>
                   </select>
                 </div>
               </div>
@@ -134,12 +134,12 @@ interface DamageEvent {
                   </div>
                 </div>
                 <div class="quick-effect-group">
-                  <span class="quick-label">Directo</span>
+                  <span class="quick-label">{{ trSvc.t('direct') }}</span>
                   <div class="quick-btns">
                     <input type="number" class="dot-input" placeholder="Cantidad" min="1"
                       [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
-                    <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">Curar</button>
-                    <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">Dannar</button>
+                    <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">{{ trSvc.t('heal_btn') }}</button>
+                    <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">{{ trSvc.t('damage_btn') }}</button>
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ interface DamageEvent {
 
       @if (sendLog().length > 0) {
         <div class="wow-panel send-log-panel">
-          <div class="panel-title">Log Master</div>
+          <div class="panel-title">{{ trSvc.t('master_log') }}</div>
           <div class="panel-body">
             <div class="send-log">
               @for (entry of sendLog(); track $index) {
@@ -175,7 +175,7 @@ interface DamageEvent {
 
     <div class="master-layout">
       <div class="wow-panel">
-        <div class="panel-title">Monstruos ({{ monsters().length }})</div>
+        <div class="panel-title">{{ trSvc.t('monsters') }} ({{ monsters().length }})</div>
         <div class="panel-body">
           <div class="add-monster-row">
             <input
@@ -322,13 +322,13 @@ interface DamageEvent {
                     <button
                       class="monster-dmg-btn"
                       (click)="$event.stopPropagation(); applyManualDamage(monster)"
-                    >Daño</button>
+                    >{{ trSvc.t('damage_label') }}</button>
                   </div>
                 </div>
               }
             </div>
           } @else {
-            <div class="damage-empty">No hay monstruos. Añade uno arriba.</div>
+            <div class="damage-empty">{{ trSvc.t('no_monsters') }}</div>
           }
         </div>
       </div>
@@ -346,7 +346,7 @@ interface DamageEvent {
               {{ firebaseConnected() ? 'On' : 'Off' }}
             </span>
             @if (pendingEvents().length > 0) {
-              <button class="clear-btn small" (click)="clearAllEvents()">Limpiar</button>
+              <button class="clear-btn small" (click)="clearAllEvents()">{{ trSvc.t('clear') }}</button>
             }
           </div>
         </div>
@@ -407,7 +407,7 @@ interface DamageEvent {
               }
             </div>
           } @else {
-            <div class="damage-empty">Sin eventos</div>
+            <div class="damage-empty">{{ trSvc.t('no_events') }}</div>
           }
         </div>
       </div>
@@ -1532,7 +1532,7 @@ export class MasterComponent implements OnInit {
     try {
       this.initFirebaseListener();
     } catch {
-      this.showToast('Firebase no configurado');
+      this.showToast(this.trSvc.t('firebase_not_configured'));
     }
   }
 
@@ -1650,7 +1650,7 @@ export class MasterComponent implements OnInit {
   applyAoeDamage(event: DamageEvent) {
     const alive = this.monsters().filter((m) => m.currentHP > 0);
     if (alive.length === 0) {
-      this.showToast('No hay monstruos vivos');
+      this.showToast(this.trSvc.t('no_monsters_alive'));
       return;
     }
     const summary: string[] = [];
@@ -1826,7 +1826,7 @@ export class MasterComponent implements OnInit {
     this.dmgInput.update((d) => ({ ...d, [monster.id]: null }));
     this.saveMonsters();
     if (monster.currentHP <= 0) {
-      this.showToast(monster.name + ' derrotado (-' + dmg + ')');
+      this.showToast(monster.name + ' ' + this.trSvc.t('defeated') + ' (-' + dmg + ')');
     } else {
       this.showToast('-' + dmg + ' a ' + monster.name);
     }
@@ -1835,7 +1835,7 @@ export class MasterComponent implements OnInit {
   healMonster(monster: Monster) {
     monster.currentHP = monster.maxHP;
     this.saveMonsters();
-    this.showToast(monster.name + ' curado al máximo');
+    this.showToast(monster.name + ' ' + this.trSvc.t('healed_max'));
   }
 
   addMonster() {
@@ -1862,7 +1862,7 @@ export class MasterComponent implements OnInit {
     this.newMonsterName.set('');
     this.newMonsterHP.set(null);
     this.saveMonsters();
-    this.showToast('Monstruo añadido');
+    this.showToast(this.trSvc.t('monster_added'));
   }
 
   addPresetNpc() {
@@ -1896,7 +1896,7 @@ export class MasterComponent implements OnInit {
     this.monsters.update((monsters) => [...monsters, newMonster]);
     this.selectedNpc.set('');
     this.saveMonsters();
-    this.showToast(npc.name + ' añadido');
+    this.showToast(npc.name + ' ' + this.trSvc.t('npc_added_msg'));
   }
 
   removeMonster(id: number) {
@@ -1976,7 +1976,7 @@ export class MasterComponent implements OnInit {
     }
     this.pendingEvents.set([]);
     this.selectedEventId.set(null);
-    this.showToast('Eventos limpiados');
+    this.showToast(this.trSvc.t('events_cleared'));
   }
 
   clearPlayers() {
@@ -1985,7 +1985,7 @@ export class MasterComponent implements OnInit {
       remove(ref(db, 'players/' + name));
     }
     this.knownPlayers.set([]);
-    this.showToast('Lista de jugadores limpiada');
+    this.showToast(this.trSvc.t('players_cleared'));
   }
 
   selectPlayerTarget(name: string) {
