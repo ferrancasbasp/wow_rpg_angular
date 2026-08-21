@@ -1337,46 +1337,47 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .pet-inline {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       margin-top: 4px;
+      margin-left: auto;
     }
-    .pet-icon-sm { font-size: 14px; }
+    .pet-icon-sm { font-size: 16px; }
     .pet-icon-img-sm {
-      width: 18px; height: 18px; border-radius: 3px;
+      width: 21px; height: 21px; border-radius: 3px;
       border: 1px solid rgba(139, 45, 240, 0.4);
     }
     .pet-bars-inline {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      width: 60px;
+      width: 70px;
     }
     .pet-bars-inline .pet-hp-track,
     .pet-bars-inline .pet-mana-track {
-      height: 5px !important;
-      border-radius: 2px;
+      height: 6px !important;
+      border-radius: 3px;
     }
     .pet-abilities-inline {
       display: flex;
       gap: 3px;
     }
     .pet-ability-icon-btn {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: rgba(139, 45, 240, 0.15);
       border: 1px solid rgba(139, 45, 240, 0.35);
       border-radius: 4px;
-      font-size: 13px;
+      font-size: 15px;
       cursor: pointer;
       transition: all 0.15s ease;
       padding: 0;
       overflow: hidden;
     }
     .pet-ability-icon-img {
-      width: 20px; height: 20px; border-radius: 3px;
+      width: 24px; height: 24px; border-radius: 3px;
     }
     .pet-ability-icon-btn:hover:not(:disabled) {
       background: rgba(139, 45, 240, 0.35);
