@@ -1097,10 +1097,29 @@ export class CharacterService {
         currentMana: Math.round(this.maxMana() * pet.manaPct),
       },
     }));
+    const playerName = (this.character().name || '').trim();
+    if (playerName) {
+      const petName = playerName + ' — ' + pet.name;
+      try {
+        this.firebase.setData('players/' + petName, { name: petName, timestamp: Date.now(), isPet: true });
+      } catch (e) {
+        console.error('Firebase register pet error:', e);
+      }
+    }
     this.showToast(`${pet.icon} ${pet.name} invocado!`);
   }
 
   dismissPet() {
+    const playerName = (this.character().name || '').trim();
+    const pet = this.activePetData();
+    if (playerName && pet) {
+      const petName = playerName + ' — ' + pet.name;
+      try {
+        this.firebase.removeData('players/' + petName);
+      } catch (e) {
+        console.error('Firebase remove pet error:', e);
+      }
+    }
     this.character.update(c => ({ ...c, activePet: null }));
     this.showToast('Pet desinvocada');
   }
@@ -1129,9 +1148,23 @@ export class CharacterService {
     this.character.update(c => {
       if (!c.activePet) return c;
       const newHP = Math.max(0, c.activePet.currentHP - amount);
+      if (newHP <= 0) {
+        const playerName = (c.name || '').trim();
+        const pet = this.classConfig().pets?.find(p => p.id === c.activePet!.petId);
+        if (playerName && pet) {
+          const petName = playerName + ' — ' + pet.name;
+          try {
+            this.firebase.removeData('players/' + petName);
+          } catch (e) {
+            console.error('Firebase remove dead pet error:', e);
+          }
+        }
+        this.showToast('Tu pet ha muerto!');
+        return { ...c, activePet: null };
+      }
       return {
         ...c,
-        activePet: newHP <= 0 ? null : { ...c.activePet, currentHP: newHP },
+        activePet: { ...c.activePet, currentHP: newHP },
       };
     });
   }
