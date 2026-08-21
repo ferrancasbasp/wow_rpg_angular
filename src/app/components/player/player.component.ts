@@ -293,10 +293,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
                     }
                     @if (ability.generatesShard) {
-                      <span class="ability-stat shard-gen">+{{ ability.generatesShard }}💎</span>
+                      <span class="ability-stat shard-gen">+{{ ability.generatesShard }}<span class="shard-mini"></span></span>
                     }
                     @if (ability.spendsShards) {
-                      <span class="ability-stat shard-cost">-{{ ability.shardCost || 3 }}💎</span>
+                      <span class="ability-stat shard-cost">-{{ ability.shardCost || 3 }}<span class="shard-mini"></span></span>
                     }
                  </div>
                </div>
@@ -1095,8 +1095,17 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
     .ability-stat.heal { color: var(--success); }
     .ability-stat.cost { color: var(--mana); }
     .ability-stat.bonus { color: var(--gold); font-size: 10px; }
-    .ability-stat.shard-gen { color: #b347ff; }
-    .ability-stat.shard-cost { color: #ff6b6b; }
+    .ability-stat.shard-gen { color: #b347ff; display: flex; align-items: center; gap: 3px; }
+    .ability-stat.shard-cost { color: #ff6b6b; display: flex; align-items: center; gap: 3px; }
+    .shard-mini {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, #b347ff, #7a1cc7);
+      border: 1px solid #d488ff;
+      border-radius: 1px;
+    }
 
     .ability-card.ability-locked { opacity: 0.5; }
 
