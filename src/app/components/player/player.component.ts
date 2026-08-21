@@ -2463,7 +2463,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
               name: 'Evangelism',
               target: isHoly ? 'shadow_boost' : 'holy_boost',
               value: evRank * 3,
-              duration: 1,
+              duration: 2,
             },
           ],
         }));
@@ -2548,18 +2548,31 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         lunarText = ' · +1 Fase Lunar';
       }
+      let hotTotal = ability.hotTotal;
+      if (evText) {
+        const boost = 1 + this.charSvc.talentRank('evangelism') * 0.03;
+        hotTotal = Math.round(hotTotal * boost);
+      }
+      const hotTick = Math.round(hotTotal / ability.hotDuration);
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + ability.hotTick + '/turno · ' +
-        ability.hotDuration + 't (' + ability.hotTotal + ' total)' + lunarText + noteText +
+        ability.name + ' R' + ability.currentRank + ': ' + hotTick + '/turno · ' +
+        ability.hotDuration + 't (' + hotTotal + ' total)' + lunarText + evText + noteText +
         ' — enviado al Master'
       );
-      this.charSvc.sendHealEvent(ability, ability.hotTotal);
+      this.charSvc.sendHealEvent(ability, hotTotal);
     } else if (ability.isDot) {
+      let dotTotal = ability.dotTotal;
+      let dotTick = ability.dotTick;
+      if (evText) {
+        const boost = 1 + this.charSvc.talentRank('evangelism') * 0.03;
+        dotTotal = Math.round(dotTotal * boost);
+        dotTick = Math.round(dotTotal / ability.dotDuration);
+      }
       const impGarrote = this.charSvc.talentRank('improved_garrote');
       if (ability.id === 'garrote' && impGarrote > 0) {
         this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': ' + ability.dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + ability.dotTotal + ' total) + Silencio — aplicalo al enemigo'
+          ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
+          ability.dotDuration + 't (' + dotTotal + ' total) + Silencio' + evText + ' — aplicalo al enemigo'
         );
         this.charSvc.sendDamageEvent(ability, 0, 1, 1);
         this.charSvc.sendDamageEvent({
@@ -2571,10 +2584,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }, 0, 1, 1);
       } else {
         this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': ' + ability.dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + ability.dotTotal + ' total) — aplicalo al enemigo'
+          ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
+          ability.dotDuration + 't (' + dotTotal + ' total)' + evText + ' — aplicalo al enemigo'
         );
-        this.charSvc.sendDamageEvent(ability, 0, 1, 1);
+        this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
