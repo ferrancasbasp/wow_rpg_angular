@@ -99,7 +99,11 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
           </div>
           @if (charSvc.activePetData()) {
             <div class="pet-inline">
-              <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
+              @if (charSvc.activePetData()!.iconImg) {
+                <img [src]="charSvc.activePetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+              } @else {
+                <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
+              }
               <div class="pet-bars-inline">
                 <div class="resource-track pet-hp-track">
                   <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
@@ -115,7 +119,11 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
                             [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
                             [title]="ab.name + ' — ' + ab.description + ' (' + ab.scaledCost + ' mana pet)'"
                             (click)="castPetAbility(ab)">
-                      {{ ab.icon }}
+                      @if (ab.iconImg) {
+                        <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
+                      } @else {
+                        {{ ab.icon }}
+                      }
                     </button>
                   }
                 </div>
@@ -1333,6 +1341,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       margin-top: 4px;
     }
     .pet-icon-sm { font-size: 14px; }
+    .pet-icon-img-sm {
+      width: 18px; height: 18px; border-radius: 3px;
+      border: 1px solid rgba(139, 45, 240, 0.4);
+    }
     .pet-bars-inline {
       display: flex;
       flex-direction: column;
@@ -1361,6 +1373,10 @@ import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from
       cursor: pointer;
       transition: all 0.15s ease;
       padding: 0;
+      overflow: hidden;
+    }
+    .pet-ability-icon-img {
+      width: 20px; height: 20px; border-radius: 3px;
     }
     .pet-ability-icon-btn:hover:not(:disabled) {
       background: rgba(139, 45, 240, 0.35);
