@@ -2685,6 +2685,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     } else if (ability.isPetSummon) {
       this.charSvc.summonPet(ability.isPetSummon);
+    } else if (ability.id === 'unsummon_pet') {
+      this.charSvc.dismissPet();
     } else if (ability.buff && ability.buff.applySelf) {
       let sndComboSpent = 0;
       if (ability.id === 'slice_and_dice') {
