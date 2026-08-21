@@ -88,7 +88,7 @@ export const WARLOCK: CharacterClass = {
       id: 'immolate',
       name: 'Immolate',
       icon: '🔥',
-      iconImg: 'img/abilities/warlock/Spell_Shadow_BurningSpirit.jpg',
+      iconImg: 'img/abilities/warlock/Spell_Fire_Immolation.jpg',
       school: 'Fuego',
       type: 'damage',
       requiredLevel: 6,
