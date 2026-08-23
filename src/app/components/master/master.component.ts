@@ -441,6 +441,24 @@ export class MasterComponent implements OnInit {
     }, 400);
     monster.lastAttackAt = Date.now();
     this.saveMonsters();
+    const tauntEff = (monster.effects || []).find(e => e.type === 'debuff' && (e.target === 'taunt' || e.stat === 'taunt'));
+    if (tauntEff && tauntEff.value) {
+      this.firebase.pushData('playerEvents', {
+        target: tauntEff.value,
+        type: 'monsterAttack',
+        amount: roll,
+        damageType: 'physical',
+        sourceName: monster.name + ' - ' + attack.name,
+        inflictsEffects: attack.inflictsEffects || null,
+        timestamp: Date.now(),
+      });
+      this.sendLog.update(log => [`${tauntEff.value}: -${roll} (${monster.name} - ${attack.name}) [Taunt]`, ...log].slice(0, 8));
+      this.selectedEventId.set(null);
+      this.showToast(
+        monster.name + ' usa ' + attack.name + ': ' + roll + ' danno — TAUNT → ' + tauntEff.value + dotText,
+      );
+      return;
+    }
     this.pendingMonsterAttack.set({
       roll,
       damageType: 'physical',

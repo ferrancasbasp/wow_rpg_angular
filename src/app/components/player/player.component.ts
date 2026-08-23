@@ -584,6 +584,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast(
           ability.name + ' R' + rank + ': ' + dmg + ' danyo oscuro — enviado al Master'
         );
+      } else if (ability.id === 'voidwalker_taunt') {
+        const myName = (this.charSvc.character().name || '').trim();
+        const petPlayerName = myName ? myName + ' — Voidwalker' : '';
+        this.firebase.pushData('damageEvents', {
+          player: this.charSvc.character().name || 'Jugador',
+          ability: ability.name,
+          rank: ability.currentRank || 1,
+          damage: 0,
+          damageType: 'physical',
+          aoe: false,
+          effects: [{ type: 'debuff', name: 'Taunt', target: 'taunt', value: petPlayerName, duration: 2, debuffType: 'none' }],
+          turn: this.charSvc.turnNumber(),
+          timestamp: Date.now(),
+          assigned: false,
+        });
+        this.charSvc.showToast(ability.name + ': fuerza al enemigo a atacar al Voidwalker (2 turnos) — enviado al Master');
       } else if (ability.currentBuffValue) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
