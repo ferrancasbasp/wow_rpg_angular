@@ -383,6 +383,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🧊 Icy Veins activa · tus hechizos de Escarcha son instantaneos (' + duration + ' turno(s))');
   }
 
+  castArcanePower(ability: any) {
+    const duration = 2;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'arcane_power'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Arcane Power', target: 'arcane_power', value: 20, duration },
+      ],
+    }));
+    this.charSvc.showToast('⚡ Arcane Power activa · 2 turnos sin coste de mana · +20% Spell Power · +25% danyo critico');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -625,6 +637,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
     this.processEffects();
+
+    if (this.charSvc.hasEffect('arcane_power')) {
+      const restored = Math.round(this.charSvc.maxMana() * 0.20);
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + restored),
+      }));
+      this.charSvc.showToast('⚡ Arcane Power: +' + restored + ' mana');
+    }
 
     const petAttack = this.charSvc.petAttack();
     if (petAttack) {
@@ -879,6 +900,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else {
       cost = ability.scaledCost || ability.computedCost;
     }
+    if (this.charSvc.hasEffect('arcane_power')) {
+      cost = 0;
+    }
 
     const resourceActual = this.charSvc.resourceActual();
     const resourceMax = this.charSvc.resourceMax();
@@ -980,6 +1004,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         critMult = critMult * 1.20;
       }
       if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
+        critMult = critMult * 1.25;
+      }
+      if (this.charSvc.hasEffect('arcane_power')) {
         critMult = critMult * 1.25;
       }
       roll = Math.round(roll * critMult);
@@ -1491,6 +1518,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castCombustion(ability);
     } else if (ability.id === 'icy_veins') {
       this.castIcyVeins(ability);
+    } else if (ability.id === 'arcane_power') {
+      this.castArcanePower(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {

@@ -115,6 +115,9 @@ export class CharacterService {
     if (this.hasEffect('demonic_form')) {
       sp = Math.round(sp * 1.25);
     }
+    if (this.hasEffect('arcane_power')) {
+      sp = Math.round(sp * 1.20);
+    }
     return sp;
   });
 
