@@ -1168,10 +1168,16 @@ export class CharacterService {
     return cls.pets.find(p => p.id === c.activePet!.petId) || null;
   });
 
+  petTalentBoost(): number {
+    return 1 + this.talentRank('grimoire_of_command') * 0.25;
+  }
+
   petMaxHP = computed<number>(() => {
     const pet = this.activePetData();
     if (!pet) return 0;
-    return Math.round(this.maxHP() * pet.hpPct);
+    let hp = Math.round(this.maxHP() * pet.hpPct);
+    if (pet.id === 'voidwalker') hp = Math.round(hp * this.petTalentBoost());
+    return hp;
   });
 
   petMaxMana = computed<number>(() => {
@@ -1247,7 +1253,7 @@ export class CharacterService {
       ...c,
       activePet: {
         petId,
-        currentHP: Math.round(this.maxHP() * pet.hpPct),
+        currentHP: this.petMaxHP(),
         currentMana: Math.round(this.maxMana() * pet.manaPct),
       },
     }));
@@ -1284,7 +1290,8 @@ export class CharacterService {
     if (!pet || !c.activePet) return null;
     if (c.activePet.currentMana < Math.round(this.petMaxMana() * pet.manaCostPct)) return null;
 
-    const damage = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
+    let damage = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
+    if (pet.id === 'imp') damage = Math.round(damage * this.petTalentBoost());
     const manaCost = Math.round(this.petMaxMana() * pet.manaCostPct);
 
     this.character.update(ch => ({

@@ -708,6 +708,7 @@ export class TranslationService {
     bard_maestro: { es: 'Los remates tienen un 15% de probabilidad por punto de devolverte un punto de accion.', en: 'Finishers have a 15% chance per point to refund an action point.' },
     bard_improved_diminuendo: { es: 'Aumenta la efectividad del debuff de Diminuendo un 10% por punto.', en: 'Increases the effectiveness of Diminuendo\'s debuff by 10% per point.' },
     druid_gift_of_the_wild: { es: 'Pasiva. Aumenta todas tus estadísticas en una cantidad igual a tu nivel. A nivel 25, +25 a todas las estadísticas.', en: 'Passive. Increases all your stats by an amount equal to your level. At level 25, +25 to all stats.' },
+    warlock_grimoire_of_command: { es: 'Fortalece a tus demonios: aumenta el dano del Imp y la vida del Voidwalker un 25% por punto.', en: 'Strengthens your demons: increases the Imp\'s damage and the Voidwalker\'s health by 25% per point.' },
     druid_insect_swarm: { es: 'Invoca un enjambre de insectos que reduce enormemente el ataque del enemigo un 50% durante 2 turnos. CD 2.', en: 'Summons a swarm of insects that greatly reduces the enemy\'s attack by 50% for 2 turns. CD 2.' },
     druid_nature_guardian: { es: 'El poder de la naturaleza te envuelve: llena tu barra de Fases Lunares al máximo y lanza un Starsurge como si tuvieses todas las fases. CD 10.', en: 'Nature\'s power surrounds you: fills your Lunar Phases bar and launches a Starsurge as if you had all phases. CD 10.' },
     bard_ballerino: { es: 'Aumenta tu Agilidad un 2% por punto.', en: 'Increases your Agility by 2% per point.' },
