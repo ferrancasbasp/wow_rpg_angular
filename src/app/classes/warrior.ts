@@ -43,7 +43,7 @@ export const WARRIOR: CharacterClass = {
   ],
 
   capstones: [
-    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'shield_wall', name: 'Shield Wall', icon: '🛡️', iconImg: 'img/capstones/warrior/shield_wall.jpg', description: 'Adopta una postura defensiva extrema durante 3 turnos, reduciendo todo el daño recibido en un 60%. Mientras Shield Wall está activo, eres inmune a efectos de control de masas. CD 10.' },
     { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
     { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
   ],
@@ -59,6 +59,7 @@ export const WARRIOR: CharacterClass = {
     { id: 'taunt', name: 'Taunt', icon: '🗯️', iconImg: 'img/abilities/warrior/taunt.jpg', school: 'Físico', type: 'utility', requiredLevel: 4, costPct: 0, costRage: 0, castType: 'instant', cooldown: 4, description: 'Obliga al enemigo a atacarte durante su próximo turno.', buff: null },
     { id: 'bloodrage', name: 'Blood Rage', icon: '🩸', iconImg: 'img/abilities/warrior/bloodrage.jpg', school: 'Físico', type: 'utility', requiredLevel: 2, costPct: 0, costRage: 0, castType: 'instant', cooldown: 5, noGcd: true, rageGain: 20, healthCostPct: 0.15, description: 'Pierde 15% de vida máxima y gana 20 de ira. Otorga 3 de ira por turno durante 2 turnos. No usable en estancia Defensiva.', buff: { stat: 'bloodrage', duration: 2, applySelf: true }, buffRanks: [{ rank: 1, level: 2, value: 3, costRage: 0 }], blockedStance: 'protection' },
     { id: 'last_stand', name: 'Last Stand', icon: '🛡️', iconImg: 'img/abilities/warrior/last_stand.jpg', school: 'Físico', type: 'utility', requiredLevel: 18, costPct: 0, costRage: 0, castType: 'instant', cooldown: 10, noGcd: true, description: 'Aumenta tu vida máxima un 20% durante 4 turnos. El % de vida actual se mantiene.', buff: { stat: 'maxHP', duration: 4, applySelf: true, isPercent: true }, buffRanks: [{ rank: 1, level: 18, value: 20, costRage: 0 }] },
+    { id: 'shield_wall', name: 'Shield Wall', icon: '🛡️', iconImg: 'img/capstones/warrior/shield_wall.jpg', school: 'Físico', type: 'utility', requiredLevel: 1, costPct: 0, costRage: 0, castType: 'instant', cooldown: 10, description: 'Postura defensiva extrema durante 3 turnos: todo el daño recibido se reduce un 60% y eres inmune a efectos de control de masas.', buff: null, capstoneGate: 'shield_wall' },
     { id: 'group_last_stand', name: 'Iron Wall', icon: '🏰', iconImg: '', school: 'Físico', type: 'utility', requiredLevel: 20, costPct: 0, costRage: 0, castType: 'instant', cooldown: 6, noGcd: true, description: 'Aumenta la vida máxima de todo el grupo un 15% durante 4 turnos. Cada jugador debe aplicarse el buff manualmente.', buff: { stat: 'maxHP', duration: 4, applySelf: false, isPercent: true }, partyBuff: true, buffRanks: [{ rank: 1, level: 20, value: 15, costRage: 0 }, { rank: 2, level: 28, value: 20, costRage: 0 }] },
   ],
 };

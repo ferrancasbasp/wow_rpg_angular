@@ -541,6 +541,7 @@ export class TranslationService {
     warrior_taunt: { es: 'Obliga al enemigo a atacarte durante su próximo turno.', en: 'Forces the enemy to attack you during their next turn.' },
     warrior_bloodrage: { es: 'Pierde 15% de vida máxima y gana 20 de ira. Otorga 3 de ira por turno durante 2 turnos. No usable en estancia Defensiva.', en: 'Loses 15% max health and gains 20 rage. Grants 3 rage per turn for 2 turns. Cannot be used in Defensive Stance.' },
     warrior_last_stand: { es: 'Aumenta tu vida máxima un 20% durante 4 turnos. El % de vida actual se mantiene.', en: 'Increases your max health by 20% for 4 turns. Current health percentage is maintained.' },
+    warrior_shield_wall: { es: 'Postura defensiva extrema durante 3 turnos: todo el daño recibido se reduce un 60% y eres inmune a efectos de control de masas. CD 10.', en: 'Extreme defensive stance for 3 turns: all damage taken is reduced by 60% and you are immune to crowd control effects. CD 10.' },
     warrior_group_last_stand: { es: 'Aumenta la vida máxima de todo el grupo un 15% durante 4 turnos. Cada jugador debe aplicarse el buff manualmente.', en: 'Increases the entire party\'s max health by 15% for 4 turns. Each player must apply the buff manually.' },
     rogue_basic_attack: { es: 'Un golpe básico que no gasta energía.', en: 'A basic strike that does not cost energy.' },
     rogue_stealth: { es: 'Te ocultas y desbloqueas Ambush y Garrote. Se desactiva al atacar o recibir dano. Pulsalo de nuevo para salir del sigilo.', en: 'Hides you and unlocks Ambush and Garrote. Breaks when you attack or take damage. Press again to leave stealth.' },
@@ -627,6 +628,7 @@ export class TranslationService {
 
   private talentDescMap: Record<string, { es: string; en: string }> = {
     warrior_master_of_weapons: { es: 'Desbloquea el uso de armas a dos manos y permite combinar arma de una mano con off hand. Los stats de ambos se acumulan.', en: 'Unlocks the use of two-handed weapons and allows combining a one-handed weapon with an off-hand. Stats from both stack.' },
+    warrior_shield_wall: { es: 'Adopta una postura defensiva extrema durante 3 turnos, reduciendo todo el daño recibido en un 60%. Mientras Shield Wall está activo, eres inmune a efectos de control de masas. CD 10.', en: 'Adopt an extreme defensive stance for 3 turns, reducing all damage taken by 60%. While Shield Wall is active, you are immune to crowd control effects. CD 10.' },
     warrior_improved_heroic_strike: { es: 'Reduce el coste de ira de Heroic Strike en 1 por punto.', en: 'Reduces the rage cost of Heroic Strike by 1 per point.' },
     warrior_anticipation: { es: 'Aumenta tu armadura física y mágica en 2 por punto.', en: 'Increases your physical and magical armor by 2 per point.' },
     warrior_improved_bloodrage: { es: 'Aumenta la ira por turno de Blood Rage en 5 por punto.', en: 'Increases the rage per turn of Blood Rage by 5 per point.' },

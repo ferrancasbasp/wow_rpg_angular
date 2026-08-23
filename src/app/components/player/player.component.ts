@@ -138,7 +138,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           let effText = '';
           if (event.inflictsEffects && Array.isArray(event.inflictsEffects)) {
             for (const eff of event.inflictsEffects) {
-              this.charSvc.addEffect({
+              this.addPlayerEffect({
                 id: Date.now() + Math.random(),
                 type: eff.type,
                 name: eff.name,
@@ -177,7 +177,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.incomingMasterMsg.set('🩹 ' + (event.abilityName || 'Master') + ': ' + event.hotTick + '/t · ' + event.hotDuration + 't');
         } else if (event.type === 'buff') {
           if (event.effect) {
-            this.charSvc.addEffect(event.effect);
+            this.addPlayerEffect(event.effect);
             const eff = event.effect;
             const icon = eff.type === 'dot' ? '🩸' : eff.type === 'debuff' ? '⛔' : '✨';
             const detail = eff.type === 'dot'
@@ -333,6 +333,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       ],
     }));
     this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo (' + duration + ' turnos)');
+  }
+
+  castShieldWall(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'shield_wall'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shield Wall', target: 'shield_wall', value: 60, duration },
+      ],
+    }));
+    this.charSvc.showToast('🛡️ Shield Wall activa · -60% daño recibido e inmune a control de masas (' + duration + ' turnos)');
   }
 
   onNameInput(event: Event) {
@@ -677,6 +689,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(this.trSvc.t('stealth_off'));
   }
 
+  isCrowdControl(eff: any): boolean {
+    const cc = ['stunned', 'silenced', 'rooted', 'slowed', 'feared', 'charmed', 'sleep', 'incapacitated', 'polymorphed'];
+    return !!eff && cc.includes(eff.target || eff.stat || '');
+  }
+
+  addPlayerEffect(eff: any): boolean {
+    if (this.charSvc.hasEffect('shield_wall') && this.isCrowdControl(eff)) {
+      this.charSvc.showToast('🛡️ Shield Wall: inmune a ' + (eff.name || 'control de masas'));
+      return false;
+    }
+    this.charSvc.addEffect(eff);
+    return true;
+  }
+
   hpAction(amount: number, actionType: string) {
     if (amount <= 0) return;
     this.hpLossAmount.set(0);
@@ -772,6 +798,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (this.charSvc.hasEffect('demonic_form')) {
         remaining = Math.round(remaining * 1.15);
+      }
+      if (this.charSvc.hasEffect('shield_wall')) {
+        remaining = Math.round(remaining * 0.40);
       }
     }
 
@@ -1405,6 +1434,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {
       this.castBladeFlurry(ability);
+    } else if (ability.id === 'shield_wall') {
+      this.castShieldWall(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
