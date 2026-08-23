@@ -371,6 +371,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🔥 Combustion activa · +25% critico y danyo critico de Fuego (' + duration + ' turnos)');
   }
 
+  castIcyVeins(ability: any) {
+    const duration = 2;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'icy_veins'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Icy Veins', target: 'icy_veins', value: 1, duration },
+      ],
+    }));
+    this.charSvc.showToast('🧊 Icy Veins activa · tus hechizos de Escarcha son instantaneos (' + duration + ' turno(s))');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -882,7 +894,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
+    const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
+    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant) ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1476,6 +1489,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castRecklessness(ability);
     } else if (ability.id === 'combustion') {
       this.castCombustion(ability);
+    } else if (ability.id === 'icy_veins') {
+      this.castIcyVeins(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
