@@ -45,7 +45,7 @@ export const MAGE: CharacterClass = {
   talents: [
     { id: 'elemental_mastery', name: 'Elemental Mastery', icon: '🔥', iconImg: 'img/talents/mage/elemental_mastery.jpg', description: 'Aumenta el daño de todos tus hechizos un 2% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'mana_efficiency', name: 'Arcane Efficiency', icon: '✨', iconImg: 'img/talents/mage/arcane_efficiency.jpg', description: 'Reduce el coste de maná de todos tus hechizos un 3% por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'improved_frostbolt', name: 'Improved Frostbolt', icon: '❄️', iconImg: '', description: 'Aumenta el daño de Frostbolt un 10% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'improved_frostbolt', name: 'Improved Frostbolt', icon: '❄️', iconImg: 'img/talents/mage/improved_frostbolt.jpg', description: 'Aumenta el daño de Frostbolt un 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'improved_arcane_intellect', name: 'Improved Arcane Intellect', icon: '🧠', iconImg: 'img/talents/mage/improved_arcane_intellect.jpg', description: 'Aumenta el efecto de Arcane Intellect un 15% por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'improved_frost_armor', name: 'Improved Frost Armor', icon: '🧊', iconImg: 'img/talents/mage/improved_frost_armor.jpg', description: 'Aumenta el efecto de Frost Armor un 10% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'casting_master', name: 'Casting Master', icon: '📜', iconImg: '', description: 'Aumenta el daño de todos tus hechizos con tiempo de lanzamiento un 5% por punto.', maxRank: 3, tier: 2, requires: null },

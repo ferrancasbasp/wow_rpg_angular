@@ -386,8 +386,15 @@ export class CharacterService {
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
       } else {
-        minVal = dmgRange ? (dmgRange.min + dmgBonus + spBonus) : 0;
-        maxVal = dmgRange ? (dmgRange.max + dmgBonus + spBonus) : 0;
+        let spellMult = 1;
+        const comp = this.computedAbilities().find(c => c.id === a.id);
+        const compDamage = comp ? (comp as any).computedDamage : undefined;
+        if (typeof compDamage === 'number') {
+          const base = (a.baseDamage || 0) + this.spellPower() * (a.spellPowerRatio || 0);
+          if (base > 0) spellMult = compDamage / base;
+        }
+        minVal = dmgRange ? Math.round((dmgRange.min + dmgBonus + spBonus) * spellMult) : 0;
+        maxVal = dmgRange ? Math.round((dmgRange.max + dmgBonus + spBonus) * spellMult) : 0;
       }
       if (a.id === 'cleave') {
         const cleaveBonus = 1 + this.talentRank('improved_cleave') * 0.20;
