@@ -599,7 +599,35 @@ export class PlayerComponent implements OnInit, OnDestroy {
           timestamp: Date.now(),
           assigned: false,
         });
-        this.charSvc.showToast(ability.name + ': fuerza al enemigo a atacar al Voidwalker (2 turnos) — enviado al Master');
+        const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
+        const heal = Math.round(this.charSvc.petMaxHP() * grimoireRank * 0.10);
+        if (heal > 0 && this.charSvc.character().activePet) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activePet: c.activePet ? { ...c.activePet, currentHP: Math.min(this.charSvc.petMaxHP(), c.activePet.currentHP + heal) } : null,
+          }));
+          this.charSvc.showToast(ability.name + ': fuerza al enemigo a atacar al Voidwalker (2 turnos) · +' + heal + ' vida — enviado al Master');
+        } else {
+          this.charSvc.showToast(ability.name + ': fuerza al enemigo a atacar al Voidwalker (2 turnos) — enviado al Master');
+        }
+      } else if (ability.id === 'imp_blood_bolt') {
+        const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
+        const sacrificePct = 15 * grimoireRank;
+        const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
+        this.firebase.pushData('damageEvents', {
+          player: this.charSvc.character().name || 'Jugador',
+          ability: ability.name,
+          rank: ability.currentRank || 1,
+          damage: sacrifice,
+          damageType: 'magical',
+          aoe: true,
+          effects: null,
+          turn: this.charSvc.turnNumber(),
+          timestamp: Date.now(),
+          assigned: false,
+        });
+        this.charSvc.petTakeDamage(sacrifice);
+        this.charSvc.showToast(ability.name + ': el Imp pierde ' + sacrifice + ' vida (' + sacrificePct + '%) — AOE enviado al Master');
       } else if (ability.currentBuffValue) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
