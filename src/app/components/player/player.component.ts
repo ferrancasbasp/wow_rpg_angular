@@ -311,6 +311,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('👹 Forma Demoníaca activa · +25% SP / +25% crit / +25% dmg crit · -15% resistencia (2 turnos)');
   }
 
+  castShadowDance(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'shadow_dance'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration },
+      ],
+    }));
+    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth (' + duration + ' turnos)');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -808,7 +820,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (ability.requiresStealth && !this.charSvc.isStealthed()) {
+    if (ability.requiresStealth && !this.charSvc.isStealthed() && !this.charSvc.hasEffect('shadow_dance')) {
       this.charSvc.showToast(this.trSvc.t('need_stealth'));
       return;
     }
@@ -1377,6 +1389,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castSummonInfernal(ability);
     } else if (ability.id === 'demonic_transformation') {
       this.castDemonicTransformation(ability);
+    } else if (ability.id === 'shadow_dance') {
+      this.castShadowDance(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
