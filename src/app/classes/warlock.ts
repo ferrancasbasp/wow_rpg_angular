@@ -22,9 +22,24 @@ export const WARLOCK: CharacterClass = {
 
   resource: { type: 'mana', label: 'Mana', color: '#9b59b6', max: null, start: 'full' },
 
-  comboConfig: { label: 'Soul Shards', icon: '🔮', max: 10 },
+  comboConfig: { label: 'Soul Shards', icon: '🔮', max: 5 },
 
-  talents: [],
+  talents: [
+    { id: 'pocket_shards', name: 'Pocket Shards', icon: '🔮', iconImg: '', description: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'improved_drain_life', name: 'Improved Drain Life', icon: '🩸', iconImg: 'img/abilities/warlock/Spell_Shadow_LifeDrain02.jpg', description: 'Aumenta la vida que cura Drain Life un 10% por punto. Solo afecta a la curacion, no al dano.', maxRank: 3, tier: 1, requires: null },
+    { id: 'demonic_embrace', name: 'Demonic Embrace', icon: '😈', iconImg: '', description: 'Mientras Fel Armor este activo, tu vida maxima aumenta un 10% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'destruction_specialization', name: 'Destruction Specialization', icon: '💥', iconImg: '', description: 'Aumenta el dano de los golpes criticos de Chaos Bolt y Rain of Fire un 15% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'dot_master', name: 'DoT Master', icon: '⏱️', iconImg: '', description: 'Aumenta la duracion de Corruption, Curse of Agony e Immolate en 1 turno por punto. El danyo por turno se mantiene igual, por lo que el total aumenta.', maxRank: 3, tier: 2, requires: null },
+    { id: 'improved_healthstone', name: 'Improved Healthstone', icon: '💎', iconImg: 'img/abilities/warlock/INV_Stone_04.jpg', description: 'Aumenta la vida recuperada por Healthstone un 25% por punto. Si Healthstone cura a un aliado, tambien recuperas vida equivalente al 25% por punto de lo restaurado.', maxRank: 2, tier: 2, requires: null },
+    { id: 'soul_conduit', name: 'Soul Conduit', icon: '🌀', iconImg: '', description: 'Al gastar Soul Shards en un hechizo o habilidad, tienes un 20% por punto de probabilidad de recuperar la Shard. Las invocaciones de demonios no se ven afectadas.', maxRank: 3, tier: 3, requires: null },
+    { id: 'soul_leech', name: 'Soul Leech', icon: '🛡️', iconImg: '', description: 'Shadow Bolt y Chaos Bolt te otorgan un escudo equivalente al 5% por punto del dano infligido. El escudo se calcula sobre el dano final, incluidos los criticos.', maxRank: 2, tier: 3, requires: null },
+  ],
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     {
       id: 'shadow_bolt',
@@ -77,11 +92,11 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.05,
       castType: 'instant',
       cooldown: 0,
-      description: 'Corrompe al enemigo con un DoT de sombra durante 6 turnos. Genera 1 Soul Shard.',
+      description: 'Corrompe al enemigo con un DoT de sombra durante 5 turnos. Genera 1 Soul Shard.',
       isDot: true,
-      dotDuration: 6,
-      damageRanges: [{ rank: 1, level: 4, min: 50, max: 50 }, { rank: 2, level: 10, min: 90, max: 90 }, { rank: 3, level: 16, min: 150, max: 150 }, { rank: 4, level: 22, min: 230, max: 230 }],
-      dotRanges: [{ rank: 1, level: 4, value: 8, duration: 6 }, { rank: 2, level: 10, value: 15, duration: 6 }, { rank: 3, level: 16, value: 25, duration: 6 }, { rank: 4, level: 22, value: 38, duration: 6 }],
+      dotDuration: 5,
+      damageRanges: [{ rank: 1, level: 1, min: 50, max: 50 }, { rank: 2, level: 8, min: 90, max: 90 }, { rank: 3, level: 16, min: 150, max: 150 }, { rank: 4, level: 22, min: 230, max: 230 }],
+      dotRanges: [{ rank: 1, level: 4, value: 10, duration: 5 }, { rank: 2, level: 10, value: 18, duration: 5 }, { rank: 3, level: 16, value: 30, duration: 5 }, { rank: 4, level: 22, value: 46, duration: 5 }],
       generatesShard: 1,
     },
     {
@@ -98,11 +113,11 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.07,
       castType: 'cast',
       cooldown: 0,
-      description: 'Quema al enemigo causando danyo directo y un DoT de fuego durante 4 turnos. Genera 1 Soul Shard.',
+      description: 'Quema al enemigo causando danyo directo y un DoT de fuego durante 3 turnos. Genera 1 Soul Shard.',
       isDot: true,
-      dotDuration: 4,
+      dotDuration: 3,
       damageRanges: [{ rank: 1, level: 6, min: 20, max: 30 }, { rank: 2, level: 12, min: 35, max: 50 }, { rank: 3, level: 18, min: 55, max: 75 }, { rank: 4, level: 24, min: 85, max: 115 }],
-      dotRanges: [{ rank: 1, level: 6, value: 10, duration: 4 }, { rank: 2, level: 12, value: 18, duration: 4 }, { rank: 3, level: 18, value: 30, duration: 4 }, { rank: 4, level: 24, value: 45, duration: 4 }],
+      dotRanges: [{ rank: 1, level: 6, value: 7, duration: 3 }, { rank: 2, level: 12, value: 12, duration: 3 }, { rank: 3, level: 18, value: 18, duration: 3 }, { rank: 4, level: 24, value: 28, duration: 3 }],
       generatesShard: 1,
     },
     {
@@ -119,11 +134,11 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.04,
       castType: 'instant',
       cooldown: 0,
-      description: 'Maldicion que causa un DoT creciente durante 8 turnos. Consume 1 Soul Shard.',
+      description: 'Maldicion que causa un DoT creciente durante 6 turnos. Consume 1 Soul Shard.',
       isDot: true,
-      dotDuration: 8,
+      dotDuration: 6,
       damageRanges: [{ rank: 1, level: 8, min: 66, max: 66 }, { rank: 2, level: 14, min: 121, max: 121 }, { rank: 3, level: 20, min: 198, max: 198 }, { rank: 4, level: 24, min: 286, max: 286 }],
-      dotRanges: [{ rank: 1, level: 8, value: 9, duration: 8 }, { rank: 2, level: 14, value: 15, duration: 8 }, { rank: 3, level: 20, value: 24, duration: 8 }, { rank: 4, level: 24, value: 35, duration: 8 }],
+      dotRanges: [{ rank: 1, level: 8, value: 11, duration: 6 }, { rank: 2, level: 14, value: 20, duration: 6 }, { rank: 3, level: 20, value: 33, duration: 6 }, { rank: 4, level: 24, value: 48, duration: 6 }],
       spendsShards: true,
       shardCost: 1,
     },

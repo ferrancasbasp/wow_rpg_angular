@@ -42,6 +42,12 @@ export const WARRIOR: CharacterClass = {
     { id: 'protection', name: 'Protection', icon: '🛡️', iconImg: 'img/talents/warrior/protection_stance.jpg', effect: 'armorBonus', value: 5 },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'basic_attack', name: 'Basic Attack', icon: '👊', iconImg: 'img/abilities/warrior/basic_attack.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, generatesRage: 5, castType: 'instant', cooldown: 0, description: 'Un golpe básico que genera ira. El daño depende del arma equipada.', usesWeaponDamage: true },
     { id: 'heroic_strike', name: 'Heroic Strike', icon: '⚔️', iconImg: 'img/abilities/rogue/ambush.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 20, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Un golpe potente que gasta ira para hacer daño extra.', weaponMultiplier: 1.0, bonusPerRank: [8, 18, 32, 46, 68] },

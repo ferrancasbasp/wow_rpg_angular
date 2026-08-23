@@ -42,8 +42,15 @@ export const ROGUE: CharacterClass = {
     { id: 'energetic', name: 'Energetic', icon: '🔋', iconImg: 'img/talents/rogue/energetic.jpg', description: 'Aumenta tu energía máxima en 4 por punto.', maxRank: 5, tier: 3, requires: null },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'basic_attack', name: 'Basic Attack', icon: '👊', iconImg: 'img/abilities/rogue/basic_attack.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costEnergy: 0, castType: 'instant', cooldown: 0, description: 'Un golpe básico que no gasta energía.', usesWeaponDamage: true },
+    { id: 'stealth', name: 'Stealth', icon: '🙈', iconImg: '', school: 'Físico', type: 'utility', requiredLevel: 1, costPct: 0, costEnergy: 0, castType: 'instant', cooldown: 0, description: 'Te ocultas y desbloqueas Ambush y Garrote. Se desactiva al atacar o recibir dano. Pulsalo de nuevo para salir del sigilo.', buff: { stat: 'stealth', duration: 999, applySelf: true }, buffRanks: [{ rank: 1, level: 1, value: 0, costEnergy: 0 }] },
     { id: 'sinister_strike', name: 'Sinister Strike', icon: '🗡️', iconImg: 'img/abilities/rogue/sinister_strike.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 20, spellPowerRatio: 0, costPct: 0, costEnergy: 40, castType: 'instant', cooldown: 0, description: 'Un golpe rápido que gasta energía y genera 1 punto de combo.', generatesCombo: 1, weaponMultiplier: 1.0, bonusPerRank: [5, 12, 21, 30, 45] },
     { id: 'eviscerate', name: 'Eviscerate', icon: '🩸', iconImg: 'img/abilities/rogue/eviscerate.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costEnergy: 35, castType: 'instant', cooldown: 0, description: 'Termina el combo. Gasta todos los puntos de combo. Más puntos = más daño.', spendsCombo: true, noWeaponScaling: true, damageRanges: [{ rank: 1, level: 1, min: 10, max: 14 }, { rank: 2, level: 8, min: 18, max: 24 }, { rank: 3, level: 16, min: 30, max: 40 }, { rank: 4, level: 24, min: 48, max: 60 }, { rank: 5, level: 32, min: 72, max: 90 }] },
     { id: 'slice_and_dice', name: 'Slice and Dice', icon: '⚔️', iconImg: 'img/abilities/rogue/slice_and_dice.jpg', school: 'Físico', type: 'utility', requiredLevel: 6, costPct: 0, costEnergy: 25, castType: 'instant', cooldown: 0, description: 'Finisher. Consume todos los puntos de combo. Te da +1 accion por turno durante tantos turnos como puntos de combo gastados.', spendsCombo: true, noWeaponScaling: true, buff: { stat: 'slice_and_dice', duration: 3, applySelf: true }, buffRanks: [{ rank: 1, level: 6, value: 0, costEnergy: 25 }] },

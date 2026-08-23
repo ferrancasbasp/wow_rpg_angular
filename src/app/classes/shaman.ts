@@ -31,6 +31,12 @@ export const SHAMAN: CharacterClass = {
     { id: 'storm_power', name: 'Poder de Tormenta', icon: '🌪️', iconImg: '', description: 'Aumenta tu Poder de Hechizo total un 10% por punto.', maxRank: 2, tier: 3, requires: { id: 'call_of_thunder', points: 2 } },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'lightning_bolt', name: 'Descarga de Rayo', icon: '⚡', iconImg: '', school: 'Naturaleza', type: 'damage', requiredLevel: 1, baseDamage: 50, spellPowerRatio: 0.714, costPct: 0.08, castType: 'cast', cooldown: 0, description: 'Lanza un rayo de energía natural al objetivo.', damageRanges: [{ rank: 1, level: 1, min: 12, max: 18 }, { rank: 2, level: 6, min: 24, max: 34 }, { rank: 3, level: 12, min: 48, max: 62 }, { rank: 4, level: 18, min: 84, max: 104 }, { rank: 5, level: 24, min: 140, max: 172 }] },
     { id: 'earth_shock', name: 'Choque de Tierra', icon: '🌍', iconImg: '', school: 'Naturaleza', type: 'damage', requiredLevel: 4, baseDamage: 40, spellPowerRatio: 0.429, costPct: 0.06, castType: 'instant', cooldown: 1, description: 'Libera una onda de tierra que daña al objetivo.', damageRanges: [{ rank: 1, level: 4, min: 10, max: 16 }, { rank: 2, level: 10, min: 22, max: 32 }, { rank: 3, level: 16, min: 44, max: 60 }, { rank: 4, level: 22, min: 80, max: 104 }] },

@@ -47,6 +47,12 @@ export const BARD: CharacterClass = {
     { id: 'harmonioso', name: 'Harmonioso', icon: '🎵', iconImg: '', description: 'Reduce el coste de mana de tus curas un 5% por punto.', maxRank: 3, tier: 3, requires: null, branch: 2 },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'staccato', name: 'Staccato', icon: '🤺', iconImg: 'img/abilities/bard/staccato.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 20, spellPowerRatio: 0, costPct: 0.04, castType: 'instant', cooldown: 0, usesWeaponDamage: true, generatesNote: 1, description: 'Una estocada rapida y precisa. Genera un Do.' },
     { id: 'scherzo', name: 'Scherzo', icon: '🎭', iconImg: 'img/abilities/bard/scherzo.jpg', school: 'Físico', type: 'damage', requiredLevel: 4, damageType: 'physical', baseDamage: 35, spellPowerRatio: 0.3, costPct: 0.18, castType: 'instant', cooldown: 1, weaponMultiplier: 1.0, generatesNote: 2, description: 'Una finta engañosa que inflige daño adicional. Genera un Re.', bonusPerRank: [12, 24, 38, 55] },

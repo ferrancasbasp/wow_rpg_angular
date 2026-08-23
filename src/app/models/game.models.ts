@@ -143,6 +143,14 @@ export interface Talent {
   branch?: number;
 }
 
+export interface Capstone {
+  id: string;
+  name: string;
+  icon: string;
+  iconImg?: string;
+  description: string;
+}
+
 export interface ComboConfig {
   label: string;
   icon: string;
@@ -195,6 +203,7 @@ export interface CharacterClass {
   resource: ResourceConfig;
   comboConfig?: ComboConfig;
   talents: Talent[];
+  capstones?: Capstone[];
   abilities: Ability[];
   stances?: Stance[];
   talentBranches?: TalentBranch[];
@@ -257,6 +266,7 @@ export interface Character {
   level: number;
   baseStats: Stats;
   talents: Record<string, number>;
+  capstone?: string;
   currentXP: number;
   currentHP: number | null;
   currentMana: number | null;

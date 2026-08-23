@@ -56,6 +56,12 @@ export const MAGE: CharacterClass = {
     { id: 'clearcasting', name: 'Clearcasting', icon: '🔮', iconImg: 'img/talents/mage/clearcasting.jpg', description: 'Tus hechizos tienen un 2% de probabilidad por punto de ser gratuitos al lanzarlos.', maxRank: 5, tier: 3, requires: null },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'fireball', name: 'Fireball', icon: '🔥', iconImg: 'img/abilities/mage/fireball.jpg', school: 'Fuego', type: 'damage', requiredLevel: 1, baseDamage: 60, spellPowerRatio: 1.0, costPct: 0.09, castType: 'cast', cooldown: 0, description: 'Lanza una bola de fuego que explota al impactar.', damageRanges: [{ rank: 1, level: 1, min: 14, max: 22 }, { rank: 2, level: 6, min: 31, max: 45 }, { rank: 3, level: 12, min: 53, max: 73 }, { rank: 4, level: 18, min: 104, max: 166 }, { rank: 5, level: 24, min: 165, max: 265 }] },
     { id: 'fire_blast', name: 'Fire Blast', icon: '💥', iconImg: 'img/abilities/mage/fire_blast.jpg', school: 'Fuego', type: 'damage', requiredLevel: 4, baseDamage: 35, spellPowerRatio: 0.429, costPct: 0.05, castType: 'instant', cooldown: 3, description: 'Una explosión instantánea de llamas al objetivo.', damageRanges: [{ rank: 1, level: 4, min: 16, max: 26 }, { rank: 2, level: 10, min: 30, max: 50 }, { rank: 3, level: 16, min: 56, max: 90 }, { rank: 4, level: 22, min: 99, max: 159 }] },

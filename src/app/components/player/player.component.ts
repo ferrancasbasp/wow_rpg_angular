@@ -131,8 +131,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
+          this.exitStealth();
         } else if (event.type === 'monsterAttack') {
           this.hpAction(event.amount, event.damageType || 'physical');
+          this.exitStealth();
           let effText = '';
           if (event.inflictsEffects && Array.isArray(event.inflictsEffects)) {
             for (const eff of event.inflictsEffects) {
@@ -214,7 +216,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   shardArray(): number[] {
-    return Array.from({ length: 10 }, (_, i) => i + 1);
+    return Array.from({ length: this.charSvc.soulShardMax() }, (_, i) => i + 1);
   }
 
   actionSlotArray(): number[] {
@@ -250,6 +252,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
   onTalentRightClick(event: Event, talentId: string) {
     event.preventDefault();
     this.charSvc.removeTalentPoint(talentId);
+  }
+
+  onCapstoneEnter(capstone: any) {
+    this.hoveredTalent.set({ ...capstone, maxRank: 1, tier: 99, requires: null, isCapstone: true });
+  }
+
+  onCapstoneRightClick(event: Event, capstone: any) {
+    event.preventDefault();
+    if (this.charSvc.selectedCapstone() === capstone.id) {
+      this.charSvc.character.update(c => ({ ...c, capstone: undefined }));
+      this.charSvc.showToast('Capstone deseleccionada');
+    }
   }
 
   onNameInput(event: Event) {
@@ -566,6 +580,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  exitStealth() {
+    if (!this.charSvc.isStealthed()) return;
+    this.charSvc.character.update(c => ({ ...c, activeEffects: (c.activeEffects || []).filter(e => e.target !== 'stealth') }));
+    this.charSvc.showToast(this.trSvc.t('stealth_off'));
+  }
+
   hpAction(amount: number, actionType: string) {
     if (amount <= 0) return;
     this.hpLossAmount.set(0);
@@ -718,6 +738,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (ability.requiresStealth && !this.charSvc.isStealthed()) {
+      this.charSvc.showToast(this.trSvc.t('need_stealth'));
+      return;
+    }
+
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
       if (this.charSvc.getShards() < shardCost) {
@@ -729,6 +754,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsCombo && (this.charSvc.character().comboPoints || 0) === 0) {
       this.charSvc.showToast(this.trSvc.t('no_combo_pts'));
       return;
+    }
+
+    if (this.charSvc.isStealthed()) {
+      this.charSvc.character.update(c => ({ ...c, activeEffects: (c.activeEffects || []).filter(e => e.target !== 'stealth') }));
+      this.charSvc.showToast(this.trSvc.t('stealth_off'));
     }
 
     this.charSvc.useAction(actionCost);
@@ -772,7 +802,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       critChance += this.charSvc.talentRank('magic_resistance') * 1;
     }
     const isCrit = Math.random() * 100 < critChance;
-    if (isCrit) roll = Math.round(roll * 1.5);
+    if (isCrit) {
+      let critMult = 1.5;
+      if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
+        critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.15;
+      }
+      roll = Math.round(roll * critMult);
+    }
     if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') {
       const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
       roll = Math.round(roll * battleMult);
@@ -788,9 +824,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
     }
 
+    let conduitText = '';
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
       this.charSvc.spendShards(shardCost);
+      const recovered = this.charSvc.soulConduitRecover(shardCost);
+      if (recovered > 0) conduitText = ' · Soul Conduit: +' + recovered + ' 🔮';
     }
 
     if (ability.spendsNotes) {
@@ -903,7 +942,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let shardText = '';
     if (ability.generatesShard) {
       this.charSvc.addShard(ability.generatesShard);
-      shardText = ' · +' + ability.generatesShard + ' 🔮 (' + this.charSvc.getShards() + '/10)';
+      shardText = ' · +' + ability.generatesShard + ' 🔮 (' + this.charSvc.getShards() + '/' + this.charSvc.soulShardMax() + ')';
     }
     if (ability.spendsShards) {
       const shardCost = ability.shardCost || 3;
@@ -962,16 +1001,28 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.isDot) {
       let dotTotal = ability.dotTotal;
       let dotTick = ability.dotTick;
+      const dotMasterDur = (ability.id === 'corruption' || ability.id === 'curse_of_agony' || ability.id === 'immolate') ? this.charSvc.talentRank('dot_master') : 0;
+      const baseDotDur = (ability.dotDuration || 1) - dotMasterDur;
       if (evText) {
         const boost = 1 + this.charSvc.talentRank('evangelism') * 0.03;
         dotTotal = Math.round(dotTotal * boost);
-        dotTick = Math.round(dotTotal / ability.dotDuration);
+        dotTick = Math.round(dotTotal / baseDotDur);
+      }
+      const displayedTotal = dotTick * ability.dotDuration;
+      let directText = '';
+      if (ability.id === 'immolate') {
+        const min = ability.currentMin || 0;
+        const max = ability.currentMax || 0;
+        const direct = Math.round((min + Math.floor(Math.random() * (max - min + 1))) / 2);
+        directText = ' +' + direct + ' directo';
+        this.charSvc.turnDamage.update(d => d + direct);
+        this.charSvc.sendDamageEvent({ ...ability, isDot: false }, direct, 1, 1);
       }
       const impGarrote = this.charSvc.talentRank('improved_garrote');
       if (ability.id === 'garrote' && impGarrote > 0) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + dotTotal + ' total) + Silencio' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
+          ability.dotDuration + 't (' + displayedTotal + ' total) + Silencio' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
         );
         this.charSvc.sendDamageEvent(ability, 0, 1, 1);
         this.charSvc.sendDamageEvent({
@@ -984,7 +1035,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + dotTotal + ' total)' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
+          ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
         );
         this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
@@ -992,6 +1043,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
       const resonanceRank = this.charSvc.talentRank('resonance');
       if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
+      if (ability.id === 'healthstone') {
+        healBonus *= (1 + this.charSvc.talentRank('improved_healthstone') * 0.25);
+      }
       if (ability.id === 'vivace') {
         const ivRank = this.charSvc.talentRank('improved_vivace');
         if (ivRank > 0) healBonus *= (1 + ivRank * 0.10);
@@ -1058,16 +1112,31 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.turnDamage.update(d => d + roll);
       let lifestealText = '';
       if (ability.lifestealPct) {
-        const heal = Math.round(roll * ability.lifestealPct);
+        const idlRank = this.charSvc.talentRank('improved_drain_life');
+        const heal = Math.round(roll * ability.lifestealPct * (1 + idlRank * 0.10));
         this.charSvc.character.update(c => ({
           ...c,
           currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + heal),
         }));
         lifestealText = ' · +' + heal + ' vida';
       }
+      const slRank = this.charSvc.talentRank('soul_leech');
+      if (slRank > 0 && (ability.id === 'shadow_bolt' || ability.id === 'chaos_bolt')) {
+        const shieldAmt = Math.round(roll * slRank * 0.05);
+        if (shieldAmt > 0) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.target !== 'shield'),
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Soul Leech', target: 'shield', value: shieldAmt, duration: 99 },
+            ],
+          }));
+          lifestealText += ' · 🛡️ +' + shieldAmt + ' escudo';
+        }
+      }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + lifestealText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -1119,6 +1188,28 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
+      return;
+    }
+
+    if (ability.id === 'stealth') {
+      if (this.charSvc.isStealthed()) {
+        this.charSvc.character.update(c => ({ ...c, activeEffects: (c.activeEffects || []).filter(e => e.target !== 'stealth') }));
+        this.charSvc.showToast(this.trSvc.t('stealth_off'));
+        return;
+      }
+      if (!this.charSvc.canAct(1)) {
+        this.charSvc.showToast(this.trSvc.t('sin_acciones'));
+        return;
+      }
+      this.charSvc.useAction(1);
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.target !== 'stealth'),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Stealth', target: 'stealth', value: 0, duration: 999 },
+        ],
+      }));
+      this.charSvc.showToast(this.trSvc.t('stealth_on'));
       return;
     }
 
@@ -1387,7 +1478,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resourceMax = this.charSvc.resourceMax();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], currentCooldowns: {}, activeEffects: effects };
+      const pocket = this.charSvc.talentRank('pocket_shards');
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
@@ -1528,7 +1620,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   resetTalents() {
     if (confirm('¿Resetear todos los talentos? Los puntos seran devueltos.')) {
-      this.charSvc.character.update(c => ({ ...c, talents: {} }));
+      this.charSvc.character.update(c => ({ ...c, talents: {}, capstone: undefined }));
       this.charSvc.showToast('Talentos reseteados');
     }
   }

@@ -41,6 +41,12 @@ export const DRUID: CharacterClass = {
     { id: 'clearcasting', name: 'Clearcasting', icon: '🔮', iconImg: 'img/talents/druid/clearcasting.jpg', description: 'Tus hechizos tienen un 2% de probabilidad por punto de ser gratuitos al lanzarlos.', maxRank: 5, tier: 3, requires: null },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'wrath', name: 'Wrath', icon: '☀️', iconImg: 'img/abilities/druid/wrath.jpg', school: 'Naturaleza', type: 'damage', requiredLevel: 1, damageType: 'magical', baseDamage: 55, spellPowerRatio: 0.85, costPct: 0.07, castType: 'cast', cooldown: 0, generatesCombo: 1, description: 'Lanza energía solar al objetivo. Genera 1 Fase Lunar.', damageRanges: [{ rank: 1, level: 1, min: 15, max: 20 }, { rank: 2, level: 8, min: 35, max: 45 }, { rank: 3, level: 14, min: 60, max: 75 }] },
     { id: 'moonfire', name: 'Moonfire', icon: '🌙', iconImg: 'img/abilities/druid/moonfire.jpg', school: 'Arcano', type: 'damage', requiredLevel: 4, damageType: 'magical', baseDamage: 20, spellPowerRatio: 0.4, costPct: 0.09, castType: 'instant', cooldown: 0, generatesCombo: 1, isDot: true, dotDuration: 3, description: 'Quema al enemigo y le inflige daño durante 3 turnos. Genera 1 Fase Lunar.', damageRanges: [{ rank: 1, level: 4, min: 18, max: 22 }, { rank: 2, level: 10, min: 30, max: 40 }, { rank: 3, level: 16, min: 55, max: 65 }], inflictsEffects: [{ type: 'dot', name: 'Moonfire', value: 10, duration: 3, debuffType: 'magic' }], dotScales: true, dotRanges: [{ rank: 1, level: 4, value: 10, duration: 3 }, { rank: 2, level: 10, value: 18, duration: 3 }, { rank: 3, level: 16, value: 25, duration: 3 }] },

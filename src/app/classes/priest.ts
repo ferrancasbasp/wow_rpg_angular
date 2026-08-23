@@ -36,6 +36,12 @@ export const PRIEST: CharacterClass = {
     { id: 'improved_renew', name: 'Improved Renew', icon: '🌿', iconImg: 'img/abilities/priest/renew.jpg', description: 'Aumenta la duración de Renew 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
   ],
 
+  capstones: [
+    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+  ],
+
   abilities: [
     { id: 'basic_attack', name: 'Basic Attack', icon: '⚔️', iconImg: 'img/talents/priest/beligerance.jpg', school: 'Físico', category: 'holy', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, castType: 'instant', cooldown: 0, description: 'Un golpe básico.', usesWeaponDamage: true },
     { id: 'smite', name: 'Smite', icon: '✨', iconImg: 'img/abilities/priest/smite.jpg', school: 'Sagrado', category: 'holy', type: 'damage', requiredLevel: 1, damageType: 'magical', baseDamage: 15, spellPowerRatio: 0.571, costPct: 0.08, castType: 'cast', cooldown: 0, description: 'Daño sagrado al enemigo.', damageRanges: [{ rank: 1, level: 1, min: 10, max: 14 }, { rank: 2, level: 6, min: 18, max: 24 }, { rank: 3, level: 12, min: 32, max: 42 }, { rank: 4, level: 18, min: 54, max: 70 }, { rank: 5, level: 24, min: 88, max: 112 }] },

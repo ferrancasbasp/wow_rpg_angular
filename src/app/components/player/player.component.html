@@ -137,6 +137,9 @@
                 <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
               }
             </div>
+            @if (charSvc.character().classKey === 'rogue' && charSvc.isStealthed()) {
+              <span class="stealth-icon" [title]="trSvc.t('stealth')">🙈</span>
+            }
           </div>
         }
       </div>
@@ -537,14 +540,48 @@
                     </div>
                   </div>
                 }
+                @if (charSvc.classConfig().capstones?.length) {
+                  <div class="wow-tier-row capstone-row" [class.tier-locked]="!charSvc.capstoneUnlocked()">
+                    <div class="wow-tier-label">
+                      {{ trSvc.t('capstone') }}
+                      @if (!charSvc.capstoneUnlocked()) {
+                        <span class="tier-lock-hint"> ({{ trSvc.t('requires_n_talents') }})</span>
+                      }
+                    </div>
+                    <div class="wow-tier-nodes">
+                      @for (capstone of charSvc.capstones(); track capstone.id) {
+                        <div class="wow-node" [class]="charSvc.capstoneNodeClass(capstone)"
+                             (click)="charSvc.selectCapstone(capstone.id)"
+                             (contextmenu)="onCapstoneRightClick($event, capstone)"
+                             (mouseenter)="onCapstoneEnter(capstone)"
+                             (mouseleave)="hoveredTalent.set(null)">
+                          <div class="wow-node-icon">
+                            @if (capstone.iconImg) {
+                              <img [src]="capstone.iconImg" (error)="onTalentImgError($event)">
+                            } @else {
+                              <span class="wow-node-emoji">{{ capstone.icon }}</span>
+                            }
+                            <span class="wow-node-rank">1/1</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
             </div>
             <div class="talent-info-panel">
               @if (hoveredTalent()) {
                 <div class="talent-info-name">{{ hoveredTalent().name }}</div>
-                <div class="talent-info-rank">{{ trSvc.t('rank') }} {{ charSvc.talentRank(hoveredTalent().id) }} {{ trSvc.t('of') }} {{ hoveredTalent().maxRank }}</div>
+                <div class="talent-info-rank">
+                  @if (hoveredTalent().isCapstone) {
+                    {{ charSvc.selectedCapstone() === hoveredTalent().id ? trSvc.t('capstone_selected') : trSvc.t('capstone') }}
+                  } @else {
+                    {{ trSvc.t('rank') }} {{ charSvc.talentRank(hoveredTalent().id) }} {{ trSvc.t('of') }} {{ hoveredTalent().maxRank }}
+                  }
+                </div>
                 <div class="talent-info-desc">{{ trSvc.tTalentDesc(hoveredTalent().id, hoveredTalent().description, charSvc.character().classKey) }}</div>
-                @if (charSvc.getTalentEffectText(hoveredTalent().id)) {
+                @if (!hoveredTalent().isCapstone && charSvc.getTalentEffectText(hoveredTalent().id)) {
                   <div class="talent-info-effect">{{ charSvc.getTalentEffectText(hoveredTalent().id) }}</div>
                 }
                 @if (hoveredTalent().requires) {
@@ -555,7 +592,11 @@
                     </span>
                   </div>
                 }
-                <div class="talent-info-hint">{{ trSvc.t('click_add_right_remove') }}</div>
+                @if (!hoveredTalent().isCapstone) {
+                  <div class="talent-info-hint">{{ trSvc.t('click_add_right_remove') }}</div>
+                } @else {
+                  <div class="talent-info-hint">{{ trSvc.t('capstone_hint') }}</div>
+                }
               } @else {
                 <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
               }

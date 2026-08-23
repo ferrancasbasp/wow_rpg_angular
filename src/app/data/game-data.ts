@@ -154,6 +154,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     level: cls?.startingLevel || 1,
     baseStats: { ...cls?.baseStats } as Stats,
     talents: {},
+    capstone: undefined,
     currentXP: 0,
     currentHP: null,
     currentMana: null,

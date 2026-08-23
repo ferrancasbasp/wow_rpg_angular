@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet } from '../models/game.models';
+import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet, Capstone } from '../models/game.models';
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, STORAGE_KEY, EQUIPMENT_SLOTS } from '../data/game-data';
@@ -70,6 +70,10 @@ export class CharacterService {
           else hp += eff.value;
         }
       }
+    }
+    const demonicEmbrace = this.talentRank('demonic_embrace');
+    if (demonicEmbrace > 0 && (effects || []).some(e => e.type === 'buff' && e.name === 'Fel Armor')) {
+      hp = Math.round(hp * (1 + demonicEmbrace * 0.10));
     }
     return hp;
   });
@@ -412,7 +416,11 @@ export class CharacterService {
       }
       let dotTick = 0, dotDuration = 0, dotTotal = 0;
       if (a.isDot) {
-        dotDuration = a.dotDuration || 1;
+        const baseDotDuration = a.dotDuration || 1;
+        dotDuration = baseDotDuration;
+        if (a.id === 'corruption' || a.id === 'curse_of_agony' || a.id === 'immolate') {
+          dotDuration += this.talentRank('dot_master');
+        }
         dotTotal = minVal;
         if (a.id === 'shadow_word_pain') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_pain') * 0.10));
@@ -420,7 +428,7 @@ export class CharacterService {
         if (a.id === 'garrote') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_garrote') * 0.20));
         }
-        dotTick = Math.round(dotTotal / dotDuration);
+        dotTick = Math.round(dotTotal / baseDotDuration);
       }
       return {
         ...a,
@@ -693,6 +701,37 @@ export class CharacterService {
     return 'wow-node-grey';
   }
 
+  capstones(): Capstone[] {
+    return this.classConfig().capstones || [];
+  }
+
+  capstoneUnlocked(): boolean {
+    return this.spentTalentPoints() >= 15;
+  }
+
+  selectedCapstone(): string | null {
+    return this.character().capstone || null;
+  }
+
+  capstoneNodeClass(capstone: any): string {
+    if (!this.capstoneUnlocked()) return 'wow-node-locked';
+    if (this.selectedCapstone() === capstone.id) return 'wow-node-maxed';
+    if (this.selectedCapstone()) return 'wow-node-grey';
+    return 'wow-node-available';
+  }
+
+  selectCapstone(id: string) {
+    if (this.selectedCapstone()) return;
+    const capstone = this.classConfig().capstones?.find(c => c.id === id);
+    if (!capstone) return;
+    if (!this.capstoneUnlocked()) {
+      this.showToast('Necesitas 15 puntos de talento para elegir una capstone.');
+      return;
+    }
+    this.character.update(c => ({ ...c, capstone: id }));
+    this.showToast(capstone.name + ' seleccionada.');
+  }
+
   getTalentEffectText(talentId: string): string {
     const rank = this.talentRank(talentId);
     if (rank === 0) return '';
@@ -886,6 +925,7 @@ export class CharacterService {
    sendHealEvent(ability: any, healAmount: number) {
     this.registerPlayer();
     try {
+      const healbackPct = ability.id === 'healthstone' ? this.talentRank('improved_healthstone') * 0.25 : 0;
       this.firebase.pushData('damageEvents', {
         player: this.character().name || 'Jugador',
         ability: `${ability.name} (Cura)`,
@@ -898,6 +938,7 @@ export class CharacterService {
         hotTick: ability.hotTick || 0,
         hotDuration: ability.hotDuration || 0,
         isShield: ability.id === 'power_word_shield',
+        healbackPct,
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
@@ -1239,14 +1280,22 @@ export class CharacterService {
     }));
   }
 
+  isStealthed(): boolean {
+    return !!(this.character().activeEffects || []).some(e => e.target === 'stealth');
+  }
+
   getShards(): number {
     return this.character().soulShards || 0;
+  }
+
+  soulShardMax(): number {
+    return 5 + this.talentRank('pocket_shards');
   }
 
   addShard(amount: number) {
     this.character.update(c => ({
       ...c,
-      soulShards: Math.min(10, (c.soulShards || 0) + amount),
+      soulShards: Math.min(this.soulShardMax(), (c.soulShards || 0) + amount),
     }));
   }
 
@@ -1258,6 +1307,24 @@ export class CharacterService {
       soulShards: current - amount,
     }));
     return true;
+  }
+
+  soulConduitRecover(shardCount: number): number {
+    if (this.character().classKey !== 'warlock') return 0;
+    const sc = this.talentRank('soul_conduit');
+    if (sc <= 0) return 0;
+    const chance = sc * 0.20;
+    let recovered = 0;
+    for (let i = 0; i < shardCount; i++) {
+      if (Math.random() * 100 < chance) {
+        this.character.update(c => ({
+          ...c,
+          soulShards: Math.min(this.soulShardMax(), (c.soulShards || 0) + 1),
+        }));
+        recovered++;
+      }
+    }
+    return recovered;
   }
 
   castPetAbility(ability: any): boolean {
