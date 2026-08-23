@@ -623,6 +623,8 @@ export class TranslationService {
     warlock_shadow_kiss: { es: 'La succubo lanza un beso oscuro que causa danyo y reduce el danyo del objetivo un 15% durante 2 turnos. Cuesta mana de la pet.', en: 'The succubus blows a dark kiss that deals damage and reduces the target\'s damage by 15% for 2 turns. Costs pet mana.' },
     warlock_summon_infernal: { es: 'Coste: 2 Soul Shards. Invoca un Infernal que aterriza causando daño de Fuego a todos los enemigos cercanos y aturdiendolos 1 turno. Lucha a tu lado durante 4 turnos sin sustituir a tu demonio actual.', en: 'Cost: 2 Soul Shards. Summons an Infernal that lands dealing Fire damage to all nearby enemies and stunning them for 1 turn. It fights by your side for 4 turns without replacing your current demon.' },
     warlock_demonic_transformation: { es: 'Coste: 2 Soul Shards. Te transformas en un demonio durante 2 turnos: +25% Spell Power, +25% prob. critico y +25% danyo critico. Recibes un 15% mas de danyo.', en: 'Cost: 2 Soul Shards. Transform into a demon for 2 turns: +25% Spell Power, +25% crit chance and +25% crit damage. You take 15% more damage.' },
+    druid_insect_swarm: { es: 'Enjambre de insectos: baja un 50% el ataque del enemigo durante 2 turnos. CD 2.', en: 'Insect swarm: lowers the enemy\'s attack by 50% for 2 turns. CD 2.' },
+    druid_nature_guardian: { es: 'Llena tus Fases Lunares y lanza un Starsurge a máxima potencia. CD 10.', en: 'Fills your Lunar Phases and launches a Starsurge at maximum power. CD 10.' },
   };
 
   tDesc(id: string, fallback: string, classKey?: string): string {
@@ -705,6 +707,9 @@ export class TranslationService {
     bard_improved_fermata: { es: 'Tras lanzar Fermata, aumentas tu armadura fisica en 14 por punto.', en: 'After casting Fermata, increases your physical armor by 14 per point.' },
     bard_maestro: { es: 'Los remates tienen un 15% de probabilidad por punto de devolverte un punto de accion.', en: 'Finishers have a 15% chance per point to refund an action point.' },
     bard_improved_diminuendo: { es: 'Aumenta la efectividad del debuff de Diminuendo un 10% por punto.', en: 'Increases the effectiveness of Diminuendo\'s debuff by 10% per point.' },
+    druid_gift_of_the_wild: { es: 'Pasiva. Aumenta todas tus estadísticas en una cantidad igual a tu nivel. A nivel 25, +25 a todas las estadísticas.', en: 'Passive. Increases all your stats by an amount equal to your level. At level 25, +25 to all stats.' },
+    druid_insect_swarm: { es: 'Invoca un enjambre de insectos que reduce enormemente el ataque del enemigo un 50% durante 2 turnos. CD 2.', en: 'Summons a swarm of insects that greatly reduces the enemy\'s attack by 50% for 2 turns. CD 2.' },
+    druid_nature_guardian: { es: 'El poder de la naturaleza te envuelve: llena tu barra de Fases Lunares al máximo y lanza un Starsurge como si tuvieses todas las fases. CD 10.', en: 'Nature\'s power surrounds you: fills your Lunar Phases bar and launches a Starsurge as if you had all phases. CD 10.' },
     bard_ballerino: { es: 'Aumenta tu Agilidad un 2% por punto.', en: 'Increases your Agility by 2% per point.' },
     bard_harmonioso: { es: 'Reduce el coste de mana de tus curas un 5% por punto.', en: 'Reduces the mana cost of your heals by 5% per point.' },
     warlock_pocket_shards: { es: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', en: 'After a rest, you keep 1 Soul Shard and increase your maximum Soul Shards by 1 per point.' },

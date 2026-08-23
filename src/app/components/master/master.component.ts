@@ -18,6 +18,7 @@ interface MonsterEffect {
   name: string;
   value?: number;
   stat?: string;
+  target?: string;
   duration: number;
   debuffType?: string;
 }
@@ -423,9 +424,16 @@ export class MasterComponent implements OnInit {
   }
 
   rollMonsterAttack(monster: Monster, attack: MonsterAttack) {
-    const roll =
+    let roll =
       attack.min +
       Math.floor(Math.random() * (attack.max - attack.min + 1));
+    if (monster.effects) {
+      for (const eff of monster.effects) {
+        if (eff.type === 'debuff' && (eff.target === 'attackPower' || eff.stat === 'attackPower')) {
+          roll = Math.max(0, Math.round(roll * (1 - (eff.value || 0) / 100)));
+        }
+      }
+    }
     const dotText = this.processMonsterEffects(monster);
     this.attackingId.set(monster.id);
     setTimeout(() => {

@@ -1556,6 +1556,24 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castIcyVeins(ability);
     } else if (ability.id === 'arcane_power') {
       this.castArcanePower(ability);
+    } else if (ability.id === 'nature_guardian') {
+      const comboMax = this.charSvc.classConfig().comboConfig?.max || 4;
+      const baseStars = this.charSvc.classConfig().abilities.find(a => a.id === 'starsurge');
+      if (baseStars) {
+        const sRank = this.charSvc.maxAvailableRank(baseStars);
+        const sDr = (baseStars.damageRanges || []).filter(d => d.rank === sRank).pop() || (baseStars.damageRanges || [])[baseStars.damageRanges!.length - 1];
+        const sp = Math.round(this.charSvc.spellPower() * (baseStars.spellPowerRatio || 1));
+        const stars = {
+          ...baseStars,
+          currentRank: sRank,
+          currentMin: (sDr?.min || 0) + sp,
+          currentMax: (sDr?.max || 0) + sp,
+          scaledCost: Math.round((baseStars.costPct || 0) * this.charSvc.maxMana()),
+        };
+        this.charSvc.character.update(c => ({ ...c, comboPoints: comboMax }));
+        this.charSvc.showToast(ability.name + ': Fases Lunares al maximo · Starsurge potenciado');
+        this.castSpell(stars);
+      }
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {

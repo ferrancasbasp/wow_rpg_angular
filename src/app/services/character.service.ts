@@ -55,6 +55,9 @@ export class CharacterService {
         const ballerino = this.talentRank('ballerino');
         if (ballerino > 0) result[key] = Math.round(result[key] * (1 + ballerino * 0.02));
       }
+      if (this.selectedCapstone() === 'gift_of_the_wild') {
+        result[key] += level;
+      }
     }
     return result;
   });
