@@ -40,7 +40,7 @@ export const WARLOCK: CharacterClass = {
   capstones: [
     { id: 'summon_infernal', name: 'Summon Infernal', icon: '🔥', iconImg: 'img/capstones/warlock/sumon_infernal.jpg', description: 'Coste: 2 Soul Shards. Invoca un Infernal desde el Twisting Nether. Al aterrizar, inflige daño de Fuego a todos los enemigos cercanos y los aturde durante 1 turno. El Infernal lucha a tu lado durante 4 turnos. Invocar un Infernal no sustituye ni hace desaparecer a tu demonio actual.' },
     { id: 'seed_of_corruption', name: 'Seed of Corruption', icon: '🌱', iconImg: 'img/capstones/warlock/seed_of_corruption.jpg', description: 'Coste: 35% de mana y 1 Soul Shard. Aplica un DoT propio potenciado (Seed of Corruption, +10% danyo) a todos los enemigos. Genera 1 Soul Shard por cada enemigo afectado, hasta un maximo de 5.' },
-    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'demonic_sacrifice', name: 'Demonic Sacrifice', icon: '💀', iconImg: 'img/capstones/warlock/demonic_sacrifice.jpg', description: 'Coste: 2 Soul Shards. Sacrificas tu demonio invocado y obtienes un efecto permanente durante el combate: Imp - Burning Soul (+20% Spell Power); Voidwalker - Void Fortitude (+25% vida maxima y escudo instantaneo del 25%). Se pierde al invocar cualquier pet.' },
   ],
 
   abilities: [
@@ -274,6 +274,23 @@ export const WARLOCK: CharacterClass = {
       spendsShards: true,
       shardCost: 1,
       capstoneGate: 'seed_of_corruption',
+    },
+    {
+      id: 'demonic_sacrifice',
+      name: 'Demonic Sacrifice',
+      icon: '💀',
+      iconImg: 'img/capstones/warlock/demonic_sacrifice.jpg',
+      school: 'Demoniaco',
+      type: 'utility',
+      requiredLevel: 0,
+      costPct: 0,
+      castType: 'instant',
+      cooldown: 0,
+      description: 'Coste: 2 Soul Shards. Sacrificas tu demonio actual: Imp - Burning Soul (+20% Spell Power); Voidwalker - Void Fortitude (+25% vida maxima y escudo del 25%). El efecto dura toda la batalla y se pierde al invocar cualquier pet.',
+      buff: null,
+      spendsShards: true,
+      shardCost: 2,
+      capstoneGate: 'demonic_sacrifice',
     },
     {
       id: 'unsummon_pet',

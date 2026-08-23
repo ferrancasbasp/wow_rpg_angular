@@ -300,6 +300,48 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🔥 Infernal aterriza! ' + dmg + ' danyo de Fuego a todos · stun 1 turno · lucha ' + turns + ' turnos');
   }
 
+  castDemonicSacrifice(ability: any) {
+    const shardCost = ability.shardCost || 2;
+    if (!this.charSvc.spendShards(shardCost)) {
+      this.charSvc.showToast(this.trSvc.t('need_shards') + ' ' + shardCost + ' ' + this.trSvc.t('soul_shards_plural'));
+      return;
+    }
+    const pet = this.charSvc.activePetData();
+    if (!pet) {
+      this.charSvc.addShard(shardCost);
+      this.charSvc.showToast('No tienes un demonio invocado para sacrificar');
+      return;
+    }
+    const now = Date.now() + Math.random();
+    const maxHp = this.charSvc.maxHP();
+    if (pet.id === 'imp') {
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.name !== 'Burning Soul'),
+          { id: now, type: 'buff' as const, name: 'Burning Soul', target: 'spellPower', value: 20, duration: 999, isPercent: true },
+        ],
+      }));
+      this.charSvc.showToast('💀 Sacrificaste al Imp · Burning Soul: +20% Spell Power (toda la batalla)');
+    } else if (pet.id === 'voidwalker') {
+      const shieldAmt = Math.round(maxHp * 0.25);
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.name !== 'Void Fortitude' && e.target !== 'shield'),
+          { id: now, type: 'buff' as const, name: 'Void Fortitude', target: 'maxHP', value: 25, duration: 999, isPercent: true },
+          { id: now + 1, type: 'buff' as const, name: 'Void Fortitude', target: 'shield', value: shieldAmt, duration: 999 },
+        ],
+      }));
+      this.charSvc.showToast('💀 Sacrificaste al Voidwalker · Void Fortitude: +25% vida maxima y escudo de ' + shieldAmt + ' HP');
+    } else {
+      this.charSvc.addShard(shardCost);
+      this.charSvc.showToast('Ese demonio no puede ser sacrificado (aun)');
+      return;
+    }
+    this.charSvc.dismissPet();
+  }
+
   castSeedOfCorruption(ability: any) {
     const shardCost = ability.shardCost || 1;
     if (!this.charSvc.spendShards(shardCost)) {
@@ -1638,6 +1680,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castSummonInfernal(ability);
     } else if (ability.id === 'seed_of_corruption') {
       this.castSeedOfCorruption(ability);
+    } else if (ability.id === 'demonic_sacrifice') {
+      this.castDemonicSacrifice(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {

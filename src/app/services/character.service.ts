@@ -1260,6 +1260,7 @@ export class CharacterService {
         currentHP: petHP,
         currentMana: Math.round(this.maxMana() * pet.manaPct),
       },
+      activeEffects: (c.activeEffects || []).filter(e => e.name !== 'Burning Soul' && e.name !== 'Void Fortitude'),
     }));
     const playerName = (this.character().name || '').trim();
     if (playerName) {
