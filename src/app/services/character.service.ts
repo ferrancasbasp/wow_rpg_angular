@@ -135,7 +135,8 @@ export class CharacterService {
     const stanceBonus = this.warriorStance() === 'fury' ? (5 + impStances * 2) : 0;
     const fromTalent = this.talentRank('cruelty') + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
-    return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff).toFixed(2);
+    const fromReckless = this.hasEffect('recklessness') ? 20 : 0;
+    return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff + fromReckless).toFixed(2);
   });
 
   readonly attackPower = computed<number>(() => {
