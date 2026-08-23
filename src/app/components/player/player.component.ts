@@ -335,6 +335,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo (' + duration + ' turnos)');
   }
 
+  castPoisonMastery(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'poison_mastery'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Poison Mastery', target: 'poison_mastery', value: 0, duration },
+      ],
+    }));
+    this.charSvc.showToast('☠️ Poison Mastery activa · Veneno Mortal x2 y Veneno Vampírico x3 (' + duration + ' turnos)');
+  }
+
   castShieldWall(ability: any) {
     const duration = 3;
     this.charSvc.character.update(c => ({
@@ -1532,6 +1544,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {
       this.castBladeFlurry(ability);
+    } else if (ability.id === 'poison_mastery') {
+      this.castPoisonMastery(ability);
     } else if (ability.id === 'shield_wall') {
       this.castShieldWall(ability);
     } else if (ability.id === 'recklessness') {

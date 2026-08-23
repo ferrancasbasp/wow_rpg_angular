@@ -645,7 +645,9 @@ export class CharacterService {
     const effects = this.character().activeEffects;
     if (!effects) return 0;
     for (const eff of effects) {
-      if (eff.type === 'buff' && eff.target === 'poisonDamage') return eff.value;
+      if (eff.type === 'buff' && eff.target === 'poisonDamage') {
+        return eff.value * (this.hasEffect('poison_mastery') ? 2 : 1);
+      }
     }
     return 0;
   }
@@ -654,7 +656,9 @@ export class CharacterService {
     const effects = this.character().activeEffects;
     if (!effects) return 0;
     for (const eff of effects) {
-      if (eff.type === 'buff' && eff.target === 'leechPoison') return eff.value;
+      if (eff.type === 'buff' && eff.target === 'leechPoison') {
+        return eff.value * (this.hasEffect('poison_mastery') ? 3 : 1);
+      }
     }
     return 0;
   }
