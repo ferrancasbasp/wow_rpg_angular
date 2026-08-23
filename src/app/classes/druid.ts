@@ -14,9 +14,9 @@ export const DRUID: CharacterClass = {
     manaRegen: (s) => Math.round(s.espiritu * 0.35 + 10),
   },
 
-  baseStats: { fuerza: 5, agilidad: 4, intelecto: 18, aguante: 15, espiritu: 20 },
+  baseStats: { fuerza: 15, agilidad: 14, intelecto: 18, aguante: 15, espiritu: 20 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.2, agilidad: 0.2, intelecto: 1.6, aguante: 0.7, espiritu: 1.8 },
+  statGrowth: { fuerza: 0.35, agilidad: 0.35, intelecto: 1.6, aguante: 0.7, espiritu: 1.8 },
   armor: 5,
   magicResist: 5,
 
