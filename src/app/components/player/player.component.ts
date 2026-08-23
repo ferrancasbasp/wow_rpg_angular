@@ -360,7 +360,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   castCombustion(ability: any) {
-    const duration = 2;
+    const duration = 3;
     this.charSvc.character.update(c => ({
       ...c,
       activeEffects: [
