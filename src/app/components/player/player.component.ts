@@ -594,7 +594,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           damage: 0,
           damageType: 'physical',
           aoe: false,
-          effects: [{ type: 'debuff', name: 'Taunt', target: 'taunt', value: petPlayerName, duration: 2, debuffType: 'none' }],
+          effects: [{ type: 'debuff', name: 'Suffering', target: 'taunt', value: petPlayerName, duration: 2, debuffType: 'none' }],
           turn: this.charSvc.turnNumber(),
           timestamp: Date.now(),
           assigned: false,
