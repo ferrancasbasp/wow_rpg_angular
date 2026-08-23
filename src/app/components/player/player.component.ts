@@ -308,16 +308,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     const corr = this.charSvc.computedAbilities().find(a => a.id === 'corruption');
     let dotTick = 10;
-    let dotDuration = 5;
     if (corr && ((corr as any).dotTick || (corr as any).currentDotValue)) {
       dotTick = (corr as any).dotTick || (corr as any).currentDotValue || 10;
-      dotDuration = (corr as any).dotDuration || 5;
     } else {
       const rank = this.charSvc.maxAvailableRank(this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')!);
       const dr = (this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')?.dotRanges || []).find(d => d.rank === rank);
       if (dr) {
         dotTick = dr.value;
-        dotDuration = dr.duration;
       }
     }
     const boosted = Math.round(dotTick * 1.10);
@@ -328,13 +325,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       damage: 0,
       damageType: 'magical',
       aoe: true,
-      effects: [{ type: 'dot', name: 'Corruption', value: boosted, duration: dotDuration, debuffType: 'shadow' }],
+      effects: [{ type: 'dot', name: 'Seed of Corruption', value: boosted, duration: 5, debuffType: 'shadow' }],
       seedShards: true,
       turn: this.charSvc.turnNumber(),
       timestamp: Date.now(),
       assigned: false,
     });
-    this.charSvc.showToast(ability.name + ': Corruption potenciada (+10%) a todos los enemigos · el Master devuelve 1 Soul Shard por enemigo (max 5)');
+    this.charSvc.showToast(ability.name + ': DoT potenciado (+10%) a todos los enemigos · -35% mana · el Master devuelve 1 Soul Shard por enemigo (max 5)');
   }
 
   castShadowDance(ability: any) {

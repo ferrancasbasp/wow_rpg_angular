@@ -39,7 +39,7 @@ export const WARLOCK: CharacterClass = {
   ],
   capstones: [
     { id: 'summon_infernal', name: 'Summon Infernal', icon: '🔥', iconImg: 'img/capstones/warlock/sumon_infernal.jpg', description: 'Coste: 2 Soul Shards. Invoca un Infernal desde el Twisting Nether. Al aterrizar, inflige daño de Fuego a todos los enemigos cercanos y los aturde durante 1 turno. El Infernal lucha a tu lado durante 4 turnos. Invocar un Infernal no sustituye ni hace desaparecer a tu demonio actual.' },
-    { id: 'seed_of_corruption', name: 'Seed of Corruption', icon: '🌱', iconImg: 'img/capstones/warlock/seed_of_corruption.jpg', description: 'Coste: 1 Soul Shard. Aplica una versión potenciada de Corruption (+10% danyo) a todos los enemigos. Genera 1 Soul Shard por cada enemigo afectado, hasta un maximo de 5.' },
+    { id: 'seed_of_corruption', name: 'Seed of Corruption', icon: '🌱', iconImg: 'img/capstones/warlock/seed_of_corruption.jpg', description: 'Coste: 35% de mana y 1 Soul Shard. Aplica un DoT propio potenciado (Seed of Corruption, +10% danyo) a todos los enemigos. Genera 1 Soul Shard por cada enemigo afectado, hasta un maximo de 5.' },
     { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
   ],
 
@@ -266,10 +266,10 @@ export const WARLOCK: CharacterClass = {
       school: 'Oscuro',
       type: 'utility',
       requiredLevel: 0,
-      costPct: 0,
+      costPct: 0.35,
       castType: 'instant',
       cooldown: 0,
-      description: 'Coste: 1 Soul Shard. Aplica una version potenciada de Corruption (+10% danyo) a todos los enemigos. El Master devuelve 1 Soul Shard por cada enemigo afectado (max 5).',
+      description: 'Coste: 35% de mana y 1 Soul Shard. Aplica un DoT propio potenciado (Seed of Corruption, +10% danyo) a todos los enemigos. El Master devuelve 1 Soul Shard por cada enemigo afectado (max 5).',
       buff: null,
       spendsShards: true,
       shardCost: 1,
