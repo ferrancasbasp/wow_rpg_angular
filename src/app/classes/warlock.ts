@@ -365,9 +365,11 @@ export const WARLOCK: CharacterClass = {
       costPct: 0,
       castType: 'instant',
       cooldown: 4,
-      description: 'El imp sacrifica un 15% de su vida por talento de Grimoire of Command y lanza ese dano en area a todos los enemigos. Si su vida llega a 0, desaparece.',
+      description: 'Sin Grimoire of Command otorga +Aguante (Stamina) al grupo. Con Grimoire of Command, el imp sacrifica un 15% de su vida por punto y lanza ese dano en area. Si su vida llega a 0, desaparece.',
       petAbility: 'imp',
-      buff: null,
+      buff: { stat: 'aguante', duration: 4, applySelf: true, isPercent: false },
+      buffRanks: [{ rank: 1, level: 8, value: 5, costPct: 0 }, { rank: 2, level: 16, value: 10, costPct: 0 }, { rank: 3, level: 22, value: 15, costPct: 0 }],
+      partyBuff: true,
     },
     // Sacrificial Shield: comentado, seguira siendo util mas adelante.
     // {

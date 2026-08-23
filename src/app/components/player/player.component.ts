@@ -612,22 +612,39 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       } else if (ability.id === 'imp_blood_bolt') {
         const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
-        const sacrificePct = 15 * grimoireRank;
-        const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
-        this.firebase.pushData('damageEvents', {
-          player: this.charSvc.character().name || 'Jugador',
-          ability: ability.name,
-          rank: ability.currentRank || 1,
-          damage: sacrifice,
-          damageType: 'magical',
-          aoe: true,
-          effects: null,
-          turn: this.charSvc.turnNumber(),
-          timestamp: Date.now(),
-          assigned: false,
-        });
-        this.charSvc.petTakeDamage(sacrifice);
-        this.charSvc.showToast(ability.name + ': el Imp pierde ' + sacrifice + ' vida (' + sacrificePct + '%) — AOE enviado al Master');
+        if (grimoireRank === 0 && ability.currentBuffValue) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [...(c.activeEffects || []), {
+              id: Date.now(),
+              type: 'buff' as const,
+              name: ability.name,
+              target: 'aguante',
+              value: ability.currentBuffValue,
+              duration: ability.currentBuffDuration,
+              isPercent: false,
+            }],
+          }));
+          this.charSvc.sendBuffEvent(ability);
+          this.charSvc.showToast(ability.name + ' R' + (ability.currentRank || 1) + ': +' + ability.currentBuffValue + ' Aguante al grupo — enviado al Master');
+        } else {
+          const sacrificePct = 15 * grimoireRank;
+          const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
+          this.firebase.pushData('damageEvents', {
+            player: this.charSvc.character().name || 'Jugador',
+            ability: ability.name,
+            rank: ability.currentRank || 1,
+            damage: sacrifice,
+            damageType: 'magical',
+            aoe: true,
+            effects: null,
+            turn: this.charSvc.turnNumber(),
+            timestamp: Date.now(),
+            assigned: false,
+          });
+          this.charSvc.petTakeDamage(sacrifice);
+          this.charSvc.showToast(ability.name + ': el Imp pierde ' + sacrifice + ' vida (' + sacrificePct + '%) — AOE enviado al Master');
+        }
       } else if (ability.currentBuffValue) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +

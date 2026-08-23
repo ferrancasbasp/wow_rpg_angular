@@ -1437,7 +1437,7 @@ export class CharacterService {
         currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
       } : null,
     }));
-    if (ability.buff && ability.currentBuffValue) {
+    if (ability.buff && ability.currentBuffValue && ability.id !== 'imp_blood_bolt') {
       if (ability.currentBuffStat === 'shield') {
         this.character.update(c => ({
           ...c,
