@@ -1322,6 +1322,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         lifestealText = ' · +' + heal + ' vida';
       }
+      const leechPoisonPct = this.charSvc.getLeechPoisonPercent();
+      if (leechPoisonPct > 0 && ability.damageType === 'physical') {
+        const leechHeal = Math.round(roll * leechPoisonPct / 100);
+        if (leechHeal > 0) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + leechHeal),
+          }));
+          lifestealText += ' · 🩸 Veneno Vampírico +' + leechHeal + ' vida';
+        }
+      }
       const slRank = this.charSvc.talentRank('soul_leech');
       if (slRank > 0 && (ability.id === 'shadow_bolt' || ability.id === 'chaos_bolt')) {
         const shieldAmt = Math.round(roll * slRank * 0.05);
@@ -1571,11 +1582,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'slice_and_dice') {
         sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice');
       }
+      const poisonSibling = ability.id === 'poison_weapon' ? 'leechPoison' : (ability.id === 'leeching_poison' ? 'poisonDamage' : null);
       this.charSvc.character.update(c => ({
         ...c,
         ...(ability.id === 'slice_and_dice' ? { comboPoints: 0 } : {}),
         activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== ability.name),
+          ...(c.activeEffects || []).filter(e => e.name !== ability.name && (poisonSibling ? e.target !== poisonSibling : true)),
           {
             id: Date.now() + Math.random(),
             type: effectType as any,

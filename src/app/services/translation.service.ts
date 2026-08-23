@@ -556,6 +556,7 @@ export class TranslationService {
     rogue_backstab: { es: 'Requiere estar detrás del enemigo. Daño elevado que genera 1 punto de combo.', en: 'Requires being behind the enemy. High damage that generates 1 combo point.' },
     rogue_sprint: { es: 'Te permite moverte sin gastar acción durante 3 turnos.', en: 'Allows you to move without spending an action for 3 turns.' },
     rogue_poison_weapon: { es: 'Envenena tu arma. Los ataques hacen daño extra y pasan a ser de tipo mágico.', en: 'Poisons your weapon. Attacks deal extra damage and become magical type.' },
+    rogue_leeching_poison: { es: 'Envenena tu arma: te curas un % del daño que haces y tus ataques pasan a ser de tipo mágico. No aumenta el daño. Incompatible con Veneno Mortal.', en: 'Poisons your weapon: you heal for a % of the damage you deal and your attacks become magical type. Does not increase damage. Incompatible with Deadly Poison.' },
     rogue_evasion: { es: 'Aumenta tu probabilidad de esquivar ataques físicos temporalmente.', en: 'Temporarily increases your chance to dodge physical attacks.' },
     mage_fireball: { es: 'Lanza una bola de fuego que explota al impactar.', en: 'Hurls a fireball that explodes on impact.' },
     mage_fire_blast: { es: 'Una explosión instantánea de llamas al objetivo.', en: 'An instant blast of flames at the target.' },
