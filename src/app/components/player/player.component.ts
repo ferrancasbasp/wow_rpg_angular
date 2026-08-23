@@ -157,6 +157,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'levelup') {
           this.grantLevel(event.amount || 1);
           this.incomingMasterMsg.set('✦ +' + (event.amount || 1) + ' nivel');
+        } else if (event.type === 'soul_shards') {
+          this.charSvc.addShard(event.amount || 0);
+          this.incomingMasterMsg.set('🌱 Seed of Corruption: +' + (event.amount || 0) + ' Soul Shards');
         } else if (event.type === 'shield') {
           this.charSvc.character.update(c => ({
             ...c,
@@ -297,18 +300,41 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🔥 Infernal aterriza! ' + dmg + ' danyo de Fuego a todos · stun 1 turno · lucha ' + turns + ' turnos');
   }
 
-  castDemonicTransformation(ability: any) {
-    const shardCost = ability.shardCost || 2;
-    this.charSvc.spendShards(shardCost);
-    const duration = 2;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'demonic_form'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Demonic Transformation', target: 'demonic_form', value: 25, duration, isPercent: true },
-      ],
-    }));
-    this.charSvc.showToast('👹 Forma Demoníaca activa · +25% SP / +25% crit / +25% dmg crit · -15% resistencia (2 turnos)');
+  castSeedOfCorruption(ability: any) {
+    const shardCost = ability.shardCost || 1;
+    if (!this.charSvc.spendShards(shardCost)) {
+      this.charSvc.showToast(this.trSvc.t('need_shards') + ' 1 ' + this.trSvc.t('soul_shard'));
+      return;
+    }
+    const corr = this.charSvc.computedAbilities().find(a => a.id === 'corruption');
+    let dotTick = 10;
+    let dotDuration = 5;
+    if (corr && ((corr as any).dotTick || (corr as any).currentDotValue)) {
+      dotTick = (corr as any).dotTick || (corr as any).currentDotValue || 10;
+      dotDuration = (corr as any).dotDuration || 5;
+    } else {
+      const rank = this.charSvc.maxAvailableRank(this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')!);
+      const dr = (this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')?.dotRanges || []).find(d => d.rank === rank);
+      if (dr) {
+        dotTick = dr.value;
+        dotDuration = dr.duration;
+      }
+    }
+    const boosted = Math.round(dotTick * 1.10);
+    this.firebase.pushData('damageEvents', {
+      player: this.charSvc.character().name || 'Jugador',
+      ability: ability.name,
+      rank: ability.currentRank || 1,
+      damage: 0,
+      damageType: 'magical',
+      aoe: true,
+      effects: [{ type: 'dot', name: 'Corruption', value: boosted, duration: dotDuration, debuffType: 'shadow' }],
+      seedShards: true,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast(ability.name + ': Corruption potenciada (+10%) a todos los enemigos · el Master devuelve 1 Soul Shard por enemigo (max 5)');
   }
 
   castShadowDance(ability: any) {
@@ -1613,8 +1639,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.id === 'summon_infernal') {
       this.castSummonInfernal(ability);
-    } else if (ability.id === 'demonic_transformation') {
-      this.castDemonicTransformation(ability);
+    } else if (ability.id === 'seed_of_corruption') {
+      this.castSeedOfCorruption(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {

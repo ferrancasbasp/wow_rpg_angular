@@ -288,6 +288,17 @@ export class MasterComponent implements OnInit {
       }
       summary.push(monster.name + ': -' + damage);
     }
+    if ((event as any).seedShards && event.player) {
+      const count = Math.min(alive.length, 5);
+      this.firebase.pushData('playerEvents', {
+        target: event.player,
+        type: 'soul_shards',
+        amount: count,
+        abilityName: event.ability || 'Seed of Corruption',
+        timestamp: Date.now(),
+      });
+      this.showToast('Seed of Corruption: +' + count + ' Soul Shard(s) → ' + event.player);
+    }
     this.markEventAssigned(event);
     this.selectedEventId.set(null);
     this.saveMonsters();
