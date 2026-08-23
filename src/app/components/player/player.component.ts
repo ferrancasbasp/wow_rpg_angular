@@ -323,6 +323,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth (' + duration + ' turnos)');
   }
 
+  castBladeFlurry(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'blade_flurry'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Blade Flurry', target: 'blade_flurry', value: 0, duration },
+      ],
+    }));
+    this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo (' + duration + ' turnos)');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -1391,6 +1403,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castDemonicTransformation(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
+    } else if (ability.id === 'blade_flurry') {
+      this.castBladeFlurry(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {

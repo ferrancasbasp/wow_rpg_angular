@@ -910,7 +910,7 @@ export class CharacterService {
         effects = ability.inflictsEffects.map((eff: any) => ({ ...eff }));
       }
       const abilityName = totalHits > 1 ? `${ability.name} (${hitNum}/${totalHits})` : ability.name;
-      this.firebase.pushData('damageEvents', {
+      const payload = {
         player: this.character().name || 'Jugador',
         ability: abilityName,
         rank: ability.currentRank || 1,
@@ -921,7 +921,11 @@ export class CharacterService {
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
-      });
+      };
+      this.firebase.pushData('damageEvents', payload);
+      if (!ability.isDot && !ability.aoe && ability.damageType !== 'heal' && this.hasEffect('blade_flurry')) {
+        this.firebase.pushData('damageEvents', { ...payload, ability: abilityName + ' (Blade Flurry)' });
+      }
     } catch (e) {
       console.error('Firebase send damage error:', e);
     }
