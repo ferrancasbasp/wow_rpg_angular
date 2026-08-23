@@ -16,7 +16,7 @@ export const DRUID: CharacterClass = {
 
   baseStats: { fuerza: 15, agilidad: 14, intelecto: 18, aguante: 15, espiritu: 20 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.35, agilidad: 0.35, intelecto: 1.6, aguante: 0.7, espiritu: 1.8 },
+  statGrowth: { fuerza: 0.55, agilidad: 0.55, intelecto: 1.3, aguante: 0.7, espiritu: 1.8 },
   armor: 5,
   magicResist: 5,
 
