@@ -39,7 +39,7 @@ export const PRIEST: CharacterClass = {
   capstones: [
     { id: 'holy_nova', name: 'Holy Nova', icon: '✨', iconImg: 'img/capstones/priest/holy_nova.jpg', description: 'CD 3. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.' },
     { id: 'hope_and_grace', name: 'Hope and Grace', icon: '🕊️', iconImg: 'img/capstones/priest/hope_and_grace.jpg', description: 'Pasiva. Aumenta tu Stamina un 10% y tu Spell Power un 20% de tu Espiritu.' },
-    { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'dark_star', name: 'Dark Star', icon: '🌑', iconImg: 'img/capstones/priest/dark_star.jpg', description: 'CD 5. Coste: 30% de mana. Un golpe de sombra en area: hace el danyo de un Mind Blast a todos los enemigos y te curas como Dark Mending.' },
   ],
 
   abilities: [
@@ -70,6 +70,22 @@ export const PRIEST: CharacterClass = {
       capstoneGate: 'holy_nova',
       damageRanges: [{ rank: 1, level: 0, min: 30, max: 45 }],
       spellPowerRatio: 0.6,
+    },
+    {
+      id: 'dark_star',
+      name: 'Dark Star',
+      icon: '🌑',
+      iconImg: 'img/capstones/priest/dark_star.jpg',
+      school: 'Sombra',
+      category: 'shadow',
+      type: 'utility',
+      requiredLevel: 0,
+      costPct: 0.30,
+      castType: 'instant',
+      cooldown: 5,
+      description: 'CD 5. Coste: 30% de mana. Un golpe de sombra en area: hace el danyo de un Mind Blast a todos los enemigos y te curas como Dark Mending.',
+      buff: null,
+      capstoneGate: 'dark_star',
     },
   ],
 };

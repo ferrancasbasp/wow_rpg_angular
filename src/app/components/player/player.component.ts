@@ -342,6 +342,51 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.dismissPet();
   }
 
+  castDarkStar(ability: any) {
+    const mb = this.charSvc.computedAbilities().find(a => a.id === 'mind_blast');
+    let dmg = 0;
+    if (mb && ((mb as any).currentMin || (mb as any).currentMax)) {
+      const minD = (mb as any).currentMin || 0;
+      const maxD = (mb as any).currentMax || 0;
+      dmg = Math.round(minD + Math.random() * (maxD - minD));
+    } else {
+      const sp = this.charSvc.spellPower();
+      dmg = Math.round(40 + Math.random() * 15 + sp * 0.429);
+    }
+    const dm = this.charSvc.computedAbilities().find(a => a.id === 'dark_mending');
+    let heal = 0;
+    if (dm && ((dm as any).currentMin || (dm as any).currentMax)) {
+      const minH = (dm as any).currentMin || 0;
+      const maxH = (dm as any).currentMax || 0;
+      heal = Math.round(minH + Math.random() * (maxH - minH));
+    } else {
+      const sp = this.charSvc.spellPower();
+      heal = Math.round(135 + sp * 0.7);
+    }
+    const isCrit = Math.random() * 100 < parseFloat(this.charSvc.spellCrit());
+    if (isCrit) {
+      dmg = Math.round(dmg * 1.5);
+      heal = Math.round(heal * 1.5);
+    }
+    const lowHp = (this.charSvc.character().currentHP ?? this.charSvc.maxHP()) / this.charSvc.maxHP() < 0.5;
+    if (lowHp) heal = Math.round(heal * 2);
+    const myName = this.charSvc.character().name || 'Jugador';
+    this.firebase.pushData('damageEvents', {
+      player: myName,
+      ability: ability.name,
+      rank: ability.currentRank || 1,
+      damage: dmg,
+      damageType: 'magical',
+      aoe: true,
+      effects: null,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.adjustHP(heal);
+    this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + heal + (lowHp ? ' (x2 low HP)' : ''));
+  }
+
   castHolyNova(ability: any) {
     const sp = this.charSvc.spellPower();
     const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
@@ -1723,6 +1768,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castDemonicSacrifice(ability);
     } else if (ability.id === 'holy_nova') {
       this.castHolyNova(ability);
+    } else if (ability.id === 'dark_star') {
+      this.castDarkStar(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {
