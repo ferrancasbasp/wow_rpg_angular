@@ -1042,8 +1042,24 @@ export class CharacterService {
 
   modulateNotes(amount: number) {
     this.character.update(c => {
-      const notes = [...new Set((c.musicalNotes || []).map(n => Math.min(7, Math.max(1, n + amount))))];
-      return { ...c, musicalNotes: notes };
+      const orig = [...(c.musicalNotes || [])];
+      if (orig.length === 0 || amount === 0) return { ...c };
+      const steps = Math.abs(amount);
+      const dir = amount > 0 ? 1 : -1;
+      const occupied = new Set<number>(orig);
+      const order = [...orig].sort((a, b) => (dir > 0 ? b - a : a - b));
+      for (const n of order) {
+        let cur = n;
+        for (let s = 0; s < steps; s++) {
+          const nxt = cur + dir;
+          if (nxt < 1 || nxt > 7) break;
+          if (occupied.has(nxt)) break;
+          cur = nxt;
+        }
+        occupied.delete(n);
+        occupied.add(cur);
+      }
+      return { ...c, musicalNotes: [...occupied].sort((a, b) => a - b) };
     });
   }
 
