@@ -359,6 +359,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('🔥 Recklessness activa · +20% critico y danyo critico · -30% resistencia (' + duration + ' turnos)');
   }
 
+  castCombustion(ability: any) {
+    const duration = 2;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'combustion'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Combustion', target: 'combustion', value: 25, duration },
+      ],
+    }));
+    this.charSvc.showToast('🔥 Combustion activa · +25% critico y danyo critico de Fuego (' + duration + ' turnos)');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -939,6 +951,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 1;
     }
+    if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
+      critChance += 25;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) {
       let critMult = 1.5;
@@ -950,6 +965,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (this.charSvc.hasEffect('recklessness')) {
         critMult = critMult * 1.20;
+      }
+      if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
+        critMult = critMult * 1.25;
       }
       roll = Math.round(roll * critMult);
     }
@@ -1456,6 +1474,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castShieldWall(ability);
     } else if (ability.id === 'recklessness') {
       this.castRecklessness(ability);
+    } else if (ability.id === 'combustion') {
+      this.castCombustion(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
