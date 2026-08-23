@@ -141,7 +141,7 @@
               }
             </div>
             @if (charSvc.character().classKey === 'rogue' && charSvc.isStealthed()) {
-              <span class="stealth-icon" [title]="trSvc.t('stealth')">🙈</span>
+              <img src="img/abilities/rogue/ability_stealth.jpg" class="stealth-icon" [title]="trSvc.t('stealth')" (error)="onImgError($event)">
             }
           </div>
         }
