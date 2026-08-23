@@ -38,7 +38,7 @@ export const PRIEST: CharacterClass = {
 
   capstones: [
     { id: 'holy_nova', name: 'Holy Nova', icon: '✨', iconImg: 'img/capstones/priest/holy_nova.jpg', description: 'CD 3. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.' },
-    { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'hope_and_grace', name: 'Hope and Grace', icon: '🕊️', iconImg: 'img/capstones/priest/hope_and_grace.jpg', description: 'Pasiva. Aumenta tu Stamina un 10% y tu Spell Power un 20% de tu Espiritu.' },
     { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
   ],
 

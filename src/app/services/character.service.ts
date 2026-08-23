@@ -58,6 +58,9 @@ export class CharacterService {
       if (this.selectedCapstone() === 'gift_of_the_wild') {
         result[key] += level;
       }
+      if (key === 'aguante' && this.selectedCapstone() === 'hope_and_grace') {
+        result[key] = Math.round(result[key] * 1.10);
+      }
     }
     return result;
   });
@@ -105,6 +108,9 @@ export class CharacterService {
     const balanceOfNature = this.talentRank('balance_of_nature');
     if (balanceOfNature > 0) {
       sp += Math.round(this.finalStats().espiritu * 0.10 * balanceOfNature);
+    }
+    if (this.selectedCapstone() === 'hope_and_grace') {
+      sp += Math.round(this.finalStats().espiritu * 0.20);
     }
     sp += this.effectStatBonus('spellPower');
     const effects = this.character().activeEffects;
