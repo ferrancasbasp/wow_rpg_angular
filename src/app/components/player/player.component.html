@@ -120,9 +120,9 @@
             <span class="combo-label">🎶 Partitura</span>
             <div class="note-slots">
               @for (n of noteSlotArray(); track n) {
-                @if (n - 1 < (charSvc.getNotes().length)) {
-                  <div class="note-slot filled" [style.--note-color]="NOTE_COLORS[charSvc.getNotes()[n - 1] - 1]">
-                    {{ NOTE_NAMES[charSvc.getNotes()[n - 1] - 1] }}
+                @if (charSvc.getNotes().includes(n)) {
+                  <div class="note-slot filled" [style.--note-color]="NOTE_COLORS[n - 1]">
+                    {{ NOTE_NAMES[n - 1] }}
                   </div>
                 } @else {
                   <div class="note-slot empty">·</div>

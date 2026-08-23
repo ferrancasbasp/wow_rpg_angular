@@ -1042,7 +1042,7 @@ export class CharacterService {
 
   modulateNotes(amount: number) {
     this.character.update(c => {
-      const notes = (c.musicalNotes || []).map(n => Math.min(7, n + amount));
+      const notes = [...new Set((c.musicalNotes || []).map(n => Math.min(7, Math.max(1, n + amount))))];
       return { ...c, musicalNotes: notes };
     });
   }
