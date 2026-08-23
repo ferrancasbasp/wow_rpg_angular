@@ -58,7 +58,6 @@ interface DamageEvent {
   buffValue?: number;
   buffDuration?: number;
   isPercent?: boolean;
-  healbackPct?: number;
 }
 
 @Component({
@@ -849,21 +848,6 @@ export class MasterComponent implements OnInit {
           amount: event.damage,
           timestamp: Date.now(),
         });
-        const healback = event.healbackPct || 0;
-        const caster = (event.player || '').trim().toLowerCase();
-        if (healback > 0 && caster && target.trim().toLowerCase() !== caster) {
-          const healbackAmt = Math.round(event.damage * healback);
-          if (healbackAmt > 0) {
-            this.firebase.pushData('playerEvents', {
-              target: event.player,
-              type: 'heal',
-              abilityName: 'Improved Healthstone',
-              amount: healbackAmt,
-              timestamp: Date.now(),
-            });
-            this.showToast(`Healthstone → ${event.player}: +${healbackAmt} HP (Improved Healthstone)`);
-          }
-        }
         this.showToast(`${event.ability} → ${target}: +${event.damage} HP`);
       }
     }

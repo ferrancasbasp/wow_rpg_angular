@@ -964,7 +964,6 @@ export class CharacterService {
    sendHealEvent(ability: any, healAmount: number) {
     this.registerPlayer();
     try {
-      const healbackPct = ability.id === 'healthstone' ? this.talentRank('improved_healthstone') * 0.25 : 0;
       this.firebase.pushData('damageEvents', {
         player: this.character().name || 'Jugador',
         ability: `${ability.name} (Cura)`,
@@ -977,7 +976,6 @@ export class CharacterService {
         hotTick: ability.hotTick || 0,
         hotDuration: ability.hotDuration || 0,
         isShield: ability.id === 'power_word_shield',
-        healbackPct,
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,

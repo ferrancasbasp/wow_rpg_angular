@@ -1318,9 +1318,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
       const resonanceRank = this.charSvc.talentRank('resonance');
       if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
-      if (ability.id === 'healthstone') {
-        healBonus *= (1 + this.charSvc.talentRank('improved_healthstone') * 0.25);
-      }
       if (ability.id === 'vivace') {
         const ivRank = this.charSvc.talentRank('improved_vivace');
         if (ivRank > 0) healBonus *= (1 + ivRank * 0.10);
@@ -1360,6 +1357,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
           (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
+        if (ability.id === 'healthstone') {
+          const ihRank = this.charSvc.talentRank('improved_healthstone');
+          if (ihRank > 0) {
+            const improved = Math.round(roll * ihRank * 0.25);
+            if (improved > 0) {
+              this.charSvc.sendHealEvent({ ...ability, name: 'Healthstone (Mejorada)' }, improved);
+              this.charSvc.showToast(ability.name + ' (Mejorada): +' + improved + ' HP para el warlock si la usas en un aliado — enviado al Master');
+            }
+          }
+        }
       }
     } else {
       const poisonDmg = this.charSvc.getPoisonDamage();
