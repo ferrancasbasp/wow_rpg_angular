@@ -299,7 +299,9 @@ export class MasterComponent implements OnInit {
       monster.effects = [];
     }
     for (const eff of effects) {
-      monster.effects = monster.effects.filter((e) => e.name !== eff.name);
+      if (!eff.stackable) {
+        monster.effects = monster.effects.filter((e) => e.name !== eff.name);
+      }
       monster.effects.push({ ...eff, duration: eff.duration });
     }
   }

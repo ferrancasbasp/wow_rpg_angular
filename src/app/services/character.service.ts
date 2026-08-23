@@ -916,7 +916,7 @@ export class CharacterService {
     try {
       let effects: any = null;
       if (ability.isDot) {
-        effects = [{ type: 'dot', name: ability.name, value: ability.dotTick, duration: ability.dotDuration, debuffType: ability.debuffType || 'none' }];
+        effects = [{ type: 'dot', name: ability.name, value: ability.dotTick, duration: ability.dotDuration, debuffType: ability.debuffType || 'none', stackable: ability.stackable ?? false }];
       } else if (ability.inflictsEffects) {
         effects = ability.inflictsEffects.map((eff: any) => ({ ...eff }));
       }

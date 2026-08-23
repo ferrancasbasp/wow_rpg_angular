@@ -1336,9 +1336,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
           lifestealText += ' · 🛡️ +' + shieldAmt + ' escudo';
         }
       }
+      const igniteRank = this.charSvc.talentRank('ignite');
+      let igniteText = '';
+      if (isCrit && igniteRank > 0 && ability.school === 'Fuego') {
+        const igniteTotal = Math.max(1, Math.round(roll * 0.08 * igniteRank));
+        const igniteTick = Math.max(1, Math.round(igniteTotal / 3));
+        this.charSvc.sendDamageEvent(
+          { ...ability, id: 'ignite', name: 'Ignite', isDot: true, dotTick: igniteTick, dotDuration: 3, stackable: true, damageType: 'magical' },
+          0, 1, 1
+        );
+        igniteText = ' · 🔥 Ignite ' + igniteTotal + ' (' + igniteTick + '/t · 3t)';
+      }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + ccText + rageText + comboText + shardText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
