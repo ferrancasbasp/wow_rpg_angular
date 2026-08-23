@@ -25,9 +25,9 @@ export const WARLOCK: CharacterClass = {
   comboConfig: { label: 'Soul Shards', icon: '🔮', max: 5 },
 
   talents: [
-    { id: 'pocket_shards', name: 'Pocket Shards', icon: '🔮', iconImg: '', description: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'pocket_shards', name: 'Pocket Shards', icon: '🔮', iconImg: 'img/talents/warlock/pocket_shards.jpg', description: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'improved_drain_life', name: 'Improved Drain Life', icon: '🩸', iconImg: 'img/abilities/warlock/Spell_Shadow_LifeDrain02.jpg', description: 'Aumenta la vida que cura Drain Life un 10% por punto. Solo afecta a la curacion, no al dano.', maxRank: 3, tier: 1, requires: null },
-    { id: 'demonic_embrace', name: 'Demonic Embrace', icon: '😈', iconImg: '', description: 'Mientras Fel Armor este activo, tu vida maxima aumenta un 10% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'demonic_embrace', name: 'Improved Soul Armor', icon: '😈', iconImg: 'img/talents/warlock/demonic_embrace.jpg', description: 'Mientras Fel Armor este activo, tu vida maxima aumenta un 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'destruction_specialization', name: 'Destruction Specialization', icon: '💥', iconImg: '', description: 'Aumenta el dano de los golpes criticos de Chaos Bolt y Rain of Fire un 15% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'dot_master', name: 'DoT Master', icon: '⏱️', iconImg: '', description: 'Aumenta la duracion de Corruption, Curse of Agony e Immolate en 1 turno por punto. El danyo por turno se mantiene igual, por lo que el total aumenta.', maxRank: 3, tier: 2, requires: null },
     { id: 'improved_healthstone', name: 'Improved Healthstone', icon: '💎', iconImg: 'img/abilities/warlock/INV_Stone_04.jpg', description: 'Aumenta la vida recuperada por Healthstone un 25% por punto. Si Healthstone cura a un aliado, tambien recuperas vida equivalente al 25% por punto de lo restaurado.', maxRank: 2, tier: 2, requires: null },
