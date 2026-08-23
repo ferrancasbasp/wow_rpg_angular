@@ -342,6 +342,45 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.dismissPet();
   }
 
+  castHolyNova(ability: any) {
+    const sp = this.charSvc.spellPower();
+    const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
+    const dmg = Math.round(dr.min + Math.random() * (dr.max - dr.min) + sp * (ability.spellPowerRatio || 0.6));
+    const heal = Math.round(45 + sp * 0.8);
+    const myName = this.charSvc.character().name || 'Jugador';
+    const turn = this.charSvc.turnNumber();
+    const now = Date.now();
+    this.firebase.pushData('damageEvents', {
+      player: myName,
+      ability: ability.name,
+      rank: ability.currentRank || 1,
+      damage: dmg,
+      damageType: 'magical',
+      aoe: true,
+      effects: null,
+      turn,
+      timestamp: now,
+      assigned: false,
+    });
+    this.firebase.pushData('damageEvents', {
+      player: myName,
+      ability: ability.name + ' (Cura)',
+      rank: ability.currentRank || 1,
+      damage: heal,
+      damageType: 'heal',
+      aoe: true,
+      effects: null,
+      isHot: false,
+      hotTick: 0,
+      hotDuration: 0,
+      isShield: false,
+      turn,
+      timestamp: now,
+      assigned: false,
+    });
+    this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos y ' + heal + ' cura a todos los aliados — 2 eventos AOE al Master');
+  }
+
   castSeedOfCorruption(ability: any) {
     const shardCost = ability.shardCost || 1;
     if (!this.charSvc.spendShards(shardCost)) {
@@ -1682,6 +1721,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castSeedOfCorruption(ability);
     } else if (ability.id === 'demonic_sacrifice') {
       this.castDemonicSacrifice(ability);
+    } else if (ability.id === 'holy_nova') {
+      this.castHolyNova(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {

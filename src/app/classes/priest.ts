@@ -37,7 +37,7 @@ export const PRIEST: CharacterClass = {
   ],
 
   capstones: [
-    { id: 'capstone_1', name: 'Capstone I', icon: '👑', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'holy_nova', name: 'Holy Nova', icon: '✨', iconImg: 'img/capstones/priest/holy_nova.jpg', description: 'CD 3. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.' },
     { id: 'capstone_2', name: 'Capstone II', icon: '🔮', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
     { id: 'capstone_3', name: 'Capstone III', icon: '⚡', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
   ],
@@ -53,5 +53,23 @@ export const PRIEST: CharacterClass = {
     { id: 'shadow_word_pain', name: 'Shadow Word: Pain', icon: '🩸', iconImg: 'img/abilities/priest/shadow_word_pain.jpg', school: 'Sombra', category: 'shadow', type: 'damage', requiredLevel: 4, damageType: 'magical', baseDamage: 20, spellPowerRatio: 0.183, costPct: 0.05, castType: 'instant', cooldown: 0, description: 'DoT de sombra. Aplicar manualmente en Efectos.', isDot: true, dotDuration: 6, damageRanges: [{ rank: 1, level: 4, min: 60, max: 60 }, { rank: 2, level: 10, min: 110, max: 110 }, { rank: 3, level: 16, min: 180, max: 180 }, { rank: 4, level: 22, min: 270, max: 270 }, { rank: 5, level: 28, min: 380, max: 380 }] },
     { id: 'dark_mending', name: 'Dark Mending', icon: '🩸', iconImg: 'img/abilities/priest/dark_mending.jpg', school: 'Sagrado', category: 'shadow', type: 'heal', requiredLevel: 16, baseDamage: 35, spellPowerRatio: 0.7, costPct: 0.14, castType: 'cast', cooldown: 0, description: 'Cura sombría. Menor que Heal y más cara, pero cura el doble si estás a menos del 50% de vida.', damageRanges: [{ rank: 1, level: 16, min: 120, max: 150 }, { rank: 2, level: 22, min: 190, max: 230 }, { rank: 3, level: 28, min: 300, max: 360 }, { rank: 4, level: 34, min: 430, max: 510 }] },
     { id: 'dispel', name: 'Dispel', icon: '✨', iconImg: 'img/abilities/priest/dispel.jpg', school: 'Sagrado', category: 'discipline', type: 'utility', requiredLevel: 8, costPct: 0.05, castType: 'instant', cooldown: 0, description: 'Elimina un efecto mágico del objetivo. Úsalo para limpiar debuffs.', bonusPerRank: [0, 0, 0] },
+    {
+      id: 'holy_nova',
+      name: 'Holy Nova',
+      icon: '✨',
+      iconImg: 'img/capstones/priest/holy_nova.jpg',
+      school: 'Sagrado',
+      category: 'holy',
+      type: 'utility',
+      requiredLevel: 0,
+      costPct: 0.35,
+      castType: 'instant',
+      cooldown: 3,
+      description: 'CD 3. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.',
+      buff: null,
+      capstoneGate: 'holy_nova',
+      damageRanges: [{ rank: 1, level: 0, min: 30, max: 45 }],
+      spellPowerRatio: 0.6,
+    },
   ],
 };

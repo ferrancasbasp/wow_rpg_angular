@@ -830,6 +830,21 @@ export class MasterComponent implements OnInit {
         timestamp: Date.now(),
       });
       this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
+    } else if (event.damageType === 'heal' && event.aoe) {
+      const targets = this.knownPlayers();
+      for (const t of targets) {
+        this.firebase.pushData('playerEvents', {
+          target: t,
+          type: event.isShield ? 'shield' : 'heal',
+          abilityName: event.ability.replace(' (Cura)', ''),
+          amount: event.damage,
+          timestamp: Date.now(),
+        });
+      }
+      this.showToast(`${event.ability} → todos (${targets.length}): +${event.damage} HP`);
+      this.markEventAssigned(event);
+      this.selectedEventId.set(null);
+      return;
     } else if (event.damageType === 'heal') {
       if (event.isHot) {
         this.firebase.pushData('playerEvents', {

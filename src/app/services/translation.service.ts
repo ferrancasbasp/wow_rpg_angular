@@ -573,6 +573,7 @@ export class TranslationService {
     mage_frost_armor: { es: 'Crea una barrera de hielo que aumenta tu armadura física.', en: 'Creates a barrier of ice that increases your physical armor.' },
     mage_blink: { es: 'Te teletransportas instantáneamente, escapando de efectos de control.', en: 'Teleports you instantly, escaping from control effects.' },
     mage_remove_curse: { es: 'Elimina una maldicion del objetivo.', en: 'Removes a curse from the target.' },
+    priest_holy_nova: { es: 'CD 3. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.', en: 'CD 3. Cost: 35% mana. A holy wave that heals all allies and damages all enemies. The Master applies both AOE events.' },
     priest_basic_attack: { es: 'Un golpe básico.', en: 'A basic strike.' },
     priest_smite: { es: 'Daño sagrado al enemigo.', en: 'Holy damage to the enemy.' },
     priest_power_word_shield: { es: 'Absorbe daño durante 4 turnos.', en: 'Absorbs damage for 4 turns.' },
