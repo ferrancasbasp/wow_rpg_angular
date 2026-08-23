@@ -527,6 +527,10 @@
                     </div>
                     <div class="wow-tier-nodes">
                       @for (talent of charSvc.talentsByTier(tier); track talent.id) {
+                        @if (talent.requires && talent.requires.id && tier === charSvc.talentById(talent.requires.id)?.tier) {
+                          <span class="talent-arrow" [class.locked]="!charSvc.prereqMet(talent)"
+                                [title]="trSvc.t('requires_max') + ' ' + (charSvc.talentById(talent.requires.id)?.name || talent.requires.id) + ' (' + charSvc.talentRank(talent.requires.id) + '/' + talent.requires.points + ')'"></span>
+                        }
                         <div class="wow-node" [class]="charSvc.talentNodeClass(talent)"
                              (click)="charSvc.addTalentPoint(talent.id)"
                              (contextmenu)="onTalentRightClick($event, talent.id)"

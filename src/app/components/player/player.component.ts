@@ -992,7 +992,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
-    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant) ? 1 : 2);
+    const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
+    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant) ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1276,6 +1277,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.isDot) {
       let dotTotal = ability.dotTotal;
       let dotTick = ability.dotTick;
+      const contagion = this.charSvc.talentRank('contagion');
+      if (contagion > 0) {
+        const boost = 1 + contagion * 0.02;
+        dotTotal = Math.round(dotTotal * boost);
+        dotTick = Math.round(dotTick * boost);
+      }
       const dotMasterDur = (ability.id === 'corruption' || ability.id === 'curse_of_agony' || ability.id === 'immolate') ? this.charSvc.talentRank('dot_master') : 0;
       const baseDotDur = (ability.dotDuration || 1) - dotMasterDur;
       if (evText) {

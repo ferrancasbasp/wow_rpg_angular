@@ -722,6 +722,10 @@ export class CharacterService {
     return this.classConfig().talents.filter(t => t.tier === tier);
   }
 
+  talentById(id: string) {
+    return this.classConfig().talents.find(t => t.id === id);
+  }
+
   tierLabel(tier: number): string {
     const labels: Record<number, string> = { 1: 'Nv. 10', 2: 'Nv. 15', 3: 'Nv. 20', 4: 'Nv. 25', 5: 'Nv. 30', 6: 'Nv. 35' };
     return labels[tier] || ('Tier ' + tier);
