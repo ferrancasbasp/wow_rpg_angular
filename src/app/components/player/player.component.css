@@ -745,6 +745,18 @@
       align-items: center;
       gap: 6px;
     }
+    .infernal-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      color: #ffb347;
+      background: rgba(255, 80, 0, 0.12);
+      border: 1px solid rgba(255, 120, 30, 0.45);
+      border-radius: 10px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      animation: stealth-pulse 1.2s ease-in-out infinite;
+    }
     .pet-icon-sm { font-size: 16px; }
     .pet-icon-img-sm {
       width: 21px; height: 21px; border-radius: 3px;

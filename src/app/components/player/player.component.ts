@@ -266,6 +266,51 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  castSummonInfernal(ability: any) {
+    const shardCost = ability.shardCost || 2;
+    this.charSvc.spendShards(shardCost);
+
+    const sp = this.charSvc.spellPower();
+    const ratio = ability.spellPowerRatio || 0.8;
+    const dr = ability.damageRanges?.[0] || { min: 70, max: 110 };
+    const minD = Math.round(dr.min + sp * ratio);
+    const maxD = Math.round(dr.max + sp * ratio);
+    let dmg = minD + Math.floor(Math.random() * (maxD - minD + 1));
+    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
+      let critMult = 1.5;
+      const dsRank = this.charSvc.talentRank('destruction_specialization');
+      if (dsRank > 0) critMult = 1.5 + dsRank * 0.15;
+      if (this.charSvc.hasEffect('demonic_form')) critMult = critMult * 1.25;
+      dmg = Math.round(dmg * critMult);
+    }
+
+    const landingAbility = {
+      ...ability,
+      currentRank: 1,
+      isDot: false,
+      inflictsEffects: [{ type: 'debuff', name: this.trSvc.t('infernal_stun'), target: 'stunned', value: 0, duration: ability.stunDuration || 1 }],
+    };
+    this.charSvc.sendDamageEvent(landingAbility, dmg);
+
+    const turns = ability.infernalTurns || 4;
+    this.charSvc.summonInfernal(turns);
+    this.charSvc.showToast('🔥 Infernal aterriza! ' + dmg + ' danyo de Fuego a todos · stun 1 turno · lucha ' + turns + ' turnos');
+  }
+
+  castDemonicTransformation(ability: any) {
+    const shardCost = ability.shardCost || 2;
+    this.charSvc.spendShards(shardCost);
+    const duration = 2;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'demonic_form'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Demonic Transformation', target: 'demonic_form', value: 25, duration, isPercent: true },
+      ],
+    }));
+    this.charSvc.showToast('👹 Forma Demoníaca activa · +25% SP / +25% crit / +25% dmg crit · -15% resistencia (2 turnos)');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -527,6 +572,28 @@ export class PlayerComponent implements OnInit, OnDestroy {
       });
     }
 
+    const infernalAttack = this.charSvc.infernalAttack();
+    if (infernalAttack) {
+      this.charSvc.addTurnDamage(infernalAttack.damage);
+      this.charSvc.showToast(`🔥 ${infernalAttack.name}: ${infernalAttack.damage} danyo de ${infernalAttack.school}`);
+      this.firebase.pushData('damageEvents', {
+        player: this.charSvc.character().name || 'Jugador',
+        ability: infernalAttack.name + ' (Infernal)',
+        rank: 1,
+        damage: infernalAttack.damage,
+        damageType: 'magical',
+        aoe: false,
+        effects: null,
+        turn: oldTurn,
+        timestamp: Date.now(),
+        assigned: false,
+      });
+      const remaining = this.charSvc.decrementInfernalTurn();
+      if (remaining <= 0) {
+        this.charSvc.showToast('El Infernal ha regresado al Twisting Nether');
+      }
+    }
+
     this.charSvc.nextTurn();
     const resType = this.charSvc.resourceConfig().type;
     if (resType === 'rage') {
@@ -679,6 +746,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const reduction = this.charSvc.magicReduction();
         remaining = Math.round(remaining * (1 - reduction / 100));
       }
+      if (this.charSvc.hasEffect('demonic_form')) {
+        remaining = Math.round(remaining * 1.15);
+      }
     }
 
     if (remaining > 0) {
@@ -806,6 +876,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let critMult = 1.5;
       if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
         critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.15;
+      }
+      if (this.charSvc.hasEffect('demonic_form')) {
+        critMult = critMult * 1.25;
       }
       roll = Math.round(roll * critMult);
     }
@@ -1300,6 +1373,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.spendShards(ability.shardCost || 1);
       }
       this.charSvc.summonPet(ability.isPetSummon);
+    } else if (ability.id === 'summon_infernal') {
+      this.castSummonInfernal(ability);
+    } else if (ability.id === 'demonic_transformation') {
+      this.castDemonicTransformation(ability);
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {
@@ -1479,7 +1556,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
       const pocket = this.charSvc.talentRank('pocket_shards');
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects };
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0 };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));

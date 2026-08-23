@@ -96,6 +96,11 @@ export interface Ability {
   aoe?: boolean;
   requiresStealth?: boolean;
   requiresBehind?: boolean;
+  capstoneGate?: string;
+  stunDuration?: number;
+  infernalTurns?: number;
+  infernalMin?: number;
+  infernalMax?: number;
   blockedStance?: string;
 
   currentRank?: number;
@@ -280,6 +285,7 @@ export interface Character {
   equipment: Equipment;
   activeEffects: ActiveEffect[];
   activePet?: ActivePet | null;
+  infernalTurnsLeft?: number;
 }
 
 export interface EffectType {

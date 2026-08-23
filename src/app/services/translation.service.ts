@@ -192,6 +192,9 @@ export class TranslationService {
     capstone_selected: { es: 'Seleccionada', en: 'Selected' },
     requires_n_talents: { es: 'requiere 15 puntos de talento', en: 'requires 15 talent points' },
     capstone_hint: { es: 'Exclusiva: 1 sola capstone por personaje', en: 'Exclusive: 1 capstone per character' },
+    infernal: { es: 'Infernal', en: 'Infernal' },
+    infernal_badge_hint: { es: 'El Infernal lucha a tu lado. Ataca cada fin de turno.', en: 'The Infernal fights by your side. It attacks each turn end.' },
+    infernal_stun: { es: 'Aturdido (Infernal)', en: 'Stunned (Infernal)' },
     available_pts: { es: 'Disponibles', en: 'Available' },
     rank_of: { es: 'Rango', en: 'Rank' },
     of: { es: 'de', en: 'of' },
@@ -609,6 +612,8 @@ export class TranslationService {
     warlock_blood_pact: { es: 'El diablillo sacrifica sangre para dar +Aguante a todo el grupo. Cuesta mana de la pet.', en: 'The imp sacrifices blood to grant +Stamina to the entire party. Costs pet mana.' },
     warlock_sacrificial_shield: { es: 'El abisario se sacrifica, destruyendose, y otorga al brujo un escudo que absorbe danyo. Cuesta mana de la pet.', en: 'The voidwalker sacrifices itself, being destroyed, and grants the warlock a shield that absorbs damage. Costs pet mana.' },
     warlock_shadow_kiss: { es: 'La succubo lanza un beso oscuro que causa danyo y reduce el danyo del objetivo un 15% durante 2 turnos. Cuesta mana de la pet.', en: 'The succubus blows a dark kiss that deals damage and reduces the target\'s damage by 15% for 2 turns. Costs pet mana.' },
+    warlock_summon_infernal: { es: 'Coste: 2 Soul Shards. Invoca un Infernal que aterriza causando daño de Fuego a todos los enemigos cercanos y aturdiendolos 1 turno. Lucha a tu lado durante 4 turnos sin sustituir a tu demonio actual.', en: 'Cost: 2 Soul Shards. Summons an Infernal that lands dealing Fire damage to all nearby enemies and stunning them for 1 turn. It fights by your side for 4 turns without replacing your current demon.' },
+    warlock_demonic_transformation: { es: 'Coste: 2 Soul Shards. Te transformas en un demonio durante 2 turnos: +25% Spell Power, +25% prob. critico y +25% danyo critico. Recibes un 15% mas de danyo.', en: 'Cost: 2 Soul Shards. Transform into a demon for 2 turns: +25% Spell Power, +25% crit chance and +25% crit damage. You take 15% more damage.' },
   };
 
   tDesc(id: string, fallback: string, classKey?: string): string {
@@ -691,6 +696,8 @@ export class TranslationService {
     warlock_improved_healthstone: { es: 'Aumenta la vida recuperada por Healthstone un 25% por punto. Si Healthstone cura a un aliado, tambien recuperas vida equivalente al 25% por punto de lo restaurado.', en: 'Increases the health restored by Healthstone by 25% per point. If Healthstone heals an ally, you also recover health equal to 25% per point of the amount restored.' },
     warlock_soul_conduit: { es: 'Al gastar Soul Shards en un hechizo o habilidad, tienes un 20% por punto de probabilidad de recuperar la Shard. Las invocaciones de demonios no se ven afectadas.', en: 'When you spend Soul Shards on a spell or ability, you have a 20% chance per point to recover the Shard. Demon summons are not affected.' },
     warlock_soul_leech: { es: 'Shadow Bolt y Chaos Bolt te otorgan un escudo equivalente al 5% por punto del dano infligido. El escudo se calcula sobre el dano final, incluidos los criticos.', en: 'Shadow Bolt and Chaos Bolt grant you a shield equal to 5% per point of the damage dealt. The shield is based on the final damage, including crits.' },
+    warlock_summon_infernal: { es: 'Coste: 2 Soul Shards. Invoca un Infernal desde el Twisting Nether. Al aterrizar, inflige daño de Fuego a todos los enemigos cercanos y los aturde durante 1 turno. El Infernal lucha a tu lado durante 4 turnos. Invocar un Infernal no sustituye ni hace desaparecer a tu demonio actual.', en: 'Cost: 2 Soul Shards. Summons an Infernal from the Twisting Nether. On landing it deals Fire damage to all nearby enemies and stuns them for 1 turn. The Infernal fights by your side for 4 turns. Summoning an Infernal does not replace or despawn your current demon.' },
+    warlock_demonic_transformation: { es: 'Coste: 2 Soul Shards. Te transformas en un demonio durante 2 turnos, aumentando tu Spell Power un 25%, tu probabilidad de golpe crítico un 25% y tu daño crítico un 25%. Recibes un 15% más de daño.', en: 'Cost: 2 Soul Shards. Transform into a demon for 2 turns, increasing your Spell Power by 25%, your crit chance by 25% and your crit damage by 25%. You take 15% more damage.' },
   };
 
   tTalentDesc(id: string, fallback: string, classKey?: string): string {

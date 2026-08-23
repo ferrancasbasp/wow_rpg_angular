@@ -112,6 +112,9 @@ export class CharacterService {
         }
       }
     }
+    if (this.hasEffect('demonic_form')) {
+      sp = Math.round(sp * 1.25);
+    }
     return sp;
   });
 
@@ -121,7 +124,8 @@ export class CharacterService {
     const fromTalent = this.talentRank('call_of_thunder') + this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2;
     const fromBuff = this.effectStatBonus('spellCrit');
     const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
-    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin).toFixed(2);
+    const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
+    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin + fromDemonic).toFixed(2);
   });
 
   readonly meleeCrit = computed<string>(() => {
@@ -449,7 +453,7 @@ export class CharacterService {
     const resType = this.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
-    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
+    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && (a.capstoneGate ? this.selectedCapstone() === a.capstoneGate : this.trainedRank(a.id) > 0)).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
@@ -475,6 +479,7 @@ export class CharacterService {
 
   readonly trainableAbilities = computed<Ability[]>(() => {
     return this.classConfig().abilities.filter(a => {
+      if (a.capstoneGate) return false;
       if (a.type === 'utility') {
         if (a.buffRanks) {
           const maxBR = a.buffRanks.filter(br => this.character().level >= br.level).length;
@@ -1282,6 +1287,37 @@ export class CharacterService {
 
   isStealthed(): boolean {
     return !!(this.character().activeEffects || []).some(e => e.target === 'stealth');
+  }
+
+  infernalTurns(): number {
+    return this.character().infernalTurnsLeft || 0;
+  }
+
+  infernalActive(): boolean {
+    return this.infernalTurns() > 0;
+  }
+
+  infernalConfig(): any {
+    return this.classConfig().abilities.find(a => a.id === 'summon_infernal') || null;
+  }
+
+  summonInfernal(turns: number) {
+    this.character.update(c => ({ ...c, infernalTurnsLeft: turns }));
+  }
+
+  infernalAttack(): { damage: number; name: string; school: string } | null {
+    const cfg = this.infernalConfig();
+    if (!cfg || !this.infernalActive()) return null;
+    const min = cfg.infernalMin || 30;
+    const max = cfg.infernalMax || 50;
+    const damage = Math.round(min + Math.random() * (max - min));
+    return { damage, name: 'Infernal Firebolt', school: 'Fuego' };
+  }
+
+  decrementInfernalTurn(): number {
+    const remaining = this.infernalTurns() - 1;
+    this.character.update(c => ({ ...c, infernalTurnsLeft: Math.max(0, remaining) }));
+    return remaining;
   }
 
   getShards(): number {
