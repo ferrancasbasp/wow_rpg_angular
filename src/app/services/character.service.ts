@@ -1102,7 +1102,8 @@ export class CharacterService {
       });
     } else if (this.resourceConfig().type === 'rage') {
       this.character.update(c => {
-        c.currentRage = Math.max(0, (c.currentRage || 0) - 5);
+        const rageDecay = Math.max(0, 3 - this.talentRank('endless_rage'));
+        c.currentRage = Math.max(0, (c.currentRage || 0) - rageDecay);
         return { ...c };
       });
     } else {
