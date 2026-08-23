@@ -469,7 +469,10 @@ export class CharacterService {
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
       if (isRage) cost = buffRank ? (buffRank.costRage || 0) : (a.costRage || 0);
-      else if (isEnergy) cost = buffRank ? (buffRank.costEnergy || 0) : (a.costEnergy || 0);
+      else if (isEnergy) {
+        cost = buffRank ? (buffRank.costEnergy || 0) : (a.costEnergy || 0);
+        if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 2);
+      }
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
 
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
@@ -797,7 +800,7 @@ export class CharacterService {
       energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +${rank} energía (+${rank * 2} si crit)`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
-      improved_slice_and_dice: `Slice and Dice: +${rank} turno${rank > 1 ? 's' : ''} duración`,
+      improved_slice_and_dice: `Slice and Dice: +${rank * 3} turnos duración`,
       opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 4}%`,
       precision: `Crítico físico: +${rank}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,

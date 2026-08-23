@@ -654,7 +654,7 @@ export class TranslationService {
     rogue_energetic_basic_attack: { es: 'Aumenta el daño de Basic Attack un 2% por punto. Basic Attack genera 1 energía (2 si es crítico).', en: 'Increases Basic Attack damage by 2% per point. Basic Attack generates 1 energy (2 on crit).' },
     rogue_ruthlessness: { es: 'Reduce el coste de energía de tus finishers en 2 por punto.', en: 'Reduces the energy cost of your finishers by 2 per point.' },
     rogue_improved_backstab: { es: 'Reduce el coste de energía de Backstab en 3 por punto.', en: 'Reduces the energy cost of Backstab by 3 per point.' },
-    rogue_improved_slice_and_dice: { es: 'Aumenta la duración de Slice and Dice en 1 turno por punto.', en: 'Increases the duration of Slice and Dice by 1 turn per point.' },
+    rogue_improved_slice_and_dice: { es: 'Aumenta la duración de Slice and Dice en 3 turnos por punto.', en: 'Increases the duration of Slice and Dice by 3 turns per point.' },
     rogue_opportunity: { es: 'Aumenta el daño de Backstab, Garrote y Ambush un 4% por punto.', en: 'Increases the damage of Backstab, Garrote and Ambush by 4% per point.' },
     rogue_precision: { es: 'Aumenta tu probabilidad de crítico físico un 1% por punto.', en: 'Increases your physical crit chance by 1% per point.' },
     rogue_endurance: { es: 'Reduce el cooldown de Evasión y Sprint en 1 turno por punto.', en: 'Reduces the cooldown of Evasion and Sprint by 1 turn per point.' },

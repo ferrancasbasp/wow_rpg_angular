@@ -1594,7 +1594,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
       if (ability.id === 'slice_and_dice') {
-        sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice');
+        sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice') * 3;
       }
       const poisonSibling = ability.id === 'poison_weapon' ? 'leechPoison' : (ability.id === 'leeching_poison' ? 'poisonDamage' : null);
       this.charSvc.character.update(c => ({
