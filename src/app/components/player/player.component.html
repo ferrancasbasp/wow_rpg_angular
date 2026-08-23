@@ -68,7 +68,10 @@
         @if (charSvc.character().classKey === 'warlock') {
           <div class="warlock-bottom-row">
             @if (charSvc.infernalActive()) {
-              <span class="infernal-badge" [title]="trSvc.t('infernal_badge_hint')">🔥 {{ trSvc.t('infernal') }} · {{ charSvc.infernalTurns() }} {{ (charSvc.infernalTurns() === 1 ? trSvc.t('turn') : trSvc.t('turns')) }}</span>
+              <span class="infernal-badge" [title]="trSvc.t('infernal_badge_hint')">
+                <img src="img/capstones/warlock/sumon_infernal.jpg" class="infernal-badge-img" (error)="onImgError($event)">
+                {{ trSvc.t('infernal') }} · {{ charSvc.infernalTurns() }} {{ (charSvc.infernalTurns() === 1 ? trSvc.t('turn') : trSvc.t('turns')) }}
+              </span>
             }
             <div class="combo-inline combo-warlock">
               <span class="combo-label">🔮 Shards</span>
