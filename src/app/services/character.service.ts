@@ -1251,11 +1251,13 @@ export class CharacterService {
     if (!cls.pets) return;
     const pet = cls.pets.find(p => p.id === petId);
     if (!pet) return;
+    let petHP = Math.round(this.maxHP() * pet.hpPct);
+    if (pet.id === 'voidwalker') petHP = Math.round(petHP * this.petTalentBoost());
     this.character.update(c => ({
       ...c,
       activePet: {
         petId,
-        currentHP: this.petMaxHP(),
+        currentHP: petHP,
         currentMana: Math.round(this.maxMana() * pet.manaPct),
       },
     }));
