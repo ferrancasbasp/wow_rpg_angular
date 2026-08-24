@@ -620,7 +620,7 @@ export class CharacterService {
   getEffectiveRageCost(ability: any): number {
     let cost = ability.costRage || 0;
     if (ability.id === 'heroic_strike') cost -= this.talentRank('improved_heroic_strike');
-    if (ability.id === 'shout') cost -= this.talentRank('improved_battle_shout');
+    if (ability.id === 'shout') cost -= this.talentRank('improved_battle_shout') * 2;
     return Math.max(0, cost);
   }
 
@@ -856,7 +856,7 @@ export class CharacterService {
       cruelty: `Crítico físico: +${rank}%`,
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida`,
       improved_cleave: `Cleave: +${rank * 20}% daño`,
-      improved_battle_shout: `Battle Shout: +${rank * 5}% AP, −${rank} ira`,
+      improved_battle_shout: `Battle Shout: +${rank * 6}% AP, −${rank * 2} ira`,
       improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 4} armor Protection`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis`,
       vitality: `Regen energía: +${rank * 10}%`,

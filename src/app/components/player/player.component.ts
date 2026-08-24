@@ -2147,7 +2147,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const hpPercentBefore = maxHP > 0 ? hpActual / maxHP : 1;
       let buffValue = ability.currentBuffValue;
       if (ability.id === 'shout') {
-        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_battle_shout') * 0.05));
+        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_battle_shout') * 0.06));
       }
       if (ability.id === 'power_word_shield') {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_shield') * 0.10));

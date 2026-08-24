@@ -33,7 +33,7 @@ export const WARRIOR: CharacterClass = {
     { id: 'improved_stances', name: 'Improved Stances', icon: '🛡️', iconImg: 'img/talents/warrior/improved_stances.jpg', description: 'Aumenta la armadura de Protection en 4, el crítico de Fury en 2% y el daño de Battle en 2% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'improved_last_stand', name: 'Improved Last Stand', icon: '🛡️', iconImg: 'img/abilities/warrior/last_stand.jpg', description: 'Last Stand también te cura un 5% de vida por punto.', maxRank: 2, tier: 3, requires: null },
     { id: 'improved_cleave', name: 'Improved Cleave', icon: '🪓', iconImg: 'img/abilities/warrior/cleave.jpg', description: 'Aumenta el daño de Cleave un 20% por punto.', maxRank: 2, tier: 3, requires: null },
-    { id: 'improved_battle_shout', name: 'Improved Battle Shout', icon: '📢', iconImg: '', description: 'Aumenta el AP otorgado por Battle Shout un 5% y reduce su coste de ira en 1 por punto.', maxRank: 5, tier: 3, requires: null },
+    { id: 'improved_battle_shout', name: 'Improved Battle Shout', icon: '📢', iconImg: '', description: 'Aumenta el AP otorgado por Battle Shout un 6% y reduce su coste de ira en 2 por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'unyielding_strikes', name: 'Unyielding Strikes', icon: '⚡', iconImg: '', description: 'Los ataques básicos tienen un 4% de probabilidad por punto de no gastar acción.', maxRank: 3, tier: 3, requires: null },
   ],
 
