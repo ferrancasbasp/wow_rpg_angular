@@ -764,6 +764,15 @@
       align-items: center;
       gap: 6px;
     }
+    .pet-inline-companion {
+      margin-top: 4px;
+      opacity: 0.92;
+    }
+    .companion-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      color: #a5d6a7;
+    }
     .infernal-badge {
       font-family: 'Cinzel', serif;
       font-size: 11px;

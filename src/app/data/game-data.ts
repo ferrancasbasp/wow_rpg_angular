@@ -170,6 +170,8 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     currentCooldowns: {},
     equipment,
     activeEffects: [],
+    activePet: null,
+    companionPet: null,
   };
 }
 

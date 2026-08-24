@@ -422,6 +422,30 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ': ' + pet.name + ' hace un golpe extra: ' + dmg + ' danyo · +10 Focus · Focus ' + this.charSvc.resourceActual() + '/' + focusMax);
   }
 
+  castExplosiveShot(ability: any) {
+    const level = this.charSvc.character().level;
+    const ranks = ability.damageRanges || [];
+    const rnk = [...ranks].reverse().find((d: any) => d.level <= level) || ranks[0];
+    const totalMin = rnk ? rnk.min : 54;
+    const totalMax = rnk ? rnk.max : 84;
+    const total = totalMin + Math.floor(Math.random() * (totalMax - totalMin + 1));
+    const tick = Math.max(1, Math.round(total / 3));
+    this.charSvc.addTurnDamage(total);
+    this.firebase.pushData('damageEvents', {
+      player: this.charSvc.character().name || 'Jugador',
+      ability: ability.name,
+      rank: rnk ? rnk.rank : 1,
+      damage: total,
+      damageType: 'magical',
+      aoe: true,
+      effects: [{ type: 'dot', name: 'Explosive Shot', value: tick, duration: 3, debuffType: 'fire', stackable: false }],
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast(ability.name + ' R' + (rnk ? rnk.rank : 1) + ': 🔥 ' + total + ' Fuego (' + tick + '/t · 3t) a todos los enemigos — enviado al Master');
+  }
+
   castDisengage(ability: any) {
     this.charSvc.character.update(c => ({
       ...c,
@@ -847,6 +871,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ],
         }));
         this.charSvc.showToast(ability.name + ': +' + howlPct + '% dano al Hunter y al Wolf durante 3 turnos');
+        const fiRank = this.charSvc.talentRank('ferocious_inspiration');
+        if (fiRank > 0) {
+          const partyVal = Math.round(howlPct * 0.5 * fiRank);
+          this.charSvc.sendBuffEvent({ ...ability, name: 'Furious Howl', currentBuffStat: 'attackPower', currentBuffValue: partyVal, currentBuffDuration: 3, buff: { stat: 'attackPower', duration: 3, isPercent: false }, partyBuff: true } as any);
+          this.charSvc.showToast(ability.name + ': 🎵 Ferocious Inspiration — party +' + partyVal + ' Attack Power (3 turnos) — enviado al Master');
+        }
       } else if (ability.id === 'growl') {
         const myName = (this.charSvc.character().name || '').trim();
         const petPlayerName = myName ? myName + ' — Bear' : '';
@@ -863,6 +893,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
           assigned: false,
         });
         this.charSvc.showToast(ability.name + ': el enemigo ataca al Bear durante 3 turnos — enviado al Master');
+        const fiRank = this.charSvc.talentRank('ferocious_inspiration');
+        if (fiRank > 0) {
+          const thickVal = [0, 5, 10, 15][fiRank] || 0;
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== 'Thick Skin'),
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Thick Skin', target: 'pet_armor', value: thickVal, duration: 3, isPercent: false },
+            ],
+          }));
+          this.charSvc.showToast(ability.name + ': 🐻 Thick Skin +' + thickVal + ' Armor al Bear (3 turnos)');
+        }
       } else if (ability.id === 'imp_blood_bolt') {
         const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
         if (grimoireRank === 0 && ability.currentBuffValue) {
@@ -983,6 +1025,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ability: petAttack.name + ' (Pet)',
         rank: 1,
         damage: petAttack.damage,
+        damageType: 'magical',
+        aoe: false,
+        effects: null,
+        turn: oldTurn,
+        timestamp: Date.now(),
+        assigned: false,
+      });
+    }
+
+    const companionAttack = this.charSvc.companionPetAttack();
+    if (companionAttack) {
+      this.charSvc.addTurnDamage(companionAttack.damage);
+      const focusText = companionAttack.focusGain > 0 ? ' · +' + companionAttack.focusGain + ' Focus' : '';
+      this.charSvc.showToast(`🐾 ${companionAttack.name}: ${companionAttack.damage} danyo de ${companionAttack.school}` + focusText);
+      this.firebase.pushData('damageEvents', {
+        player: this.charSvc.character().name || 'Jugador',
+        ability: companionAttack.name + ' (Companion)',
+        rank: 1,
+        damage: companionAttack.damage,
         damageType: 'magical',
         aoe: false,
         effects: null,
@@ -1305,10 +1366,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentEnergy: Math.max(0, resourceActual - cost),
       }));
     } else if (isFocus) {
-      this.charSvc.character.update(c => ({
-        ...c,
-        currentFocus: Math.max(0, resourceActual - cost),
-      }));
+      this.charSvc.character.update(c => {
+        const effects = ability.id === 'aimed_shot'
+          ? (c.activeEffects || []).filter(e => e.name !== 'Lock and Load')
+          : c.activeEffects;
+        return {
+          ...c,
+          currentFocus: Math.max(0, resourceActual - cost),
+          activeEffects: effects,
+        };
+      });
     } else if (!clearcast) {
       this.charSvc.character.update(c => ({
         ...c,
@@ -1329,6 +1396,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
       critChance += 25;
     }
+    if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
+      const hawkActive = (this.charSvc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
+      if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 2;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) {
       let critMult = 1.5;
@@ -1346,6 +1417,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (this.charSvc.hasEffect('arcane_power')) {
         critMult = critMult * 1.25;
+      }
+      if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
+        critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.15);
       }
       roll = Math.round(roll * critMult);
     }
@@ -1653,7 +1727,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.id === 'hunters_mark') {
       const hRank = ability.currentRank || 1;
       const hBuff = ability.buffRanks?.find((br: any) => br.rank === hRank);
-      const armorVal = hBuff ? hBuff.value : 20;
+      let armorVal = hBuff ? hBuff.value : 20;
+      const ihmRank = this.charSvc.talentRank('improved_hunters_mark');
+      if (ihmRank > 0) armorVal = Math.round(armorVal * (1 + ihmRank * 0.10));
       this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: "Hunter's Mark", stat: 'armor', value: armorVal, duration: 5 }] }, 0, 1, 1);
       this.charSvc.showToast(ability.name + ' R' + hRank + ': Armor -' + armorVal + ' (5 turnos) — ' + this.trSvc.t('apply_to_enemy'));
       return;
@@ -1662,7 +1738,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const fBuff = ability.buffRanks?.find((br: any) => br.rank === fRank);
       const slowVal = fBuff ? fBuff.value : 40;
       this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: 'Frost Trap', target: 'attackPower', value: slowVal, duration: 3 }] }, 0, 1, 1);
-      this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master');
+      const lnlRank = this.charSvc.talentRank('lock_and_load');
+      let lnlText = '';
+      if (lnlRank > 0) {
+        const lnlVal = [0, 15, 30, 50][lnlRank] || 0;
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 999, isPercent: false }],
+        }));
+        lnlText = ' · Lock and Load: Aimed -' + lnlVal + ' Focus';
+      }
+      this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master' + lnlText);
       return;
     } else {
       const poisonDmg = this.charSvc.getPoisonDamage();
@@ -1735,8 +1821,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
         igniteText = ' · 🔥 Ignite ' + igniteTotal + ' (' + igniteTick + '/t · 3t)';
       }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
+      let serpentText = '';
+      let sendAbility: any = ability;
+      if (ability.id === 'multi_shot') {
+        const ssRank = this.charSvc.talentRank('serpent_spread');
+        if (ssRank > 0) {
+          const serp = this.charSvc.computedAbilities().find((x: any) => x.id === 'serpent_sting');
+          const serpTick = serp && serp.dotTick ? serp.dotTick : Math.max(1, roll);
+          const serpentTick = Math.max(1, Math.round(serpTick * 0.15 * ssRank));
+          sendAbility = { ...ability, inflictsEffects: [{ type: 'dot', name: 'Serpent Sting', value: serpentTick, duration: 4, debuffType: 'poison', stackable: false }] };
+          serpentText = ' · 🐍 Serpent Sting ' + serpentTick + '/t (4t)';
+        }
+      }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -1751,7 +1849,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
           if (poisonDmg > 0 && ability.damageType === 'physical') hitRoll += poisonDmg;
           this.charSvc.turnDamage.update(d => d + hitRoll);
         }
-        this.charSvc.sendDamageEvent(ability, hitRoll, h + 1, hits);
+        this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits);
+      }
+      const dtRank = this.charSvc.talentRank('double_tap');
+      if (ability.id === 'arcanic_shot' && dtRank > 0 && Math.random() * 100 < dtRank * 15) {
+        this.charSvc.turnDamage.update(d => d + roll);
+        this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Double Tap)' }, roll, 1, 1);
+        this.charSvc.character.update(c => {
+          const focusMax = this.charSvc.resourceMax();
+          return {
+            ...c,
+            currentFocus: Math.min(focusMax, (c.currentFocus || 0) + 10),
+          };
+        });
+        this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ✨ ¡Double Tap! ' + roll + ' dano extra · +10 Focus');
       }
     }
   }
@@ -1917,10 +2028,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
     } else if (ability.isPetSummon) {
+      if (this.charSvc.selectedCapstone() === 'lone_wolf') {
+        this.charSvc.showToast('🐺 Lone Wolf activo: no puedes invocar a tu mascota');
+        return;
+      }
       if (ability.spendsShards) {
         this.charSvc.spendShards(ability.shardCost || 1);
       }
       this.charSvc.summonPet(ability.isPetSummon);
+    } else if (ability.id === 'explosive_shot') {
+      this.castExplosiveShot(ability);
     } else if (ability.id === 'summon_infernal') {
       this.castSummonInfernal(ability);
     } else if (ability.id === 'seed_of_corruption') {

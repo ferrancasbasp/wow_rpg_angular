@@ -114,6 +114,21 @@
                 }
               </div>
             }
+            @if (charSvc.companionPetData()) {
+              <div class="pet-inline pet-inline-companion">
+                @if (charSvc.companionPetData()!.iconImg) {
+                  <img [src]="charSvc.companionPetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+                } @else {
+                  <span class="pet-icon-sm">{{ charSvc.companionPetData()!.icon }}</span>
+                }
+                <div class="pet-bars-inline">
+                  <div class="resource-track pet-hp-track">
+                    <div class="resource-fill hp" [style.width]="charSvc.companionPetHPPercent() + '%'"></div>
+                  </div>
+                </div>
+                <span class="companion-label">{{ charSvc.companionPetData()!.name }}</span>
+              </div>
+            }
           </div>
         } @else if (charSvc.character().classKey === 'bard') {
           <div class="combo-inline combo-bard">

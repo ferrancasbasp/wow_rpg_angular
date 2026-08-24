@@ -22,12 +22,25 @@ export const HUNTER: CharacterClass = {
 
   resource: { type: 'focus', label: 'Focus', color: '#aad372', max: 100, start: 'full', regen: 0 },
 
-  talents: [],
+  talents: [
+    { id: 'ranged_weapon_spec', name: 'Ranged Weapon Specialization', icon: '🏹', iconImg: 'img/talents/hunter/ranged_weapon_spec.jpg', description: 'Aumenta el dano de Auto Shot, Arcane Shot, Aimed Shot y Multi-Shot un 5% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'bestial_discipline', name: 'Bestial Discipline', icon: '🐺', iconImg: 'img/talents/hunter/bestial_discipline.jpg', description: 'Aumenta el dano de los ataques basicos de tu pet un 10% por punto y el Focus que generan en +2/+4/+5.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_aspect_of_the_hawk', name: 'Improved Aspect of the Hawk', icon: '🦅', iconImg: 'img/talents/hunter/improved_aspect_of_the_hawk.jpg', description: 'Mientras Aspect of the Hawk esta activo, +2% por punto de probabilidad de critico para tus ataques a distancia.', maxRank: 3, tier: 1, requires: null },
+    { id: 'survivalist', name: 'Survivalist', icon: '❤️', iconImg: 'img/talents/hunter/survivalist.jpg', description: 'Aumenta tu vida maxima un 3% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'serpent_spread', name: 'Serpent Spread', icon: '🐍', iconImg: 'img/talents/hunter/serpent_spread.jpg', description: 'Multi-Shot aplica Serpent Sting a todos los enemigos con una efectividad del 15% por punto de su dano normal.', maxRank: 4, tier: 2, requires: null },
+    { id: 'improved_kill_command', name: 'Improved Kill Command', icon: '🐾', iconImg: 'img/talents/hunter/improved_kill_command.jpg', description: 'Reduce el cooldown de Kill Command en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
+    { id: 'improved_hunters_mark', name: "Improved Hunter's Mark", icon: '🎯', iconImg: 'img/talents/hunter/improved_hunters_mark.jpg', description: "Aumenta la reduccion de Armor de Hunter's Mark un 10% por punto.", maxRank: 3, tier: 2, requires: null },
+    { id: 'efficiency', name: 'Efficiency', icon: '⚡', iconImg: 'img/talents/hunter/efficiency.jpg', description: 'Reduce el coste de Aimed Shot en 5 Focus por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'double_tap', name: 'Double Tap', icon: '✨', iconImg: 'img/talents/hunter/double_tap.jpg', description: 'Arcane Shot tiene un 15% por punto de probabilidad de dispararse una segunda vez gratis (mismo dano, genera focus).', maxRank: 3, tier: 3, requires: null },
+    { id: 'mortal_shots', name: 'Mortal Shots', icon: '💀', iconImg: 'img/talents/hunter/mortal_shots.jpg', description: 'Aumenta el dano de los criticos de tus disparos un 15% por punto.', maxRank: 3, tier: 3, requires: null },
+    { id: 'ferocious_inspiration', name: 'Ferocious Inspiration', icon: '🦁', iconImg: 'img/talents/hunter/ferocious_inspiration.jpg', description: 'Mejora tus pets: Furious Howl tambien da a la party con 50% por punto de eficacia; Growl da Thick Skin (+5/+10/+15 armor) al Bear 3 turnos.', maxRank: 3, tier: 3, requires: null },
+    { id: 'lock_and_load', name: 'Lock and Load', icon: '🧨', iconImg: 'img/talents/hunter/lock_and_load.jpg', description: 'Tras usar Frost Trap, tu siguiente Aimed Shot cuesta 15/30/50 Focus menos.', maxRank: 3, tier: 3, requires: null },
+  ],
 
   capstones: [
-    { id: 'capstone_1', name: 'Capstone I', icon: '⬜', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
-    { id: 'capstone_2', name: 'Capstone II', icon: '⬜', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
-    { id: 'capstone_3', name: 'Capstone III', icon: '⬜', iconImg: '', description: 'Capstone de ejemplo. (Por definir)' },
+    { id: 'lone_wolf', name: 'Lone Wolf', icon: '🐺', iconImg: 'img/capstones/hunter/lone_wolf.jpg', description: 'No puedes tener un pet activo durante el resto del combate. Tu dano a distancia +20% y tienes 1 accion adicional por turno.' },
+    { id: 'explosive_shot', name: 'Explosive Shot', icon: '💥', iconImg: 'img/capstones/hunter/explosive_shot.jpg', description: 'Coste: 50 Focus. Cast. Dispara un proyectil que se incrusta 3 turnos: dano de Fuego cada turno al objetivo y a todos los enemigos cercanos.' },
+    { id: 'animal_companion', name: 'Animal Companion', icon: '🐾', iconImg: 'img/capstones/hunter/animal_companion.jpg', description: 'Invoca Wolf y Bear a la vez. Ambos atacan, usan sus habilidades y generan Focus por separado.' },
   ],
 
   abilities: [
@@ -47,6 +60,7 @@ export const HUNTER: CharacterClass = {
     { id: 'summon_bear', name: 'Summon Bear', icon: '🐻', iconImg: 'img/abilities/hunter/summon_bear.jpg', school: 'Invocacion', type: 'utility', requiredLevel: 10, costPct: 0, costFocus: 15, castType: 'cast', cooldown: 0, description: 'Invoca un Bear tanque que lucha a tu lado: ataca cada turno y genera 5 Focus. Puede usar Growl. Un solo pet activo. Cuesta 15 Focus.', isPetSummon: 'bear', buff: null },
     { id: 'furious_howl', name: 'Furious Howl', icon: '🐺', iconImg: 'img/abilities/hunter/furious_howl.jpg', school: 'Bestial', type: 'utility', requiredLevel: 4, costPct: 0, castType: 'instant', cooldown: 3, description: 'El Wolf aulla: aumenta el dano del Hunter y del Wolf un 15% durante 3 turnos. CD 3.', petAbility: 'wolf', buffRanks: [{ rank: 1, level: 4, value: 15 }], buff: { stat: 'furious_howl', duration: 3, applySelf: true } },
     { id: 'growl', name: 'Growl', icon: '🐻', iconImg: 'img/abilities/hunter/growl.jpg', school: 'Bestial', type: 'utility', requiredLevel: 10, costPct: 0, castType: 'instant', cooldown: 0, description: 'El Bear gruñe obligando al enemigo a atacarle durante 3 turnos.', petAbility: 'bear', buffRanks: [{ rank: 1, level: 10, value: 3 }], buff: { stat: 'growl', duration: 3, applySelf: true } },
+    { id: 'explosive_shot', name: 'Explosive Shot', icon: '💥', iconImg: 'img/capstones/hunter/explosive_shot.jpg', school: 'Fuego', type: 'utility', requiredLevel: 0, costPct: 0, costFocus: 50, castType: 'cast', cooldown: 3, description: 'Coste: 50 Focus. Dispara un proyectil que se incrusta 3 turnos: dano de Fuego cada turno al objetivo y a los enemigos cercanos. CD 3.', capstoneGate: 'explosive_shot', buff: null, damageRanges: [{ rank: 1, level: 1, min: 54, max: 84 }, { rank: 2, level: 20, min: 96, max: 138 }, { rank: 3, level: 40, min: 150, max: 204 }] },
   ],
 
   pets: [

@@ -291,6 +291,7 @@ export interface Character {
   equipment: Equipment;
   activeEffects: ActiveEffect[];
   activePet?: ActivePet | null;
+  companionPet?: ActivePet | null;
   infernalTurnsLeft?: number;
 }
 

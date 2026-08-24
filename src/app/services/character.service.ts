@@ -22,7 +22,8 @@ export class CharacterService {
   maxActions = computed<number>(() => {
     const effects = this.character().activeEffects || [];
     const hasSnD = effects.some(e => e.name === 'Slice and Dice');
-    return hasSnD ? 3 : 2;
+    const loneWolf = this.selectedCapstone() === 'lone_wolf' ? 1 : 0;
+    return (hasSnD ? 3 : 2) + loneWolf;
   });
 
   canAct(cost: number): boolean {
@@ -68,6 +69,9 @@ export class CharacterService {
   readonly maxHP = computed<number>(() => {
     const cls = this.classConfig();
     let hp = Math.round(cls.formulas.hp(this.finalStats(), this.character().level));
+    if (this.character().classKey === 'hunter') {
+      hp = Math.round(hp * (1 + this.talentRank('survivalist') * 0.03));
+    }
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -430,6 +434,12 @@ export class CharacterService {
         minVal = Math.round(minVal * shadowBonus);
         maxVal = Math.round(maxVal * shadowBonus);
       }
+      if (this.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(a.id)) {
+        let hunterMult = 1 + this.talentRank('ranged_weapon_spec') * 0.05;
+        if (this.selectedCapstone() === 'lone_wolf') hunterMult *= 1.20;
+        minVal = Math.round(minVal * hunterMult);
+        maxVal = Math.round(maxVal * hunterMult);
+      }
       const dotRange = a.dotRanges?.find(dr => dr.rank === rank);
       let hotTick = 0, hotDuration = 0, hotTotal = 0;
       if (a.isHot) {
@@ -526,9 +536,10 @@ export class CharacterService {
 
   readonly unlockedPetAbilities = computed<Ability[]>(() => {
     const c = this.character();
-    if (!c.activePet) return [];
+    if (!c.activePet && !c.companionPet) return [];
     const cls = this.classConfig();
-    return cls.abilities.filter(a => a.petAbility && a.petAbility === c.activePet!.petId && this.trainedRank(a.id) > 0).map(a => {
+    const petIds = [c.activePet?.petId, c.companionPet?.petId].filter(Boolean);
+    return cls.abilities.filter(a => a.petAbility && petIds.includes(a.petAbility) && this.trainedRank(a.id) > 0).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       const buffValue = buffRank ? buffRank.value : 0;
@@ -601,6 +612,7 @@ export class CharacterService {
     if (ability.id === 'fire_blast') cd -= this.talentRank('improved_fire_blast');
     if (ability.id === 'blink') cd -= this.talentRank('improved_blink');
     if (['evasion', 'sprint'].includes(ability.id)) cd -= this.talentRank('endurance');
+    if (ability.id === 'kill_command') cd -= this.talentRank('improved_kill_command');
     return Math.max(0, cd);
   }
 
@@ -620,6 +632,11 @@ export class CharacterService {
 
   getEffectiveFocusCost(ability: any): number {
     let cost = ability.costFocus || 0;
+    if (ability.id === 'aimed_shot') cost -= this.talentRank('efficiency') * 5;
+    if (ability.id === 'aimed_shot') {
+      const lnl = (this.character().activeEffects || []).find(e => e.type === 'buff' && e.name === 'Lock and Load');
+      if (lnl && lnl.value) cost -= lnl.value;
+    }
     return Math.max(0, cost);
   }
 
@@ -785,8 +802,28 @@ export class CharacterService {
       this.showToast('Necesitas 15 puntos de talento para elegir una capstone.');
       return;
     }
-    this.character.update(c => ({ ...c, capstone: id }));
+    this.character.update(c => {
+      if (id === 'lone_wolf') {
+        return { ...c, capstone: id, activePet: null, companionPet: null };
+      }
+      return { ...c, capstone: id };
+    });
+    if (id === 'lone_wolf') this.dismissPetsFirebase();
     this.showToast(capstone.name + ' seleccionada.');
+  }
+
+  private dismissPetsFirebase() {
+    const playerName = (this.character().name || '').trim();
+    if (!playerName) return;
+    const cls = this.classConfig();
+    if (!cls.pets) return;
+    for (const p of cls.pets) {
+      try {
+        this.firebase.removeData('players/' + playerName + ' — ' + p.name);
+      } catch (e) {
+        console.error('Firebase remove pet error:', e);
+      }
+    }
   }
 
   getTalentEffectText(talentId: string): string {
@@ -1183,12 +1220,19 @@ export class CharacterService {
   });
 
   activePetData = computed<Pet | null>(() => {
-    const c = this.character();
-    if (!c.activePet) return null;
+    return this.petDefFor(this.character().activePet);
+  });
+
+  companionPetData = computed<Pet | null>(() => {
+    return this.petDefFor(this.character().companionPet);
+  });
+
+  private petDefFor(slot: ActivePet | null | undefined): Pet | null {
+    if (!slot) return null;
     const cls = this.classConfig();
     if (!cls.pets) return null;
-    return cls.pets.find(p => p.id === c.activePet!.petId) || null;
-  });
+    return cls.pets.find(p => p.id === slot!.petId) || null;
+  }
 
   petTalentBoost(): number {
     return 1 + this.talentRank('grimoire_of_command') * 0.25;
@@ -1232,6 +1276,24 @@ export class CharacterService {
     return Math.round((this.petMana() / max) * 100);
   });
 
+  companionPetMaxHP = computed<number>(() => {
+    const pet = this.companionPetData();
+    if (!pet) return 0;
+    return Math.round(this.maxHP() * pet.hpPct);
+  });
+
+  companionPetHP = computed<number>(() => {
+    const c = this.character();
+    if (!c.companionPet) return 0;
+    return c.companionPet.currentHP;
+  });
+
+  companionPetHPPercent = computed<number>(() => {
+    const max = this.companionPetMaxHP();
+    if (max === 0) return 0;
+    return Math.round((this.companionPetHP() / max) * 100);
+  });
+
   readonly petSwapWarning = signal<string | null>(null);
 
   summonPet(petId: string) {
@@ -1240,6 +1302,10 @@ export class CharacterService {
     const pet = cls.pets.find(p => p.id === petId);
     if (!pet) return;
     const currentPet = this.character().activePet;
+    if (this.selectedCapstone() === 'animal_companion') {
+      this.doSummonPet(petId);
+      return;
+    }
     if (currentPet && currentPet.petId !== petId) {
       const currentPetData = cls.pets.find(p => p.id === currentPet.petId);
       this.petSwapWarning.set((currentPetData?.name || 'Pet') + ' → ' + pet.name);
@@ -1273,15 +1339,33 @@ export class CharacterService {
     if (!pet) return;
     let petHP = Math.round(this.maxHP() * pet.hpPct);
     if (pet.id === 'voidwalker') petHP = Math.round(petHP * this.petTalentBoost());
-    this.character.update(c => ({
-      ...c,
-      activePet: {
-        petId,
-        currentHP: petHP,
-        currentMana: Math.round(this.maxMana() * pet.manaPct),
-      },
-      activeEffects: (c.activeEffects || []).filter(e => e.name !== 'Burning Soul' && e.name !== 'Void Fortitude'),
-    }));
+    const manaPct = pet.manaPct || 0;
+    this.character.update(c => {
+      let activePet = c.activePet;
+      let companion: ActivePet | null | undefined = c.companionPet;
+      const canDual = this.selectedCapstone() === 'animal_companion';
+      const isCompanion = canDual && activePet && activePet.petId !== petId && !companion;
+      if (canDual && activePet && activePet.petId !== petId) {
+        companion = {
+          petId,
+          currentHP: petHP,
+          currentMana: Math.round(this.maxMana() * manaPct),
+        };
+      } else {
+        activePet = {
+          petId,
+          currentHP: petHP,
+          currentMana: Math.round(this.maxMana() * manaPct),
+        };
+        if (!canDual) companion = undefined;
+      }
+      return {
+        ...c,
+        activePet,
+        companionPet: companion ?? null,
+        activeEffects: (c.activeEffects || []).filter(e => e.name !== 'Burning Soul' && e.name !== 'Void Fortitude'),
+      };
+    });
     const playerName = (this.character().name || '').trim();
     if (playerName) {
       const petName = playerName + ' — ' + pet.name;
@@ -1297,6 +1381,7 @@ export class CharacterService {
   dismissPet() {
     const playerName = (this.character().name || '').trim();
     const pet = this.activePetData();
+    const companion = this.companionPetData();
     if (playerName && pet) {
       const petName = playerName + ' — ' + pet.name;
       try {
@@ -1305,34 +1390,56 @@ export class CharacterService {
         console.error('Firebase remove pet error:', e);
       }
     }
-    this.character.update(c => ({ ...c, activePet: null }));
-    this.showToast('Pet desinvocada');
+    if (playerName && companion) {
+      const petName = playerName + ' — ' + companion.name;
+      try {
+        this.firebase.removeData('players/' + petName);
+      } catch (e) {
+        console.error('Firebase remove companion error:', e);
+      }
+    }
+    this.character.update(c => ({ ...c, activePet: null, companionPet: null }));
+    this.showToast('Pets desinvocadas');
   }
 
   petAttack(): { damage: number; name: string; school: string; manaCost: number; focusGain: number } | null {
-    const pet = this.activePetData();
+    return this.petAttackFor(this.character().activePet);
+  }
+
+  companionPetAttack(): { damage: number; name: string; school: string; manaCost: number; focusGain: number } | null {
+    return this.petAttackFor(this.character().companionPet);
+  }
+
+  petAttackFor(slot: ActivePet | null | undefined): { damage: number; name: string; school: string; manaCost: number; focusGain: number } | null {
     const c = this.character();
-    if (!pet || !c.activePet) return null;
-    if (c.activePet.currentMana < Math.round(this.petMaxMana() * pet.manaCostPct)) return null;
+    if (!slot) return null;
+    const pet = this.petDefFor(slot);
+    if (!pet) return null;
+    if (slot.currentMana < Math.round(this.petMaxMana() * pet.manaCostPct)) return null;
 
     let damage = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
     if (pet.id === 'imp') damage = Math.round(damage * this.petTalentBoost());
+    const bd = this.talentRank('bestial_discipline');
+    if (bd > 0) damage = Math.round(damage * (1 + bd * 0.10));
 
     let focusGain = 0;
     if (this.resourceConfig().type === 'focus') {
       const howl = (c.activeEffects || []).find(e => e.type === 'buff' && e.name === 'Furious Howl');
       if (howl) damage = Math.round(damage * (1 + (howl.value || 0) / 100));
-      focusGain = pet.focusGain || 0;
+      const focusBonus = bd > 0 ? [0, 2, 4, 5][bd] || 0 : 0;
+      focusGain = (pet.focusGain || 0) + focusBonus;
     }
 
     const manaCost = Math.round(this.petMaxMana() * pet.manaCostPct);
 
     this.character.update(ch => {
-      const next = ch.activePet ? {
-        ...ch.activePet,
-        currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
-      } : null;
-      const out = { ...ch, activePet: next };
+      const isMain = slot === ch.activePet;
+      let out = { ...ch };
+      if (isMain) {
+        out.activePet = ch.activePet ? { ...ch.activePet, currentMana: Math.max(0, ch.activePet.currentMana - manaCost) } : null;
+      } else {
+        out.companionPet = ch.companionPet ? { ...ch.companionPet, currentMana: Math.max(0, ch.companionPet.currentMana - manaCost) } : null;
+      }
       if (focusGain > 0) {
         const focusMax = this.resourceMax();
         out.currentFocus = Math.min(focusMax, (out.currentFocus || 0) + focusGain);
@@ -1344,8 +1451,28 @@ export class CharacterService {
   }
 
   petTakeDamage(amount: number) {
+    const thickSkin = (this.character().activeEffects || []).find(e => e.type === 'buff' && e.name === 'Thick Skin');
+    if (thickSkin && thickSkin.value) amount = Math.max(0, amount - thickSkin.value);
     this.character.update(c => {
-      if (!c.activePet) return c;
+      if (!c.activePet) {
+        if (!c.companionPet) return c;
+        const newHP = Math.max(0, c.companionPet.currentHP - amount);
+        if (newHP <= 0) {
+          const playerName = (c.name || '').trim();
+          const pet = this.classConfig().pets?.find(p => p.id === c.companionPet!.petId);
+          if (playerName && pet) {
+            const petName = playerName + ' — ' + pet.name;
+            try {
+              this.firebase.removeData('players/' + petName);
+            } catch (e) {
+              console.error('Firebase remove dead pet error:', e);
+            }
+          }
+          this.showToast('Tu pet ha muerto!');
+          return { ...c, companionPet: null };
+        }
+        return { ...c, companionPet: { ...c.companionPet, currentHP: newHP } };
+      }
       const newHP = Math.max(0, c.activePet.currentHP - amount);
       if (newHP <= 0) {
         const playerName = (c.name || '').trim();
@@ -1370,13 +1497,19 @@ export class CharacterService {
 
   petRest() {
     const pet = this.activePetData();
-    if (!pet) return;
+    const companion = this.companionPetData();
+    if (!pet && !companion) return;
     this.character.update(c => ({
       ...c,
       activePet: c.activePet ? {
         ...c.activePet,
         currentHP: this.petMaxHP(),
         currentMana: this.petMaxMana(),
+      } : null,
+      companionPet: c.companionPet ? {
+        ...c.companionPet,
+        currentHP: this.companionPetMaxHP(),
+        currentMana: 0,
       } : null,
     }));
   }
