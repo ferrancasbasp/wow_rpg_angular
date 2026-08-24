@@ -1316,7 +1316,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
-    const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.isMaxed('improved_mind_blast', 3);
+    const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.talentRank('improved_mind_blast') > 0;
     const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
@@ -1397,9 +1397,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const max = ability.currentMax || 0;
     let roll = min + Math.floor(Math.random() * (max - min + 1));
     let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
-    if (ability.id === 'mind_blast') {
-      critChance += this.charSvc.talentRank('improved_mind_blast') * 10;
-    }
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 1;
     }
@@ -2114,16 +2111,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
       if (ability.id === 'inner_fire') {
-        const innerVal = ability.currentBuffValue || 5;
+        const iifRank = this.charSvc.talentRank('improved_inner_fire');
+        const innerVal = Math.round((ability.currentBuffValue || 5) * (1 + iifRank * 0.20));
+        const innerAp = innerVal * 4;
         this.charSvc.character.update(c => ({
           ...c,
           activeEffects: [
             ...(c.activeEffects || []).filter(e => e.name !== 'Inner Fire'),
-            { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Inner Fire', target: 'armor', value: innerVal, duration: 999, isPercent: false },
-            { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Inner Fire (AP)', target: 'attackPower', value: innerVal * 4, duration: 999, isPercent: false },
+            { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Inner Fire', target: 'armor', value: innerVal, duration: 15, isPercent: false },
+            { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Inner Fire (AP)', target: 'attackPower', value: innerAp, duration: 15, isPercent: false },
           ],
         }));
-        this.charSvc.showToast('🔥 Inner Fire: +' + innerVal + ' Armor · +' + (innerVal * 4) + ' Attack Power');
+        this.charSvc.showToast('🔥 Inner Fire: +' + innerVal + ' Armor · +' + innerAp + ' Attack Power (15 turnos)');
         return;
       }
       let sndComboSpent = 0;

@@ -613,7 +613,7 @@ export class CharacterService {
     if (ability.id === 'blink') cd -= this.talentRank('improved_blink');
     if (['evasion', 'sprint'].includes(ability.id)) cd -= this.talentRank('endurance');
     if (ability.id === 'kill_command') cd -= this.talentRank('improved_kill_command');
-    if (ability.id === 'mind_blast' && this.isMaxed('improved_mind_blast', 3)) cd -= 1;
+    if (ability.id === 'mind_blast' && this.talentRank('improved_mind_blast') > 0) cd -= 1;
     return Math.max(0, cd);
   }
 
@@ -879,7 +879,8 @@ export class CharacterService {
       improved_pain: `SW: Pain: +${rank * 10}% daño`,
       holyness: `Regen maná: +${rank * 5}%`,
       preservation: `Armadura mágica: +${rank * 5}`,
-      improved_mind_blast: `Mind Blast crit: +${rank * 10}%${rank >= 3 ? ' · A tope: CD -1 y cast instantaneo' : ''}`,
+      improved_mind_blast: `Mind Blast: CD -1 y cast instantaneo${rank > 0 ? ' (activo)' : ''}`,
+      improved_inner_fire: `Inner Fire eficacia: +${rank * 20}%`,
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
