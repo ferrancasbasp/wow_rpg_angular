@@ -452,6 +452,38 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ' R' + (rnk ? rnk.rank : 1) + ': 🔥 ' + total + ' Fuego (' + tick + '/t · 3t) a todos los enemigos — enviado al Master');
   }
 
+  castColossusSmash(ability: any) {
+    const weaponDmg = this.charSvc.totalWeaponDamage();
+    const apBonus = Math.round(this.charSvc.attackPower() / 7);
+    const base = Math.round(weaponDmg * 2) + apBonus;
+    const min = Math.max(1, Math.round(base * 0.5));
+    const max = Math.max(min + 1, Math.round(base * 1.5));
+    let roll = min + Math.floor(Math.random() * (max - min + 1));
+    let isCrit = false;
+    if (Math.random() * 100 < parseFloat(this.charSvc.meleeCrit())) {
+      isCrit = true;
+      let critMult = 1.5;
+      if (this.charSvc.hasEffect('recklessness')) critMult = critMult * 1.20;
+      roll = Math.round(roll * critMult);
+    }
+    if (this.charSvc.warriorStance() === 'battle') {
+      roll = Math.round(roll * (1.10 + this.charSvc.talentRank('improved_stances') * 0.02));
+    }
+    this.charSvc.addTurnDamage(roll);
+    this.firebase.pushData('damageEvents', {
+      player: this.charSvc.character().name || 'Jugador',
+      ability: ability.name,
+      rank: 1,
+      damage: roll,
+      damageType: 'physical',
+      effects: [{ type: 'debuff', name: 'Colossus Smash', target: 'armor', value: 30, duration: 2, debuffType: 'none', stackable: false }],
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast(ability.name + ': 💥 ' + roll + ' Fisico' + (isCrit ? ' · CRITICO' : '') + ' · armadura −30 (2 turnos) — enviado al Master');
+  }
+
   castDisengage(ability: any) {
     this.charSvc.character.update(c => ({
       ...c,
@@ -2124,6 +2156,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castPoisonMastery(ability);
     } else if (ability.id === 'shield_wall') {
       this.castShieldWall(ability);
+    } else if (ability.id === 'colossus_smash') {
+      this.castColossusSmash(ability);
     } else if (ability.id === 'recklessness') {
       this.castRecklessness(ability);
     } else if (ability.id === 'combustion') {

@@ -345,7 +345,7 @@ export class MasterComponent implements OnInit {
     let armor = monster.armor || 0;
     if (monster.effects) {
       for (const eff of monster.effects) {
-        if (eff.type === 'debuff' && eff.stat === 'armor') {
+        if (eff.type === 'debuff' && (eff.stat === 'armor' || eff.target === 'armor')) {
           armor -= eff.value || 0;
         }
       }
