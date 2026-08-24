@@ -729,6 +729,17 @@ export class CharacterService {
     return 0;
   }
 
+  getWoundPoisonPercent(): number {
+    const effects = this.character().activeEffects;
+    if (!effects) return 0;
+    for (const eff of effects) {
+      if (eff.type === 'buff' && eff.target === 'woundPoison') {
+        return eff.value || 0;
+      }
+    }
+    return 0;
+  }
+
   hasPoison(): boolean {
     return this.getPoisonDamage() > 0 || this.getLeechPoisonPercent() > 0;
   }

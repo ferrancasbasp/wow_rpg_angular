@@ -1859,8 +1859,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
           serpentText = ' · 🐍 Serpent Sting ' + serpentTick + '/t (4t)';
         }
       }
+      let woundText = '';
+      const woundPct = this.charSvc.getWoundPoisonPercent();
+      if (woundPct > 0) {
+        const woundEff = { type: 'debuff' as const, name: 'Wound', target: 'healing_received', value: woundPct, duration: 3, debuffType: 'poison' as const, stackable: false };
+        sendAbility = sendAbility.inflictsEffects
+          ? { ...sendAbility, inflictsEffects: [...sendAbility.inflictsEffects, woundEff] }
+          : { ...sendAbility, inflictsEffects: [woundEff] };
+        woundText = ' · 🩸 Wound −' + woundPct + '% cura (3t)';
+      }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2180,12 +2189,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'slice_and_dice') {
         sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice') * 3;
       }
-      const poisonSibling = ability.id === 'poison_weapon' ? 'leechPoison' : (ability.id === 'leeching_poison' ? 'poisonDamage' : null);
+      const poisonBuffTargets = ['poisonDamage', 'leechPoison', 'woundPoison'];
+      const poisonClearTargets = poisonBuffTargets.includes(ability.currentBuffStat)
+        ? poisonBuffTargets.filter(t => t !== ability.currentBuffStat)
+        : [];
       this.charSvc.character.update(c => ({
         ...c,
         ...(ability.id === 'slice_and_dice' ? { comboPoints: 0 } : {}),
         activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== ability.name && (poisonSibling ? e.target !== poisonSibling : true)),
+          ...(c.activeEffects || []).filter(e => e.name !== ability.name && (poisonClearTargets.length > 0 ? !poisonClearTargets.includes(e.target) : true)),
           {
             id: Date.now() + Math.random(),
             type: effectType as any,
