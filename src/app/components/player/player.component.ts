@@ -1794,6 +1794,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         lifestealText = ' · +' + heal + ' vida';
       }
+      if (ability.id === 'basic_attack' && this.charSvc.selectedCapstone() === 'hope_and_grace') {
+        const graceHeal = Math.round(roll * 0.30);
+        if (graceHeal > 0) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + graceHeal),
+          }));
+          lifestealText += ' · 🕊️ +' + graceHeal + ' vida (Hope and Grace)';
+        }
+      }
       const leechPoisonPct = this.charSvc.getLeechPoisonPercent();
       if (leechPoisonPct > 0 && ability.damageType === 'physical') {
         const leechHeal = Math.round(roll * leechPoisonPct / 100);

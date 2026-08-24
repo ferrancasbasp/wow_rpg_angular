@@ -59,9 +59,6 @@ export class CharacterService {
       if (this.selectedCapstone() === 'gift_of_the_wild') {
         result[key] += level;
       }
-      if (key === 'aguante' && this.selectedCapstone() === 'hope_and_grace') {
-        result[key] = Math.round(result[key] * 1.10);
-      }
     }
     return result;
   });
@@ -71,6 +68,9 @@ export class CharacterService {
     let hp = Math.round(cls.formulas.hp(this.finalStats(), this.character().level));
     if (this.character().classKey === 'hunter') {
       hp = Math.round(hp * (1 + this.talentRank('survivalist') * 0.03));
+    }
+    if (this.selectedCapstone() === 'hope_and_grace') {
+      hp += 10 * this.character().level;
     }
     const effects = this.character().activeEffects;
     if (effects) {
