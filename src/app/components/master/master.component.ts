@@ -11,6 +11,7 @@ interface MonsterAttack {
   min: number;
   max: number;
   inflictsEffects?: NpcAttackEffect[];
+  isHeal?: boolean;
 }
 
 interface MonsterEffect {
@@ -93,6 +94,7 @@ export class MasterComponent implements OnInit {
   selectedDebuffType = signal<string>('none');
   DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
+  pendingMonsterHeal = signal<{ amount: number; sourceName: string } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -128,6 +130,10 @@ export class MasterComponent implements OnInit {
     return !event?.assigned;
   });
 
+  isMonsterTargeting = computed(() => {
+    return this.pendingMonsterHeal() !== null;
+  });
+
   isPlayerTargeting = computed(() => {
     const eventId = this.selectedEventId();
     if (eventId !== null) {
@@ -144,6 +150,8 @@ export class MasterComponent implements OnInit {
     if (event) return event.ability;
     const atk = this.pendingMonsterAttack();
     if (atk) return `${atk.sourceName}: ${atk.roll} danno ${atk.damageType === 'physical' ? 'fisico' : 'magico'}`;
+    const heal = this.pendingMonsterHeal();
+    if (heal) return `Click a un monstruo: +${heal.amount} (${heal.sourceName})`;
     return '';
   });
 
@@ -433,7 +441,21 @@ export class MasterComponent implements OnInit {
     );
   }
 
+  onMonsterCardClick(monster: Monster) {
+    const pending = this.pendingMonsterHeal();
+    if (pending) {
+      this.applyMonsterHeal(monster, pending);
+    } else {
+      this.assignDamageToMonster(monster);
+    }
+  }
+
   rollMonsterAttack(monster: Monster, attack: MonsterAttack) {
+    if (attack.isHeal) {
+      this.rollMonsterHeal(monster, attack);
+      return;
+    }
+    this.pendingMonsterHeal.set(null);
     let roll =
       attack.min +
       Math.floor(Math.random() * (attack.max - attack.min + 1));
@@ -479,6 +501,48 @@ export class MasterComponent implements OnInit {
     this.showToast(
       monster.name + ' usa ' + attack.name + ': ' + roll + ' danno — clicka un jugador para asignar' + dotText,
     );
+  }
+
+  rollMonsterHeal(monster: Monster, attack: MonsterAttack) {
+    if (monster.currentHP <= 0) {
+      this.showToast('Este monstruo está derrotado');
+      return;
+    }
+    this.pendingMonsterAttack.set(null);
+    const roll = attack.min + Math.floor(Math.random() * (attack.max - attack.min + 1));
+    this.attackingId.set(monster.id);
+    setTimeout(() => {
+      this.attackingId.set(null);
+    }, 400);
+    monster.lastAttackAt = Date.now();
+    this.saveMonsters();
+    this.pendingMonsterHeal.set({
+      amount: roll,
+      sourceName: monster.name + ' - ' + attack.name,
+    });
+    this.selectedEventId.set(null);
+    this.showToast(
+      '💚 ' + monster.name + ' lanza ' + attack.name + ': +' + roll + ' — clicka un monstruo para curar',
+    );
+  }
+
+  applyMonsterHeal(monster: Monster, pending: { amount: number; sourceName: string }) {
+    this.pendingMonsterHeal.set(null);
+    if (monster.currentHP <= 0) {
+      this.showToast('No puedes curar a un monstruo derrotado');
+      return;
+    }
+    if (monster.currentHP >= monster.maxHP) {
+      this.showToast(monster.name + ' ya está a tope de vida');
+      this.selectedEventId.set(null);
+      return;
+    }
+    const healed = Math.min(pending.amount, monster.maxHP - monster.currentHP);
+    monster.currentHP = Math.min(monster.maxHP, monster.currentHP + healed);
+    this.saveMonsters();
+    this.sendLog.update(log => [`${monster.name}: +${healed} HP (${pending.sourceName})`, ...log].slice(0, 8));
+    this.showToast('💚 +' + healed + ' HP → ' + monster.name + ' (' + pending.sourceName + ')');
+    this.selectedEventId.set(null);
   }
 
   applyManualDamage(monster: Monster) {
@@ -555,6 +619,7 @@ export class MasterComponent implements OnInit {
         min: a.minDamage,
         max: a.maxDamage,
         inflictsEffects: a.inflictsEffects || undefined,
+        isHeal: a.isHeal || undefined,
       })),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);

@@ -260,6 +260,12 @@
       cursor: crosshair;
     }
 
+    .monster-card.monster-heal-targeting {
+      border-color: var(--success);
+      box-shadow: 0 0 12px rgba(95, 168, 95, 0.35);
+      cursor: crosshair;
+    }
+
     .monster-card.dead {
       opacity: 0.5;
       filter: grayscale(0.7);
@@ -454,6 +460,22 @@
       font-size: 11px;
       color: #c0392b;
       font-weight: 700;
+    }
+
+    .monster-attack-btn.heal {
+      background: linear-gradient(180deg, #1d2e1d 0%, #101a10 100%);
+      border-color: #5d8a5d;
+      color: #8fd08f;
+    }
+
+    .monster-attack-btn.heal:hover {
+      border-color: #a5e0a5;
+      color: #c5f0c5;
+      box-shadow: 0 0 8px rgba(95, 168, 95, 0.3);
+    }
+
+    .monster-attack-dmg.heal {
+      color: #5fa85f;
     }
 
     .attack-effect-indicator {

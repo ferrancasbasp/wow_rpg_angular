@@ -315,6 +315,7 @@ export interface NpcAttack {
   minDamage: number;
   maxDamage: number;
   inflictsEffects?: NpcAttackEffect[];
+  isHeal?: boolean;
 }
 
 export interface Npc {

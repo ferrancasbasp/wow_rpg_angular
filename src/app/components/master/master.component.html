@@ -110,7 +110,13 @@
 
     <div class="master-layout">
       <div class="wow-panel">
-        <div class="panel-title">{{ trSvc.t('monsters') }} ({{ monsters().length }})</div>
+        <div class="panel-title">
+          @if (isMonsterTargeting()) {
+            <span class="targeting-hint">💚 {{ targetingLabel() }}</span>
+          } @else {
+            {{ trSvc.t('monsters') }} ({{ monsters().length }})
+          }
+        </div>
         <div class="panel-body">
           <div class="add-monster-row">
             <input
@@ -160,7 +166,8 @@
                   [class.targeting]="isTargeting()"
                   [class.dead]="monster.currentHP <= 0"
                   [class.attacking]="attackingId() === monster.id"
-                  (click)="assignDamageToMonster(monster)"
+                  [class.monster-heal-targeting]="isMonsterTargeting()"
+                  (click)="onMonsterCardClick(monster)"
                 >
                   <div class="monster-header">
                     <span
@@ -233,13 +240,16 @@
                       @for (attack of monster.attacks; track $index) {
                         <button
                           class="monster-attack-btn"
+                          [class.heal]="attack.isHeal"
                           (click)="$event.stopPropagation(); rollMonsterAttack(monster, attack)"
                         >
                           {{ attack.name }}
-                          @if (attack.inflictsEffects && attack.inflictsEffects.length > 0) {
+                          @if (attack.isHeal) {
+                            <span class="attack-effect-indicator">💚</span>
+                          } @else if (attack.inflictsEffects && attack.inflictsEffects.length > 0) {
                             <span class="attack-effect-indicator">⚡</span>
                           }
-                          <span class="monster-attack-dmg">{{ attack.min }}-{{ attack.max }}</span>
+                          <span class="monster-attack-dmg" [class.heal]="attack.isHeal">{{ attack.min }}-{{ attack.max }}</span>
                         </button>
                       }
                     </div>

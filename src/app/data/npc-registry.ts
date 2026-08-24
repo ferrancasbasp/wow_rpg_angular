@@ -39,6 +39,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     attacks: [
       { name: 'Cleave', minDamage: 20, maxDamage: 32 },
       { name: 'Strike', minDamage: 16, maxDamage: 26 },
+      { name: 'Mend', minDamage: 25, maxDamage: 45, isHeal: true },
     ],
   },
   wolf_pup: {
