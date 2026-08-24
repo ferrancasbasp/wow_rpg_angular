@@ -1458,7 +1458,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.hasEffect('inner_focus')) {
       critChance += 25;
     }
-    if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot', 'sniper_shot'].includes(ability.id)) {
+    if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
       const hawkActive = (this.charSvc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
       if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 2;
     }
@@ -1480,7 +1480,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.hasEffect('arcane_power')) {
         critMult = critMult * 1.25;
       }
-      if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot', 'sniper_shot'].includes(ability.id)) {
+      if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
         critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.15);
       }
       roll = Math.round(roll * critMult);
