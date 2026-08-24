@@ -434,7 +434,7 @@ export class CharacterService {
         minVal = Math.round(minVal * shadowBonus);
         maxVal = Math.round(maxVal * shadowBonus);
       }
-      if (this.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(a.id)) {
+      if (this.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot', 'sniper_shot'].includes(a.id)) {
         let hunterMult = 1 + this.talentRank('ranged_weapon_spec') * 0.05;
         if (this.selectedCapstone() === 'lone_wolf') hunterMult *= 1.20;
         minVal = Math.round(minVal * hunterMult);
