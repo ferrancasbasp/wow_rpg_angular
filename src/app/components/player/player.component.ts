@@ -1296,6 +1296,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.hasEffect('arcane_power')) {
       cost = 0;
     }
+    if (this.charSvc.hasEffect('inner_focus')) {
+      cost = 0;
+    }
 
     const resourceActual = this.charSvc.resourceActual();
     const resourceMax = this.charSvc.resourceMax();
@@ -1382,6 +1385,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentMana: manaActual - cost,
       }));
     }
+    if (this.charSvc.hasEffect('inner_focus')) {
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: (c.activeEffects || []).filter(e => e.target !== 'inner_focus'),
+      }));
+    }
 
     const min = ability.currentMin || 0;
     const max = ability.currentMax || 0;
@@ -1394,6 +1403,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       critChance += this.charSvc.talentRank('magic_resistance') * 1;
     }
     if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
+      critChance += 25;
+    }
+    if (this.charSvc.hasEffect('inner_focus')) {
       critChance += 25;
     }
     if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
@@ -2100,6 +2112,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
+      if (ability.id === 'inner_fire') {
+        const innerVal = ability.currentBuffValue || 5;
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.name !== 'Inner Fire'),
+            { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Inner Fire', target: 'armor', value: innerVal, duration: 999, isPercent: false },
+            { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Inner Fire (AP)', target: 'attackPower', value: innerVal * 4, duration: 999, isPercent: false },
+          ],
+        }));
+        this.charSvc.showToast('🔥 Inner Fire: +' + innerVal + ' Armor · +' + (innerVal * 4) + ' Attack Power');
+        return;
+      }
       let sndComboSpent = 0;
       if (ability.id === 'slice_and_dice') {
         sndComboSpent = this.charSvc.character().comboPoints || 0;
@@ -2156,6 +2181,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }
         }
         this.charSvc.character.update(c => ({ ...c, currentHP: newHP }));
+      }
+      if (ability.id === 'inner_focus') {
+        this.charSvc.showToast('🎯 Inner Focus: tu próximo hechizo no cuesta maná y tiene +25% de crítico');
+        return;
       }
       const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
       this.charSvc.showToast(
