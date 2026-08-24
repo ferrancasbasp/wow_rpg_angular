@@ -633,7 +633,7 @@ export class CharacterService {
 
   getEffectiveFocusCost(ability: any): number {
     let cost = ability.costFocus || 0;
-    if (ability.id === 'aimed_shot') cost -= this.talentRank('efficiency') * 5;
+    if (ability.id === 'aimed_shot') cost -= this.talentRank('improved_aimed_shot') * 5;
     if (ability.id === 'aimed_shot') {
       const lnl = (this.character().activeEffects || []).find(e => e.type === 'buff' && e.name === 'Lock and Load');
       if (lnl && lnl.value) cost -= lnl.value;
