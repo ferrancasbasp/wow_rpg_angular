@@ -94,7 +94,7 @@ export class MasterComponent implements OnInit {
   selectedDebuffType = signal<string>('none');
   DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
-  pendingMonsterHeal = signal<{ amount: number; sourceName: string } | null>(null);
+  pendingMonsterHeal = signal<{ amount: number; sourceName: string; sourceId: number } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -519,6 +519,7 @@ export class MasterComponent implements OnInit {
     this.pendingMonsterHeal.set({
       amount: roll,
       sourceName: monster.name + ' - ' + attack.name,
+      sourceId: monster.id,
     });
     this.selectedEventId.set(null);
     this.showToast(
@@ -526,7 +527,7 @@ export class MasterComponent implements OnInit {
     );
   }
 
-  applyMonsterHeal(monster: Monster, pending: { amount: number; sourceName: string }) {
+  applyMonsterHeal(monster: Monster, pending: { amount: number; sourceName: string; sourceId: number }) {
     this.pendingMonsterHeal.set(null);
     if (monster.currentHP <= 0) {
       this.showToast('No puedes curar a un monstruo derrotado');
@@ -539,11 +540,18 @@ export class MasterComponent implements OnInit {
     }
     let healAmount = pending.amount;
     let reducedNote = '';
+    const source = this.monsters().find(m => m.id === pending.sourceId);
+    const outgoingEff = source ? (source.effects || []).find(e => e.type === 'debuff' && (e.target === 'healing_outgoing' || e.stat === 'healing_outgoing')) : null;
+    if (outgoingEff && (outgoingEff.value || 0) > 0) {
+      healAmount = Math.round(healAmount * Math.max(0, 1 - (outgoingEff.value || 0) / 100));
+      reducedNote += ' sale −' + outgoingEff.value + '%';
+    }
     const reduceEff = (monster.effects || []).find(e => e.type === 'debuff' && (e.target === 'healing_received' || e.stat === 'healing_received'));
     if (reduceEff && (reduceEff.value || 0) > 0) {
       healAmount = Math.round(healAmount * Math.max(0, 1 - (reduceEff.value || 0) / 100));
-      reducedNote = ' (cura reducida −' + reduceEff.value + '%)';
+      reducedNote += reducedNote ? ' · recibe −' + reduceEff.value + '%' : ' recibe −' + reduceEff.value + '%';
     }
+    if (reducedNote) reducedNote = ' (cura reducida:' + reducedNote + ')';
     if (healAmount <= 0) {
       this.saveMonsters();
       this.sendLog.update(log => [`${monster.name}: cura bloqueada (${pending.sourceName})`, ...log].slice(0, 8));
@@ -572,6 +580,20 @@ export class MasterComponent implements OnInit {
     } else {
       this.showToast('-' + dmg + ' a ' + monster.name);
     }
+  }
+
+  applyMonsterDebuff(monster: Monster, target: 'healing_outgoing' | 'healing_received') {
+    if (!monster.effects) monster.effects = [];
+    const name = target === 'healing_outgoing' ? 'Curas reducidas' : 'Cura recibida reducida';
+    monster.effects = monster.effects
+      .filter(e => e.target !== target)
+      .concat([{ type: 'debuff', name, target, value: 30, duration: 3, debuffType: 'none' }]);
+    this.saveMonsters();
+    this.showToast(
+      target === 'healing_outgoing'
+        ? '💀 ' + monster.name + ': sus curas −30% (3 turnos)'
+        : '💉 ' + monster.name + ': recibe −30% de cura (3 turnos)',
+    );
   }
 
   healMonster(monster: Monster) {

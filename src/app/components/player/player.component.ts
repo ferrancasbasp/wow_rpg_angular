@@ -386,8 +386,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: Date.now(),
       assigned: false,
     });
-    this.charSvc.adjustHP(heal);
-    this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + heal + (lowHp ? ' (x2 low HP)' : ''));
+    const healMult = this.charSvc.healingReceivedMult();
+    const appliedHeal = healMult < 1 ? Math.round(heal * healMult) : heal;
+    this.charSvc.adjustHP(appliedHeal);
+    const healReduced = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
+    this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + appliedHeal + healReduced + (lowHp ? ' (x2 low HP)' : ''));
   }
 
   castKillCommand(ability: any) {
@@ -1107,12 +1110,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
             currentMana: Math.min(maxMana, (c.currentMana ?? maxMana) + eff.value),
           }));
         } else {
+          const tickHeal = Math.round(eff.value * this.charSvc.healingReceivedMult());
           this.charSvc.character.update(c => ({
             ...c,
-            currentHP: Math.min(maxHP, (c.currentHP ?? maxHP) + eff.value),
+            currentHP: Math.min(maxHP, (c.currentHP ?? maxHP) + tickHeal),
           }));
+          messages.push('+' + tickHeal + ' ' + eff.name);
         }
-        messages.push('+' + eff.value + ' ' + eff.name);
       } else if (eff.type === 'dot') {
         if (eff.target === 'mana') {
           this.charSvc.character.update(c => ({
@@ -1701,13 +1705,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         lunarText = ' · +1 Fase Lunar';
       }
+      const outMult = this.charSvc.healingOutgoingMult();
+      const outNote = outMult < 1 ? ' (curas −' + Math.round((1 - outMult) * 100) + '%)' : '';
       if (ability.id === 'power_word_shield') {
         healBonus *= (1 + this.charSvc.talentRank('improved_shield') * 0.10);
-        roll = Math.round(roll * healBonus);
+        roll = Math.round(roll * healBonus * outMult);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -1719,11 +1725,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
             darkMendingText = ' · x2 (low HP!)';
           }
         }
-        roll = Math.round(roll * healBonus);
+        roll = Math.round(roll * healBonus * outMult);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
         if (ability.id === 'healthstone') {
