@@ -269,6 +269,7 @@ export class CharacterService {
     const rc = this.resourceConfig();
     if (rc.type === 'rage') return rc.max || 100;
     if (rc.type === 'energy') return (rc.max || 100) + this.talentRank('energetic') * 4;
+    if (rc.type === 'focus') return rc.max || 100;
     return this.maxMana();
   });
 
@@ -277,6 +278,7 @@ export class CharacterService {
     const char = this.character();
     if (rc.type === 'rage') return Math.max(0, Math.min(this.resourceMax(), char.currentRage || 0));
     if (rc.type === 'energy') return Math.max(0, Math.min(this.resourceMax(), char.currentEnergy ?? 100));
+    if (rc.type === 'focus') return Math.max(0, Math.min(this.resourceMax(), char.currentFocus ?? 100));
     return this.manaActual();
   });
 
@@ -473,6 +475,7 @@ export class CharacterService {
     const resType = this.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
+    const isFocus = resType === 'focus';
     return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && (a.capstoneGate ? this.selectedCapstone() === a.capstoneGate : this.trainedRank(a.id) > 0)).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
@@ -482,6 +485,7 @@ export class CharacterService {
         cost = buffRank ? (buffRank.costEnergy || 0) : (a.costEnergy || 0);
         if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 2);
       }
+      else if (isFocus) cost = buffRank ? (buffRank.costFocus || 0) : (a.costFocus || 0);
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
 
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
@@ -608,6 +612,11 @@ export class CharacterService {
     let cost = ability.costEnergy || 0;
     if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 2;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
+    return Math.max(0, cost);
+  }
+
+  getEffectiveFocusCost(ability: any): number {
+    let cost = ability.costFocus || 0;
     return Math.max(0, cost);
   }
 
@@ -1149,6 +1158,8 @@ export class CharacterService {
         c.currentRage = Math.max(0, (c.currentRage || 0) - rageDecay);
         return { ...c };
       });
+    } else if (this.resourceConfig().type === 'focus') {
+      // el focus del Hunter no regenera al final del turno
     } else {
       const regen = this.manaRegen();
       this.character.update(c => {

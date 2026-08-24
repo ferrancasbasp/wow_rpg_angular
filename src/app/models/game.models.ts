@@ -2,7 +2,7 @@ export type StatKey = 'fuerza' | 'agilidad' | 'intelecto' | 'aguante' | 'espirit
 
 export type Stats = Record<StatKey, number>;
 
-export type ResourceType = 'mana' | 'rage' | 'energy';
+export type ResourceType = 'mana' | 'rage' | 'energy' | 'focus';
 
 export type DamageType = 'physical' | 'magical';
 
@@ -24,6 +24,7 @@ export interface BuffRank {
   costPct?: number;
   costRage?: number;
   costEnergy?: number;
+  costFocus?: number;
 }
 
 export interface InflictedEffect {
@@ -66,6 +67,7 @@ export interface Ability {
   costPct: number;
   costRage?: number;
   costEnergy?: number;
+  costFocus?: number;
   castType: CastType;
   cooldown: number;
   description: string;
@@ -277,6 +279,7 @@ export interface Character {
   currentMana: number | null;
   currentRage: number;
   currentEnergy: number;
+  currentFocus: number;
   comboPoints: number;
   musicalNotes?: number[];
   soulShards?: number;

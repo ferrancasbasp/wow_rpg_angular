@@ -145,6 +145,8 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
       equipment.mainHand = { name: 'Bastón Druida', bonus: { ...emptyBonus, espiritu: 2 }, weaponDamage: 4 };
     } else if (cls.name === 'Warlock') {
       equipment.mainHand = { name: 'Bastón Oscuro', bonus: { ...emptyBonus, intelecto: 2 }, weaponDamage: 4 };
+    } else if (cls.name === 'Hunter') {
+      equipment.mainHand = { name: 'Arco de Cazador', bonus: { ...emptyBonus, agilidad: 2 }, weaponDamage: 5 };
     }
   }
 
@@ -160,6 +162,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     currentMana: null,
     currentRage: 0,
     currentEnergy: 100,
+    currentFocus: 100,
     comboPoints: 0,
     soulShards: 0,
     trainedRanks: {},

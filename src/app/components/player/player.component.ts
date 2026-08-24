@@ -1114,11 +1114,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resType = this.charSvc.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
+    const isFocus = resType === 'focus';
     let cost: number;
     if (isRage) {
       cost = this.charSvc.getEffectiveRageCost(ability);
     } else if (isEnergy) {
       cost = this.charSvc.getEffectiveEnergyCost(ability);
+    } else if (isFocus) {
+      cost = this.charSvc.getEffectiveFocusCost(ability);
     } else {
       cost = ability.scaledCost || ability.computedCost;
     }
@@ -1182,7 +1185,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    const clearcast = (isRage || isEnergy) ? false : this.charSvc.checkClearcasting();
+    const clearcast = (isRage || isEnergy || isFocus) ? false : this.charSvc.checkClearcasting();
 
     if (isRage) {
       this.charSvc.character.update(c => ({
@@ -1194,6 +1197,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ...c,
         currentEnergy: Math.max(0, resourceActual - cost),
       }));
+    } else if (isFocus) {
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentFocus: Math.max(0, resourceActual - cost),
+      }));
     } else if (!clearcast) {
       this.charSvc.character.update(c => ({
         ...c,
@@ -1204,7 +1212,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const min = ability.currentMin || 0;
     const max = ability.currentMax || 0;
     let roll = min + Math.floor(Math.random() * (max - min + 1));
-    let critChance = parseFloat((isRage || isEnergy) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
+    let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
     if (ability.id === 'mind_blast') {
       critChance += this.charSvc.talentRank('improved_mind_blast') * 10;
     }
@@ -1620,11 +1628,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resType = this.charSvc.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
+    const isFocus = resType === 'focus';
     let cost: number;
     if (isRage) {
       cost = ability.costRage || 0;
     } else if (isEnergy) {
       cost = this.charSvc.getEffectiveEnergyCost(ability);
+    } else if (isFocus) {
+      cost = ability.costFocus || 0;
     } else {
       cost = ability.scaledCost || 0;
     }
@@ -1708,6 +1719,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({
         ...c,
         currentEnergy: Math.max(0, resourceActual - cost),
+      }));
+    } else if (isFocus) {
+      if (resourceActual < cost) {
+        this.charSvc.showToast(this.resourceLabel() + ' ' + this.trSvc.t('insufficient_resource'));
+        return;
+      }
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentFocus: Math.max(0, resourceActual - cost),
       }));
     } else {
       if (manaActual < cost) {
@@ -1992,6 +2012,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (this.charSvc.resourceConfig().type === 'energy') {
       this.charSvc.character.update(c => ({ ...c, currentEnergy: resourceMax }));
       this.charSvc.showToast('Full Rest: vida y energia al maximo, buffs -2 turnos');
+    } else if (this.charSvc.resourceConfig().type === 'focus') {
+      this.charSvc.character.update(c => ({ ...c, currentFocus: resourceMax }));
+      this.charSvc.showToast('Full Rest: vida y focus al maximo, buffs -2 turnos');
     } else {
       this.charSvc.character.update(c => ({ ...c, currentMana: maxMana }));
       this.charSvc.showToast('Full Rest: vida y mana al maximo, buffs -2 turnos');
@@ -2179,6 +2202,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const rc = this.charSvc.resourceConfig();
     if (rc.type === 'rage') return 'Ira';
     if (rc.type === 'energy') return 'Energia';
+    if (rc.type === 'focus') return 'Focus';
     return 'Mana';
   }
 
@@ -2186,6 +2210,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const type = this.charSvc.resourceConfig().type;
     if (type === 'rage') return 'linear-gradient(180deg, #c0392b 0%, #8b2e1e 100%)';
     if (type === 'energy') return 'linear-gradient(180deg, #f1c40f 0%, #b7950b 100%)';
+    if (type === 'focus') return 'linear-gradient(180deg, #aad372 0%, #79b54a 100%)';
     return 'linear-gradient(180deg, #3498db 0%, #2471a3 100%)';
   }
 
