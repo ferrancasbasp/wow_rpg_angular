@@ -32,8 +32,8 @@ export const PRIEST: CharacterClass = {
     { id: 'improved_pain', name: 'Improved Pain', icon: '🩸', iconImg: 'img/talents/priest/improved_pain.jpg', description: 'Aumenta el daño de Shadow Word: Pain un 10% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'holyness', name: 'Holyness', icon: '🌟', iconImg: 'img/talents/priest/holyness.jpg', description: 'Aumenta tu regeneración de maná un 5% por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'preservation', name: 'Preservation', icon: '🛡️', iconImg: 'img/talents/priest/preservation.jpg', description: 'Aumenta tu armadura mágica en 5 por punto.', maxRank: 3, tier: 3, requires: null },
-    { id: 'improved_mind_blast', name: 'Improved Mind Blast', icon: '💥', iconImg: 'img/talents/priest/improved_mind_blast.jpg', description: 'Requiere Shadow Ally al maximo. Mind Blast tiene CD -1 y su cast se vuelve instantaneo.', maxRank: 1, tier: 3, requires: { id: 'shadow_ally', points: 3 } },
-    { id: 'improved_inner_fire', name: 'Improved Inner Fire', icon: '🔥', iconImg: 'img/talents/priest/improved_inner_fire.jpg', description: 'Aumenta la eficacia de Inner Fire un 20% por punto: mas Armor y Attack Power.', maxRank: 2, tier: 3, requires: null },
+    { id: 'improved_mind_blast', name: 'Improved Mind Blast', icon: '💥', iconImg: 'img/abilities/priest/mind_blast.jpg', description: 'Requiere Shadow Ally al maximo. Mind Blast tiene CD -1 y su cast se vuelve instantaneo.', maxRank: 1, tier: 1, requires: { id: 'shadow_ally', points: 3 } },
+    { id: 'improved_inner_fire', name: 'Improved Inner Fire', icon: '🔥', iconImg: 'img/abilities/priest/inner_fire.jpg', description: 'Aumenta la eficacia de Inner Fire un 20% por punto: mas Armor y Attack Power.', maxRank: 2, tier: 3, requires: null },
     { id: 'improved_renew', name: 'Improved Renew', icon: '🌿', iconImg: 'img/abilities/priest/renew.jpg', description: 'Aumenta la duración de Renew 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
   ],
 
