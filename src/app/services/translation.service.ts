@@ -691,7 +691,7 @@ export class TranslationService {
     priest_improved_fortitude: { es: 'Aumenta el bonus de Aguante de Power Word: Fortitude un 15% por punto.', en: 'Increases the Stamina bonus of Power Word: Fortitude by 15% per point.' },
     priest_improved_pain: { es: 'Aumenta el daño de Shadow Word: Pain un 10% por punto.', en: 'Increases Shadow Word: Pain damage by 10% per point.' },
     priest_holyness: { es: 'Aumenta tu regeneración de maná un 5% por punto.', en: 'Increases your mana regeneration by 5% per point.' },
-    priest_preservation: { es: 'Aumenta tu armadura mágica en 5 por punto.', en: 'Increases your magic armor by 5 per point.' },
+    priest_preservation: { es: 'Aumenta tu armadura mágica en 5 y tu probabilidad de crítico con hechizos un 1% por punto.', en: 'Increases your magic armor by 5 and spell crit chance by 1% per point.' },
     priest_improved_mind_blast: { es: 'Requiere Shadow Ally al maximo. Mind Blast tiene CD -1 y su cast se vuelve instantaneo.', en: 'Requires max Shadow Ally. Mind Blast CD -1 and instant cast.' },
     priest_improved_inner_fire: { es: 'Aumenta la eficacia de Inner Fire un 20% por punto: mas Armor y Attack Power.', en: 'Increases Inner Fire efficiency by 20% per point: more Armor and Attack Power.' },
     priest_improved_renew: { es: 'Aumenta la duración de Renew 1 turno por punto.', en: 'Increases the duration of Renew by 1 turn per point.' },

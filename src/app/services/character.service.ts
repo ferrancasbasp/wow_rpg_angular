@@ -137,7 +137,7 @@ export class CharacterService {
   readonly spellCrit = computed<string>(() => {
     const fromInt = this.finalStats().intelecto / 60;
     const fromLevel = this.character().level * 0.02;
-    const fromTalent = this.talentRank('call_of_thunder') + this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2;
+    const fromTalent = this.talentRank('call_of_thunder') + this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
     const fromBuff = this.effectStatBonus('spellCrit');
     const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
@@ -878,7 +878,7 @@ export class CharacterService {
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,
       improved_pain: `SW: Pain: +${rank * 10}% daño`,
       holyness: `Regen maná: +${rank * 5}%`,
-      preservation: `Armadura mágica: +${rank * 5}`,
+      preservation: `Armadura mágica: +${rank * 5} · Spell crit: +${rank}%`,
       improved_mind_blast: `Mind Blast: CD -1 y cast instantaneo${rank > 0 ? ' (activo)' : ''}`,
       improved_inner_fire: `Inner Fire eficacia: +${rank * 20}%`,
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
