@@ -2044,6 +2044,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida');
       }
+      if (ability.buff && ability.buff.applySelf) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.name !== ability.name),
+            { id: Date.now() + Math.random(), type: 'buff' as const, name: ability.name, target: ability.currentBuffStat, value: ability.currentBuffValue, duration: ability.currentBuffDuration, isPercent: false },
+          ],
+        }));
+        const tickRage = ability.id === 'bloodrage' ? this.charSvc.getBloodrageTickRage() : 0;
+        if (tickRage > 0) this.charSvc.showToast('🩸 Blood Rage: +' + tickRage + ' ira/turno durante ' + ability.currentBuffDuration + ' turnos');
+      }
     } else if (ability.isPetSummon) {
       if (this.charSvc.selectedCapstone() === 'lone_wolf') {
         this.charSvc.showToast('🐺 Lone Wolf activo: no puedes invocar a tu mascota');
