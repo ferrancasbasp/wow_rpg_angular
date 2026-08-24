@@ -321,8 +321,24 @@ export class MasterComponent implements OnInit {
       if (!eff.stackable) {
         monster.effects = monster.effects.filter((e) => e.name !== eff.name);
       }
+      if (eff.type === 'debuff' && this.isDebuffGroup(eff.target || eff.stat)) {
+        const key = eff.target || eff.stat;
+        const stronger = monster.effects.find(
+          (e) => e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) > (eff.value || 0),
+        );
+        if (stronger) {
+          continue;
+        }
+        monster.effects = monster.effects.filter(
+          (e) => !(e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) <= (eff.value || 0)),
+        );
+      }
       monster.effects.push({ ...eff, duration: eff.duration });
     }
+  }
+
+  private isDebuffGroup(key: string | undefined): boolean {
+    return !!key && (key === 'attackPower' || key === 'armor');
   }
 
   getEffectiveArmor(monster: Monster): number {

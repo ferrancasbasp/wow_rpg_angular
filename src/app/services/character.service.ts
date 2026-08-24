@@ -1107,12 +1107,30 @@ export class CharacterService {
 
   // ==================== EFFECTS ====================
 
+  isDebuffGroup(key: string | undefined): boolean {
+    return !!key && (key === 'attackPower' || key === 'armor');
+  }
+
   addEffect(effect: ActiveEffect) {
+    const isGrouped = effect.type === 'debuff' && this.isDebuffGroup(effect.target || '');
     this.character.update(c => {
       if (!c.activeEffects) c.activeEffects = [];
+      let next = [...c.activeEffects];
+      if (isGrouped) {
+        const key = effect.target || '';
+        const stronger = next.find(
+          (e) => e.type === 'debuff' && (e.target === key || (e as any).stat === key) && (e.value || 0) > (effect.value || 0),
+        );
+        if (stronger) {
+          return { ...c };
+        }
+        next = next.filter(
+          (e) => !(e.type === 'debuff' && (e.target === key || (e as any).stat === key) && (e.value || 0) <= (effect.value || 0)),
+        );
+      }
       const effectWithId = { ...effect, id: effect.id || (Date.now() + Math.random()) };
-      c.activeEffects.push(effectWithId);
-      return { ...c };
+      next.push(effectWithId);
+      return { ...c, activeEffects: next };
     });
   }
 

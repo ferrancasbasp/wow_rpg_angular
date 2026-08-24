@@ -599,7 +599,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Poison Mastery', target: 'poison_mastery', value: 0, duration },
       ],
     }));
-    this.charSvc.showToast('☠️ Poison Mastery activa · Veneno Mortal x2 y Veneno Vampírico x3 (' + duration + ' turnos)');
+    const hasWound = this.charSvc.hasEffect('woundPoison');
+    const hasMortal = this.charSvc.hasEffect('poisonDamage');
+    const hasVamp = this.charSvc.hasEffect('leechPoison');
+    let effectText: string;
+    if (hasWound) {
+      effectText = 'Wound: tus ataques además reducen un 25% el daño del enemigo';
+    } else if (hasMortal) {
+      effectText = 'Veneno Mortal x2';
+    } else if (hasVamp) {
+      effectText = 'Veneno Vampírico x3';
+    } else {
+      effectText = 'envenena antes tus armas para potenciar el veneno';
+    }
+    this.charSvc.showToast('☠️ Poison Mastery activa · ' + effectText + ' (' + duration + ' turnos)');
   }
 
   castShieldWall(ability: any) {
@@ -1862,11 +1875,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let woundText = '';
       const woundPct = this.charSvc.getWoundPoisonPercent();
       if (woundPct > 0) {
-        const woundEff = { type: 'debuff' as const, name: 'Wound', target: 'healing_received', value: woundPct, duration: 3, debuffType: 'poison' as const, stackable: false };
-        sendAbility = sendAbility.inflictsEffects
-          ? { ...sendAbility, inflictsEffects: [...sendAbility.inflictsEffects, woundEff] }
-          : { ...sendAbility, inflictsEffects: [woundEff] };
+        const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
+        effects.push({ type: 'debuff' as const, name: 'Wound', target: 'healing_received', value: woundPct, duration: 3, debuffType: 'poison' as const, stackable: false });
         woundText = ' · 🩸 Wound −' + woundPct + '% cura (3t)';
+        if (this.charSvc.hasEffect('poison_mastery')) {
+          effects.push({ type: 'debuff' as const, name: 'Wound (Envenom)', target: 'attackPower', value: 25, duration: 3, debuffType: 'poison' as const, stackable: false });
+          woundText += ' · 💀 Envenom: daño enemigo −25% (3t)';
+        }
+        sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText
