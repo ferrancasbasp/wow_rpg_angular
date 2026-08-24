@@ -1788,32 +1788,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }
         }
       }
-    } else if (ability.id === 'hunters_mark') {
-      const hRank = ability.currentRank || 1;
-      const hBuff = ability.buffRanks?.find((br: any) => br.rank === hRank);
-      let armorVal = hBuff ? hBuff.value : 20;
-      const ihmRank = this.charSvc.talentRank('improved_hunters_mark');
-      if (ihmRank > 0) armorVal = Math.round(armorVal * (1 + ihmRank * 0.10));
-      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: "Hunter's Mark", stat: 'armor', value: armorVal, duration: 5 }] }, 0, 1, 1);
-      this.charSvc.showToast(ability.name + ' R' + hRank + ': Armor -' + armorVal + ' (5 turnos) — ' + this.trSvc.t('apply_to_enemy'));
-      return;
-    } else if (ability.id === 'frost_trap') {
-      const fRank = ability.currentRank || 1;
-      const fBuff = ability.buffRanks?.find((br: any) => br.rank === fRank);
-      const slowVal = fBuff ? fBuff.value : 40;
-      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: 'Frost Trap', target: 'attackPower', value: slowVal, duration: 3 }] }, 0, 1, 1);
-      const lnlRank = this.charSvc.talentRank('lock_and_load');
-      let lnlText = '';
-      if (lnlRank > 0) {
-        const lnlVal = [0, 15, 30, 50][lnlRank] || 0;
-        this.charSvc.character.update(c => ({
-          ...c,
-          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 999, isPercent: false }],
-        }));
-        lnlText = ' · Lock and Load: Aimed -' + lnlVal + ' Focus';
-      }
-      this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master' + lnlText);
-      return;
     } else {
       const poisonDmg = this.charSvc.getPoisonDamage();
       if (poisonDmg > 0 && ability.damageType === 'physical') {
@@ -2121,6 +2095,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const tickRage = ability.id === 'bloodrage' ? this.charSvc.getBloodrageTickRage() : 0;
         if (tickRage > 0) this.charSvc.showToast('🩸 Blood Rage: +' + tickRage + ' ira/turno durante ' + ability.currentBuffDuration + ' turnos');
       }
+    } else if (ability.id === 'hunters_mark') {
+      const hRank = ability.currentRank || 1;
+      const hBuff = ability.buffRanks?.find((br: any) => br.rank === hRank);
+      let armorVal = hBuff ? hBuff.value : 20;
+      const ihmRank = this.charSvc.talentRank('improved_hunters_mark');
+      if (ihmRank > 0) armorVal = Math.round(armorVal * (1 + ihmRank * 0.10));
+      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: "Hunter's Mark", stat: 'armor', value: armorVal, duration: 5 }] }, 0, 1, 1);
+      this.charSvc.showToast(ability.name + ' R' + hRank + ': Armor -' + armorVal + ' (5 turnos) — ' + this.trSvc.t('apply_to_enemy'));
+      return;
+    } else if (ability.id === 'frost_trap') {
+      const fRank = ability.currentRank || 1;
+      const fBuff = ability.buffRanks?.find((br: any) => br.rank === fRank);
+      const slowVal = fBuff ? fBuff.value : 40;
+      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: 'Frost Trap', target: 'attackPower', value: slowVal, duration: 3 }] }, 0, 1, 1);
+      const lnlRank = this.charSvc.talentRank('lock_and_load');
+      let lnlText = '';
+      if (lnlRank > 0) {
+        const lnlVal = [0, 15, 30, 50][lnlRank] || 0;
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 999, isPercent: false }],
+        }));
+        lnlText = ' · Lock and Load: Aimed -' + lnlVal + ' Focus';
+      }
+      this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master' + lnlText);
+      return;
     } else if (ability.isPetSummon) {
       if (this.charSvc.selectedCapstone() === 'lone_wolf') {
         this.charSvc.showToast('🐺 Lone Wolf activo: no puedes invocar a tu mascota');

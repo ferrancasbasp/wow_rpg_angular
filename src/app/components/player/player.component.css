@@ -759,6 +759,13 @@
     .xp-bottom-bar { margin-top: 20px; }
     .xp-mini-bar { margin-top: 6px; }
 
+    .pet-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+      padding-left: 2px;
+    }
     .pet-inline {
       display: flex;
       align-items: center;

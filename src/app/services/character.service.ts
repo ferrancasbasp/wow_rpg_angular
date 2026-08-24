@@ -493,12 +493,12 @@ export class CharacterService {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
-      if (isRage) cost = buffRank ? (buffRank.costRage || 0) : (a.costRage || 0);
+      if (isRage) cost = buffRank ? (buffRank.costRage ?? a.costRage ?? 0) : (a.costRage || 0);
       else if (isEnergy) {
-        cost = buffRank ? (buffRank.costEnergy || 0) : (a.costEnergy || 0);
+        cost = buffRank ? (buffRank.costEnergy ?? a.costEnergy ?? 0) : (a.costEnergy || 0);
         if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 2);
       }
-      else if (isFocus) cost = buffRank ? (buffRank.costFocus || 0) : (a.costFocus || 0);
+      else if (isFocus) cost = buffRank ? (buffRank.costFocus ?? a.costFocus ?? 0) : (a.costFocus || 0);
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
 
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);

@@ -163,6 +163,56 @@
             }
           </div>
         }
+        @if (charSvc.activePetData() && charSvc.character().classKey !== 'warlock') {
+          <div class="pet-lane">
+            <div class="pet-inline">
+              @if (charSvc.activePetData()!.iconImg) {
+                <img [src]="charSvc.activePetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+              } @else {
+                <span class="pet-icon-sm">{{ charSvc.activePetData()!.icon }}</span>
+              }
+              <div class="pet-bars-inline">
+                <div class="resource-track pet-hp-track">
+                  <div class="resource-fill hp" [style.width]="charSvc.petHPPercent() + '%'"></div>
+                </div>
+                <div class="resource-track pet-mana-track">
+                  <div class="resource-fill mana" [style.width]="charSvc.petManaPercent() + '%'"></div>
+                </div>
+              </div>
+              @if (charSvc.unlockedPetAbilities().length > 0) {
+                <div class="pet-abilities-inline">
+                  @for (ab of charSvc.unlockedPetAbilities(); track ab.id) {
+                    <button class="pet-ability-icon-btn"
+                            [disabled]="!charSvc.canAct(1) || charSvc.petMana() < ab.scaledCost!"
+                            [title]="ab.name + ' — ' + trSvc.tDesc(ab.id, ab.description, charSvc.character().classKey) + ' (' + ab.scaledCost + ' mana pet)'"
+                            (click)="castPetAbility(ab)">
+                      @if (ab.iconImg) {
+                        <img [src]="ab.iconImg" class="pet-ability-icon-img" (error)="onImgError($event)">
+                      } @else {
+                        {{ ab.icon }}
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+            @if (charSvc.companionPetData()) {
+              <div class="pet-inline pet-inline-companion">
+                @if (charSvc.companionPetData()!.iconImg) {
+                  <img [src]="charSvc.companionPetData()!.iconImg" class="pet-icon-img-sm" (error)="onImgError($event)">
+                } @else {
+                  <span class="pet-icon-sm">{{ charSvc.companionPetData()!.icon }}</span>
+                }
+                <div class="pet-bars-inline">
+                  <div class="resource-track pet-hp-track">
+                    <div class="resource-fill hp" [style.width]="charSvc.companionPetHPPercent() + '%'"></div>
+                  </div>
+                </div>
+                <span class="companion-label">{{ charSvc.companionPetData()!.name }}</span>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <div class="top-side-controls">
@@ -259,11 +309,11 @@
           <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
-                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0)"
+                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0))"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
               <div class="ability-icon castable"
                    [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || charSvc.getCooldown(ability.id) > 0"
                    [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                    (click)="castSpell(ability)">
                  @if (ability.iconImg) {
@@ -301,12 +351,19 @@
                    }
                     @if (charSvc.resourceConfig().type === 'rage') {
                       <span class="ability-stat cost">{{ ability.effectiveRageCost || 0 }} ira@if (ability.effectiveRageGen) { · +{{ ability.effectiveRageGen }} }</span>
-                    } @else if (charSvc.resourceConfig().type === 'energy') {
-                      <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
-                    } @else {
-                      <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                    }
-                    @if (ability.generatesShard) {
+                     } @else if (charSvc.resourceConfig().type === 'energy') {
+                       <span class="ability-stat cost">{{ charSvc.getEffectiveEnergyCost(ability) }} en</span>
+                     } @else if (charSvc.resourceConfig().type === 'focus') {
+                       @if (charSvc.getEffectiveFocusCost(ability) > 0) {
+                         <span class="ability-stat cost">-{{ charSvc.getEffectiveFocusCost(ability) }} fc</span>
+                       }
+                       @if (ability.focusGain) {
+                         <span class="ability-stat cost">+{{ ability.focusGain }} fc</span>
+                       }
+                     } @else {
+                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                     }
+                     @if (ability.generatesShard) {
                       <span class="ability-stat shard-gen">+{{ ability.generatesShard }}<span class="shard-mini"></span></span>
                     }
                     @if (ability.spendsShards) {
@@ -386,16 +443,23 @@
                      {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
                    </div>
                    <div class="ability-stats">
-                     @if (ability.currentBuffValue) {
-                       <span class="ability-stat bonus">+{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
-                     }
-                     @if (charSvc.resourceConfig().type === 'rage') {
-                       <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
-                     } @else if (charSvc.resourceConfig().type === 'energy') {
-                       <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
-                     } @else {
-                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                     }
+                      @if (ability.currentBuffValue) {
+                        <span class="ability-stat bonus">{{ ability.buff && !ability.buff.applySelf ? '−' : '+' }}{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
+                      }
+                      @if (charSvc.resourceConfig().type === 'rage') {
+                        <span class="ability-stat cost">{{ ability.scaledCost }} ira</span>
+                      } @else if (charSvc.resourceConfig().type === 'energy') {
+                        <span class="ability-stat cost">{{ ability.scaledCost }} en</span>
+                      } @else if (charSvc.resourceConfig().type === 'focus') {
+                        @if (ability.scaledCost > 0) {
+                          <span class="ability-stat cost">-{{ ability.scaledCost }} fc</span>
+                        }
+                        @if (ability.focusGain) {
+                          <span class="ability-stat cost">+{{ ability.focusGain }} fc</span>
+                        }
+                      } @else {
+                        <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                      }
                    </div>
                  </div>
                  <div class="ability-cast-col">
