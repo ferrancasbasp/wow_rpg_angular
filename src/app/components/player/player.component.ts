@@ -2028,7 +2028,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentHP: Math.max(1, hpActual - healthLost),
       }));
       if (ability.rageGain && isRage) {
-        const rageGain = this.charSvc.getEffectiveRageGen(ability);
+        const rageGain = this.charSvc.getEffectiveRageGain(ability);
         this.charSvc.character.update(c => ({
           ...c,
           currentRage: Math.min(resourceMax, (c.currentRage || 0) + rageGain),
