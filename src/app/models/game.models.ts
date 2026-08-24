@@ -68,6 +68,7 @@ export interface Ability {
   costRage?: number;
   costEnergy?: number;
   costFocus?: number;
+  focusGain?: number;
   castType: CastType;
   cooldown: number;
   description: string;
@@ -233,6 +234,7 @@ export interface Equipment {
   mainHand: EquipmentItem;
   offHand: EquipmentItem;
   twoHand: EquipmentItem;
+  ranged: EquipmentItem;
 }
 
 export interface ActiveEffect {
@@ -259,6 +261,7 @@ export interface Pet {
   attackMax: number;
   attackSchool: string;
   manaCostPct: number;
+  focusGain?: number;
 }
 
 export interface ActivePet {

@@ -293,6 +293,9 @@ export class CharacterService {
     if (char.classKey === 'warrior' && this.talentRank('master_of_weapons') > 0 && this.warriorWeaponMode() === 'twohanded') {
       return char.equipment.twoHand?.weaponDamage || 0;
     }
+    if (char.classKey === 'hunter') {
+      return char.equipment.ranged?.weaponDamage || 0;
+    }
     const main = char.equipment.mainHand?.weaponDamage || 0;
     const off = char.equipment.offHand?.weaponDamage || 0;
     return main + off;
@@ -1306,7 +1309,7 @@ export class CharacterService {
     this.showToast('Pet desinvocada');
   }
 
-  petAttack(): { damage: number; name: string; school: string; manaCost: number } | null {
+  petAttack(): { damage: number; name: string; school: string; manaCost: number; focusGain: number } | null {
     const pet = this.activePetData();
     const c = this.character();
     if (!pet || !c.activePet) return null;
@@ -1314,17 +1317,30 @@ export class CharacterService {
 
     let damage = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
     if (pet.id === 'imp') damage = Math.round(damage * this.petTalentBoost());
+
+    let focusGain = 0;
+    if (this.resourceConfig().type === 'focus') {
+      const howl = (c.activeEffects || []).find(e => e.type === 'buff' && e.name === 'Furious Howl');
+      if (howl) damage = Math.round(damage * (1 + (howl.value || 0) / 100));
+      focusGain = pet.focusGain || 0;
+    }
+
     const manaCost = Math.round(this.petMaxMana() * pet.manaCostPct);
 
-    this.character.update(ch => ({
-      ...ch,
-      activePet: ch.activePet ? {
+    this.character.update(ch => {
+      const next = ch.activePet ? {
         ...ch.activePet,
         currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
-      } : null,
-    }));
+      } : null;
+      const out = { ...ch, activePet: next };
+      if (focusGain > 0) {
+        const focusMax = this.resourceMax();
+        out.currentFocus = Math.min(focusMax, (out.currentFocus || 0) + focusGain);
+      }
+      return out;
+    });
 
-    return { damage, name: pet.attackName, school: pet.attackSchool, manaCost };
+    return { damage, name: pet.attackName, school: pet.attackSchool, manaCost, focusGain };
   }
 
   petTakeDamage(amount: number) {
@@ -1459,7 +1475,7 @@ export class CharacterService {
         currentMana: Math.max(0, ch.activePet.currentMana - manaCost),
       } : null,
     }));
-    if (ability.buff && ability.currentBuffValue && ability.id !== 'imp_blood_bolt') {
+    if (ability.buff && ability.currentBuffValue && ability.id !== 'imp_blood_bolt' && ability.id !== 'furious_howl' && ability.id !== 'growl') {
       if (ability.currentBuffStat === 'shield') {
         this.character.update(c => ({
           ...c,

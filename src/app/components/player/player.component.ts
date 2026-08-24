@@ -387,6 +387,82 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + heal + (lowHp ? ' (x2 low HP)' : ''));
   }
 
+  castKillCommand(ability: any) {
+    const pet = this.charSvc.activePetData();
+    if (!pet) {
+      this.charSvc.showToast('No tienes mascota activa');
+      return;
+    }
+    const effects = this.charSvc.character().activeEffects || [];
+    const hawkEff = effects.find(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
+    const howlEff = effects.find(e => e.type === 'buff' && e.name === 'Furious Howl');
+    let dmg = Math.round(pet.attackMin + Math.random() * (pet.attackMax - pet.attackMin));
+    if (hawkEff) dmg = Math.round(dmg * (1 + (hawkEff.value || 0) / 100));
+    if (howlEff) dmg = Math.round(dmg * (1 + (howlEff.value || 0) / 100));
+    const playerName = (this.charSvc.character().name || '').trim();
+    const petPlayerName = playerName ? playerName + ' — ' + pet.name : '';
+    this.charSvc.addTurnDamage(dmg);
+    this.firebase.pushData('damageEvents', {
+      player: petPlayerName,
+      ability: ability.name,
+      rank: ability.currentRank || 1,
+      damage: dmg,
+      damageType: 'physical',
+      aoe: false,
+      effects: null,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    const focusMax = this.charSvc.resourceMax();
+    this.charSvc.character.update(c => ({
+      ...c,
+      currentFocus: Math.min(focusMax, (c.currentFocus ?? 0) + 10),
+    }));
+    this.charSvc.showToast(ability.name + ': ' + pet.name + ' hace un golpe extra: ' + dmg + ' danyo · +10 Focus · Focus ' + this.charSvc.resourceActual() + '/' + focusMax);
+  }
+
+  castDisengage(ability: any) {
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [...(c.activeEffects || []), {
+        id: Date.now() + Math.random(),
+        type: 'buff' as const,
+        name: 'Disengage',
+        target: 'evasion',
+        value: 20,
+        duration: 1,
+      }],
+    }));
+    this.charSvc.showToast(ability.name + ': +5 Focus · +20% esquivar 1 turno (no gasta accion)');
+  }
+
+  castAspect(ability: any) {
+    const rank = ability.currentRank || 1;
+    const buffRank = ability.buffRanks?.find((br: any) => br.rank === rank);
+    const value = buffRank ? buffRank.value : 20;
+    const stat = (ability.buff && ability.buff.stat) || 'attackPower';
+    const duration = (ability.buff && ability.buff.duration) || 999;
+    const otherName = stat === 'attackPower' ? 'Aspect of the Monkey' : 'Aspect of the Hawk';
+    this.charSvc.character.update(c => {
+      const filtered = (c.activeEffects || []).filter(e => e.name !== 'Aspect of the Hawk' && e.name !== 'Aspect of the Monkey');
+      return {
+        ...c,
+        activeEffects: [...filtered, {
+          id: Date.now() + Math.random(),
+          type: 'buff' as const,
+          name: ability.name,
+          target: stat,
+          value,
+          duration,
+          isPercent: false,
+        }],
+      };
+    });
+    const statLabel = stat === 'attackPower' ? 'Attack Power' : 'Dodge';
+    this.charSvc.showToast(ability.name + ' R' + rank + ': +' + value + ' ' + statLabel + ' — Aspect activado (solo puedes tener uno) · Focus ' + this.charSvc.resourceActual() + '/' + this.charSvc.resourceMax());
+  }
+
   castHolyNova(ability: any) {
     const sp = this.charSvc.spellPower();
     const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
@@ -759,6 +835,34 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else {
           this.charSvc.showToast(ability.name + ': fuerza al enemigo a atacar al Voidwalker (2 turnos) — enviado al Master');
         }
+      } else if (ability.id === 'furious_howl') {
+        const rank = ability.currentRank || 1;
+        const buffRank = ability.buffRanks?.find((br: any) => br.rank === rank);
+        const howlPct = buffRank ? buffRank.value : 15;
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.name !== 'Furious Howl'),
+            { id: Date.now(), type: 'buff' as const, name: 'Furious Howl', target: 'furious_howl', value: howlPct, duration: 3, isPercent: true },
+          ],
+        }));
+        this.charSvc.showToast(ability.name + ': +' + howlPct + '% dano al Hunter y al Wolf durante 3 turnos');
+      } else if (ability.id === 'growl') {
+        const myName = (this.charSvc.character().name || '').trim();
+        const petPlayerName = myName ? myName + ' — Bear' : '';
+        this.firebase.pushData('damageEvents', {
+          player: this.charSvc.character().name || 'Jugador',
+          ability: ability.name,
+          rank: ability.currentRank || 1,
+          damage: 0,
+          damageType: 'physical',
+          aoe: false,
+          effects: [{ type: 'debuff', name: 'Growl', target: 'taunt', value: petPlayerName, duration: 3, debuffType: 'none' }],
+          turn: this.charSvc.turnNumber(),
+          timestamp: Date.now(),
+          assigned: false,
+        });
+        this.charSvc.showToast(ability.name + ': el enemigo ataca al Bear durante 3 turnos — enviado al Master');
       } else if (ability.id === 'imp_blood_bolt') {
         const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
         if (grimoireRank === 0 && ability.currentBuffValue) {
@@ -872,7 +976,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const petAttack = this.charSvc.petAttack();
     if (petAttack) {
       this.charSvc.addTurnDamage(petAttack.damage);
-      this.charSvc.showToast(`👹 ${petAttack.name}: ${petAttack.damage} danyo de ${petAttack.school}`);
+      const focusText = petAttack.focusGain > 0 ? ' · +' + petAttack.focusGain + ' Focus' : '';
+      this.charSvc.showToast(`👹 ${petAttack.name}: ${petAttack.damage} danyo de ${petAttack.school}` + focusText);
       this.firebase.pushData('damageEvents', {
         player: this.charSvc.character().name || 'Jugador',
         ability: petAttack.name + ' (Pet)',
@@ -916,6 +1021,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (resType === 'energy') {
       const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * 0.10));
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
+    } else if (resType === 'focus') {
+      this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · Focus: sin regen');
     } else {
       const regen = this.charSvc.manaRegen();
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('mana_regen_turn'));
@@ -1372,6 +1479,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
       comboText = ' · ' + comboSpent + ' combo gastados';
     }
 
+    let focusText = '';
+    if (ability.focusGain && isFocus) {
+      const resourceMaxF = this.charSvc.resourceMax();
+      const gained = ability.focusGain;
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentFocus: Math.min(resourceMaxF, (c.currentFocus ?? 0) + gained),
+      }));
+      focusText = ' · +' + gained + ' Focus (' + this.charSvc.resourceActual() + '/' + resourceMaxF + ')';
+    }
+
     let shardText = '';
     if (ability.generatesShard) {
       this.charSvc.addShard(ability.generatesShard);
@@ -1532,6 +1650,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }
         }
       }
+    } else if (ability.id === 'hunters_mark') {
+      const hRank = ability.currentRank || 1;
+      const hBuff = ability.buffRanks?.find((br: any) => br.rank === hRank);
+      const armorVal = hBuff ? hBuff.value : 20;
+      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: "Hunter's Mark", stat: 'armor', value: armorVal, duration: 5 }] }, 0, 1, 1);
+      this.charSvc.showToast(ability.name + ' R' + hRank + ': Armor -' + armorVal + ' (5 turnos) — ' + this.trSvc.t('apply_to_enemy'));
+      return;
+    } else if (ability.id === 'frost_trap') {
+      const fRank = ability.currentRank || 1;
+      const fBuff = ability.buffRanks?.find((br: any) => br.rank === fRank);
+      const slowVal = fBuff ? fBuff.value : 40;
+      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: 'Frost Trap', target: 'attackPower', value: slowVal, duration: 3 }] }, 0, 1, 1);
+      this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master');
+      return;
     } else {
       const poisonDmg = this.charSvc.getPoisonDamage();
       if (poisonDmg > 0 && ability.damageType === 'physical') {
@@ -1604,7 +1736,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -1743,6 +1875,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (ability.focusGain && isFocus) {
+      const resourceMaxF = this.charSvc.resourceMax();
+      const gained = ability.focusGain;
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentFocus: Math.min(resourceMaxF, (c.currentFocus ?? 0) + gained),
+      }));
+    }
+
     const effCd = this.charSvc.getEffectiveCooldown(ability);
     if (effCd > 0) {
       this.charSvc.character.update(c => {
@@ -1790,6 +1931,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castHolyNova(ability);
     } else if (ability.id === 'dark_star') {
       this.castDarkStar(ability);
+    } else if (ability.id === 'kill_command') {
+      this.castKillCommand(ability);
+    } else if (ability.id === 'disengage') {
+      this.castDisengage(ability);
+    } else if (ability.id === 'aspect_of_the_hawk' || ability.id === 'aspect_of_the_monkey') {
+      this.castAspect(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {
@@ -2222,12 +2369,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   visibleEquipmentSlots(): any[] {
+    const classKey = this.charSvc.character().classKey;
     const slots = [...EQUIPMENT_SLOTS];
-    if (this.charSvc.character().classKey === 'warrior' && this.charSvc.talentRank('master_of_weapons') > 0) {
+    if (classKey === 'warrior' && this.charSvc.talentRank('master_of_weapons') > 0) {
       slots.push({
         key: 'twoHand',
         label: 'Dos Manos',
         icon: '⚔️',
+        extraFields: [{ key: 'weaponDamage', label: 'Dano', icon: '💥' }],
+      });
+    }
+    if (classKey === 'hunter') {
+      slots.push({
+        key: 'ranged',
+        label: 'A Distancia',
+        icon: '🏹',
         extraFields: [{ key: 'weaponDamage', label: 'Dano', icon: '💥' }],
       });
     }

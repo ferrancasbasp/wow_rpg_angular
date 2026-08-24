@@ -121,6 +121,7 @@ export function createDefaultEquipment(): Equipment {
     mainHand:  { name: 'Arma básica', bonus: { ...emptyBonus }, weaponDamage: 4 },
     offHand:   { name: '', bonus: { ...emptyBonus }, weaponDamage: 0, defense: 0 },
     twoHand:   { name: '', bonus: { ...emptyBonus }, weaponDamage: 0 },
+    ranged:    { name: '', bonus: { ...emptyBonus }, weaponDamage: 0 },
   };
 }
 
@@ -146,7 +147,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     } else if (cls.name === 'Warlock') {
       equipment.mainHand = { name: 'Bastón Oscuro', bonus: { ...emptyBonus, intelecto: 2 }, weaponDamage: 4 };
     } else if (cls.name === 'Hunter') {
-      equipment.mainHand = { name: 'Arco de Cazador', bonus: { ...emptyBonus, agilidad: 2 }, weaponDamage: 5 };
+      equipment.ranged = { name: 'Arco de Cazador', bonus: { ...emptyBonus, agilidad: 2 }, weaponDamage: 5 };
     }
   }
 
