@@ -677,6 +677,18 @@ export class CharacterService {
     return total;
   }
 
+  healingReceivedMult(): number {
+    const effects = this.character().activeEffects;
+    if (!effects) return 1;
+    let mult = 1;
+    for (const eff of effects) {
+      if (eff.type === 'debuff' && eff.target === 'healing_received') {
+        mult *= Math.max(0, 1 - (eff.value || 0) / 100);
+      }
+    }
+    return mult;
+  }
+
   hasEffect(target: string): boolean {
     const effects = this.character().activeEffects;
     if (!effects) return false;

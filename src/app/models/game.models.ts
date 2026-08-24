@@ -324,6 +324,7 @@ export interface Npc {
   level: number;
   hp: number;
   armor: number;
+  magicResist?: number;
   zone: string;
   imageUrl?: string;
   attacks: NpcAttack[];

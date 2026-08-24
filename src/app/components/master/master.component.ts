@@ -537,11 +537,25 @@ export class MasterComponent implements OnInit {
       this.selectedEventId.set(null);
       return;
     }
-    const healed = Math.min(pending.amount, monster.maxHP - monster.currentHP);
+    let healAmount = pending.amount;
+    let reducedNote = '';
+    const reduceEff = (monster.effects || []).find(e => e.type === 'debuff' && (e.target === 'healing_received' || e.stat === 'healing_received'));
+    if (reduceEff && (reduceEff.value || 0) > 0) {
+      healAmount = Math.round(healAmount * Math.max(0, 1 - (reduceEff.value || 0) / 100));
+      reducedNote = ' (cura reducida −' + reduceEff.value + '%)';
+    }
+    if (healAmount <= 0) {
+      this.saveMonsters();
+      this.sendLog.update(log => [`${monster.name}: cura bloqueada (${pending.sourceName})`, ...log].slice(0, 8));
+      this.showToast('⛔ Cura bloqueada a ' + monster.name + reducedNote);
+      this.selectedEventId.set(null);
+      return;
+    }
+    const healed = Math.min(healAmount, monster.maxHP - monster.currentHP);
     monster.currentHP = Math.min(monster.maxHP, monster.currentHP + healed);
     this.saveMonsters();
     this.sendLog.update(log => [`${monster.name}: +${healed} HP (${pending.sourceName})`, ...log].slice(0, 8));
-    this.showToast('💚 +' + healed + ' HP → ' + monster.name + ' (' + pending.sourceName + ')');
+    this.showToast('💚 +' + healed + ' HP → ' + monster.name + reducedNote + ' (' + pending.sourceName + ')');
     this.selectedEventId.set(null);
   }
 
@@ -614,6 +628,7 @@ export class MasterComponent implements OnInit {
       currentHP: npc.hp,
       armor: npc.armor,
       isElite: npc.isElite || false,
+      magicResist: npc.magicResist ?? null,
       attacks: npc.attacks.map((a) => ({
         name: a.name,
         min: a.minDamage,

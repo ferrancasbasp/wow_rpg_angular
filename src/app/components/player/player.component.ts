@@ -126,8 +126,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
 
         if (event.type === 'heal') {
-          this.charSvc.adjustHP(event.amount);
-          this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + event.amount + ' HP');
+          const healMult = this.charSvc.healingReceivedMult();
+          const applied = healMult < 1 ? Math.max(0, Math.round((event.amount || 0) * healMult)) : (event.amount || 0);
+          this.charSvc.adjustHP(applied);
+          const reducedNote = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
+          this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + applied + ' HP' + reducedNote);
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');

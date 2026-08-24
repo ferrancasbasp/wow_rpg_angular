@@ -45,6 +45,7 @@
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
+                  <button class="quick-btn debuff-btn" title="Reduce la cura recibida del panel un 50% durante 3 turnos" (click)="quickSendDebuff('Mortal Wound', 'healing_received', 50, 3)">💀 Cura −50%</button>
                 </div>
                 <div class="debuff-type-row">
                   <span class="debuff-type-label">{{ trSvc.t('type') }}</span>
