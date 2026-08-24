@@ -67,6 +67,15 @@ export const NPC_REGISTRY: Record<string, Npc> = {
       { name: 'Trample', minDamage: 20, maxDamage: 60 },
     ],
   },
+  gnoll_healer_16: {
+    id: 'gnoll_healer_16', name: 'Gnoll Healer', level: 16, hp: 620, armor: 25, magicResist: 30, zone: 'Redridge Mountains',
+    imageUrl: 'img/enemies/Gnoll-Healer-16.jpeg',
+    attacks: [
+      { name: 'Healing Wave', minDamage: 150, maxDamage: 220, isHeal: true },
+      { name: 'Lightning Bolt', minDamage: 55, maxDamage: 75, inflictsEffects: [{ type: 'debuff', name: 'Chispa', target: 'spellPower', value: 10, duration: 4, debuffType: 'magic' }] },
+      { name: 'Staff Smash', minDamage: 30, maxDamage: 45 },
+    ],
+  },
   riverpaw_bone_chanter: {
     id: 'riverpaw_bone_chanter', name: 'Riverpaw Bone Chanter', level: 13, hp: 475, armor: 35, zone: 'Redridge Mountains',
     imageUrl: 'img/enemies/Gnoll-13.jpeg',
