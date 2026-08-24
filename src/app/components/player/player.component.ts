@@ -1316,7 +1316,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
-    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant) ? 1 : 2);
+    const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.isMaxed('improved_mind_blast', 3);
+    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
