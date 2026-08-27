@@ -282,10 +282,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const minD = Math.round(dr.min + sp * ratio);
     const maxD = Math.round(dr.max + sp * ratio);
     let dmg = minD + Math.floor(Math.random() * (maxD - minD + 1));
-    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
+    const dsRank = this.charSvc.talentRank('destruction_specialization');
+    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit()) + dsRank * 5) {
       let critMult = 1.5;
-      const dsRank = this.charSvc.talentRank('destruction_specialization');
-      if (dsRank > 0) critMult = 1.5 + dsRank * 0.15;
+      if (dsRank > 0) critMult = 1.5 + dsRank * 0.10;
       if (this.charSvc.hasEffect('demonic_form')) critMult = critMult * 1.25;
       dmg = Math.round(dmg * critMult);
     }
@@ -1462,11 +1462,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const hawkActive = (this.charSvc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
       if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 2;
     }
+    if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
+      critChance += this.charSvc.talentRank('destruction_specialization') * 5;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) {
       let critMult = 1.5;
       if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
-        critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.15;
+        critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.10;
       }
       if (this.charSvc.hasEffect('demonic_form')) {
         critMult = critMult * 1.25;
