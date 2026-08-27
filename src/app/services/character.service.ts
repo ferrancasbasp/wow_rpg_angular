@@ -440,6 +440,11 @@ export class CharacterService {
         minVal = Math.round(minVal * hunterMult);
         maxVal = Math.round(maxVal * hunterMult);
       }
+      if (['shadow_bolt', 'drain_life'].includes(a.id)) {
+        const shadowMasteryBonus = 1 + this.talentRank('shadow_mastery') * 0.05;
+        minVal = Math.round(minVal * shadowMasteryBonus);
+        maxVal = Math.round(maxVal * shadowMasteryBonus);
+      }
       const dotRange = a.dotRanges?.find(dr => dr.rank === rank);
       let hotTick = 0, hotDuration = 0, hotTotal = 0;
       if (a.isHot) {
