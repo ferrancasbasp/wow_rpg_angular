@@ -652,6 +652,10 @@ export class CharacterService {
     return gen;
   }
 
+  getEffectiveComboChance(ability: any): number {
+    return ability.generatesComboChance ?? 100;
+  }
+
   getEffectiveRageGain(ability: any): number {
     let gain = (ability as any).rageGain || 0;
     return gain;
@@ -1611,6 +1615,12 @@ export class CharacterService {
 
   getShards(): number {
     return this.character().soulShards || 0;
+  }
+
+  isMaelstormReady(): boolean {
+    if (this.character().classKey !== 'shaman') return false;
+    const max = this.classConfig().comboConfig?.max || 4;
+    return (this.character().comboPoints || 0) >= max;
   }
 
   soulShardMax(): number {

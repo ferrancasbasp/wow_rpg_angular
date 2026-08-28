@@ -1369,7 +1369,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
     const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.talentRank('improved_mind_blast') > 0;
-    const actionCost = ability.noGcd ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2);
+    const maelstormFree = this.charSvc.isMaelstormReady() && ability.castType === 'cast';
+    const actionCost = ability.noGcd ? 0 : (maelstormFree ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1399,6 +1400,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     this.charSvc.useAction(actionCost);
+
+    let maelstormText = '';
+    if (maelstormFree) {
+      this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
+      maelstormText = ' · ¡Maelstorm! Lanzamiento instantáneo';
+    }
 
     let unyieldingText = '';
     if (ability.id === 'basic_attack' && isRage) {
@@ -1602,17 +1609,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     let comboText = '';
     if (ability.generatesCombo) {
-      let comboGen = ability.generatesCombo;
-      if (ability.id === 'sinister_strike') {
-        const initChance = this.charSvc.talentRank('initiative') * 15;
-        if (Math.random() * 100 < initChance) comboGen += 1;
+      const comboChance = this.charSvc.getEffectiveComboChance(ability);
+      if (Math.random() * 100 < comboChance) {
+        let comboGen = ability.generatesCombo;
+        if (ability.id === 'sinister_strike') {
+          const initChance = this.charSvc.talentRank('initiative') * 15;
+          if (Math.random() * 100 < initChance) comboGen += 1;
+        }
+        const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
+        const newCombo = Math.min(comboMax, (this.charSvc.character().comboPoints || 0) + comboGen);
+        this.charSvc.character.update(c => ({ ...c, comboPoints: newCombo }));
+        comboText = ' · ' + newCombo + ' ' + (this.charSvc.classConfig().comboConfig
+          ? this.charSvc.classConfig().comboConfig!.label.toLowerCase().split(' ')[0]
+          : 'combo');
       }
-      const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
-      const newCombo = Math.min(comboMax, (this.charSvc.character().comboPoints || 0) + comboGen);
-      this.charSvc.character.update(c => ({ ...c, comboPoints: newCombo }));
-      comboText = ' · ' + newCombo + ' ' + (this.charSvc.classConfig().comboConfig
-        ? this.charSvc.classConfig().comboConfig!.label.toLowerCase().split(' ')[0]
-        : 'combo');
     }
     if (ability.spendsCombo) {
       comboText = ' · ' + comboSpent + ' combo gastados';
@@ -1894,7 +1904,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
