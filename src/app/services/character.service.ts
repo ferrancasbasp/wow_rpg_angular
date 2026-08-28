@@ -727,6 +727,13 @@ export class CharacterService {
     return 0;
   }
 
+  getWeaponImbueValue(target: 'windfuryWeapon' | 'flametongueWeapon'): number {
+    const effects = this.character().activeEffects;
+    if (!effects) return 0;
+    const eff = effects.find(e => e.type === 'buff' && e.target === target);
+    return eff ? eff.value : 0;
+  }
+
   getLeechPoisonPercent(): number {
     const effects = this.character().activeEffects;
     if (!effects) return 0;

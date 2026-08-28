@@ -525,6 +525,30 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ' R' + rank + ': +' + value + ' ' + statLabel + ' — Aspect activado (solo puedes tener uno) · Focus ' + this.charSvc.resourceActual() + '/' + this.charSvc.resourceMax());
   }
 
+  castWeaponImbue(ability: any) {
+    const rank = ability.currentRank || 1;
+    const buffRank = ability.buffRanks?.find((br: any) => br.rank === rank);
+    const value = buffRank ? buffRank.value : 0;
+    const stat = ability.buff!.stat;
+    const duration = ability.buff!.duration || 999;
+    this.charSvc.character.update(c => {
+      const filtered = (c.activeEffects || []).filter(e => e.target !== 'windfuryWeapon' && e.target !== 'flametongueWeapon');
+      return {
+        ...c,
+        activeEffects: [...filtered, {
+          id: Date.now() + Math.random(),
+          type: 'buff' as const,
+          name: ability.name,
+          target: stat,
+          value,
+          duration,
+          isPercent: false,
+        }],
+      };
+    });
+    this.charSvc.showToast(ability.name + ' R' + rank + ': arma imbuida (solo puedes tener un Weapon Imbue activo)');
+  }
+
   castHolyNova(ability: any) {
     const sp = this.charSvc.spellPower();
     const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
@@ -1807,6 +1831,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         roll += poisonDmg;
       }
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
+        const flametongueBonus = this.charSvc.getWeaponImbueValue('flametongueWeapon');
+        if (flametongueBonus > 0) roll += flametongueBonus;
         const belRank = this.charSvc.talentRank('beligerance');
         if (belRank > 0) {
           const spirit = this.charSvc.finalStats().espiritu || 0;
@@ -1933,6 +1959,24 @@ export class PlayerComponent implements OnInit, OnDestroy {
           };
         });
         this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ✨ ¡Double Tap! ' + roll + ' dano extra · +10 Focus');
+      }
+      if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
+        const windfuryChance = this.charSvc.getWeaponImbueValue('windfuryWeapon');
+        if (windfuryChance > 0 && Math.random() * 100 < windfuryChance) {
+          this.charSvc.turnDamage.update(d => d + roll);
+          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
+          let windfuryComboText = '';
+          if (ability.generatesCombo) {
+            const comboChance = this.charSvc.getEffectiveComboChance(ability);
+            if (Math.random() * 100 < comboChance) {
+              const comboMax = this.charSvc.classConfig().comboConfig?.max || 5;
+              const newCombo = Math.min(comboMax, (this.charSvc.character().comboPoints || 0) + ability.generatesCombo);
+              this.charSvc.character.update(c => ({ ...c, comboPoints: newCombo }));
+              windfuryComboText = ' · ' + newCombo + ' Maelstorm';
+            }
+          }
+          this.charSvc.showToast(ability.name + ': 🌪️ ¡Windfury! +' + roll + ' daño extra' + windfuryComboText);
+        }
       }
     }
   }
@@ -2161,6 +2205,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castDisengage(ability);
     } else if (ability.id === 'aspect_of_the_hawk' || ability.id === 'aspect_of_the_monkey') {
       this.castAspect(ability);
+    } else if (ability.id === 'windfury_weapon' || ability.id === 'flametongue_weapon') {
+      this.castWeaponImbue(ability);
     } else if (ability.id === 'shadow_dance') {
       this.castShadowDance(ability);
     } else if (ability.id === 'blade_flurry') {
@@ -2563,6 +2609,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   effectValueText(eff: ActiveEffect): string {
+    if (eff.target === 'windfuryWeapon') return '+' + eff.value + '% Extra Attack';
+    if (eff.target === 'flametongueWeapon') return '+' + eff.value + ' Fire Damage';
     if (eff.type === 'buff') return '+' + eff.value + ' ' + eff.target;
     if (eff.type === 'debuff') return '-' + eff.value + ' ' + eff.target;
     if (eff.type === 'hot') return '+' + eff.value + ' ' + (eff.target === 'mana' ? 'mana' : 'vida') + '/turno';
