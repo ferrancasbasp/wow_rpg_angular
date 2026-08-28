@@ -147,7 +147,7 @@
             <span class="note-contribution">×{{ charSvc.noteContribution().toFixed(1) }}</span>
           </div>
         } @else if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
-          <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'">
+          <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'" [class.combo-shaman]="charSvc.character().classKey === 'shaman'" [class.combo-full]="charSvc.isMaelstormReady()">
             <span class="combo-label">{{
               charSvc.classConfig().comboConfig
                 ? (charSvc.classConfig().comboConfig!.icon + ' ' + charSvc.classConfig().comboConfig!.label)

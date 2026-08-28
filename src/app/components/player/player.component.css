@@ -365,6 +365,27 @@
       clip-path: inset(0 0 0 0);
     }
 
+    .combo-shaman .combo-point.active {
+      border-color: #1e4d8c;
+      box-shadow: 0 0 10px rgba(30,77,140,0.5);
+    }
+    .combo-shaman .combo-point.active::before {
+      background: radial-gradient(circle at 35% 35%, #3a6bb0 0%, #1e4d8c 60%, #0a1f3d 100%);
+    }
+    .combo-shaman .combo-point.active:nth-child(1)::before,
+    .combo-shaman .combo-point.active:nth-child(2)::before,
+    .combo-shaman .combo-point.active:nth-child(3)::before,
+    .combo-shaman .combo-point.active:nth-child(4)::before {
+      clip-path: inset(0 0 0 0);
+    }
+    .combo-shaman.combo-full .combo-point.active {
+      animation: maelstorm-glow 1.2s ease-in-out infinite;
+    }
+    @keyframes maelstorm-glow {
+      0%, 100% { box-shadow: 0 0 10px rgba(30,77,140,0.5); }
+      50% { box-shadow: 0 0 18px 4px rgba(58,107,176,0.9); }
+    }
+
     .combo-bard { gap: 6px; }
     .note-slots { display: flex; gap: 3px; }
     .note-slot {

@@ -75,6 +75,7 @@ export interface Ability {
   damageRanges?: DamageRange[];
   generatesRage?: number;
   generatesCombo?: number;
+  generatesComboChance?: number;
   spendsCombo?: boolean;
   generatesNote?: number;
   spendsNotes?: boolean;
