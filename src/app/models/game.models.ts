@@ -43,6 +43,7 @@ export interface Buff {
   applySelf?: boolean;
   isPercent?: boolean;
   isHot?: boolean;
+  value?: number;
 }
 
 export interface DotRange {

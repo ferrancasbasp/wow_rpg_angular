@@ -170,6 +170,7 @@ export class CharacterService {
   readonly attackPower = computed<number>(() => {
     let total = this.classConfig().formulas.attackPower(this.finalStats());
     total += this.effectStatBonus('attackPower');
+    if (this.hasEffect('bloodlust')) total = Math.round(total * 1.20);
     return total;
   });
 

@@ -922,7 +922,25 @@ export class MasterComponent implements OnInit {
       return;
     }
 
-    if (event.damageType === 'buff') {
+    if (event.damageType === 'buff' && event.aoe) {
+      const targets = this.knownPlayers();
+      for (const t of targets) {
+        this.firebase.pushData('playerEvents', {
+          target: t,
+          type: 'buff',
+          abilityName: event.ability.replace(' (Buff)', ''),
+          buffStat: event.buffStat,
+          buffValue: event.buffValue,
+          buffDuration: event.buffDuration,
+          isPercent: event.isPercent,
+          timestamp: Date.now(),
+        });
+      }
+      this.showToast(`${event.ability} → todos (${targets.length}): +${event.buffValue} ${event.buffStat}`);
+      this.markEventAssigned(event);
+      this.selectedEventId.set(null);
+      return;
+    } else if (event.damageType === 'buff') {
       this.firebase.pushData('playerEvents', {
         target,
         type: 'buff',

@@ -751,17 +751,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   castBloodlust(ability: any) {
     const duration = 3;
-    const apBonus = Math.round(this.charSvc.attackPower() * 0.20);
     this.charSvc.character.update(c => ({
       ...c,
       activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'bloodlust' && e.target !== 'bloodlust_ap'),
+        ...(c.activeEffects || []).filter(e => e.target !== 'bloodlust'),
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Bloodlust', target: 'bloodlust', value: 20, duration },
-        { id: Date.now() + Math.random() + 1, type: 'buff' as const, name: 'Bloodlust', target: 'attackPower', value: apBonus, duration },
       ],
       comboPoints: Math.min(this.charSvc.getMaelstromMax(), (c.comboPoints || 0) + 2),
     }));
-    this.charSvc.showToast('🩸 Bloodlust · party +20% Attack Power y Spell Power (3 turnos) · +2 Cargas de Maelstorm');
+    this.charSvc.sendBuffEvent(ability);
+    this.charSvc.showToast('🩸 Bloodlust · party +20% Attack Power y Spell Power (3 turnos) · +2 Cargas de Maelstorm — enviado al Master (AOE)');
   }
 
   castSpiritLink(ability: any) {
