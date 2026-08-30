@@ -213,7 +213,7 @@
             }
           </div>
         }
-        @if (charSvc.character().classKey === 'shaman' && (charSvc.totemInfo('fire') || charSvc.totemInfo('water'))) {
+        @if (charSvc.character().classKey === 'shaman' && (charSvc.totemInfo('fire') || charSvc.totemInfo('water') || charSvc.spiritLinkTotemData())) {
           <div class="totem-lane">
             @if (charSvc.totemData('fire'); as fireTotem) {
               <div class="pet-inline totem-inline">
@@ -235,6 +235,17 @@
                 }
                 <span class="totem-countdown">{{ waterTotem.turns }}t</span>
                 <span class="companion-label totem-label">{{ waterTotem.name }}</span>
+              </div>
+            }
+            @if (charSvc.spiritLinkTotemData(); as spiritLink) {
+              <div class="pet-inline totem-inline">
+                @if (spiritLink.iconImg) {
+                  <img [src]="spiritLink.iconImg" class="pet-icon-img-sm totem-icon-img" (error)="onImgError($event)">
+                } @else {
+                  <span class="pet-icon-sm">🕸️</span>
+                }
+                <span class="totem-countdown">{{ spiritLink.turns }}t</span>
+                <span class="companion-label totem-label">{{ spiritLink.name }}</span>
               </div>
             }
           </div>

@@ -737,6 +737,45 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('⚡ Arcane Power activa · 2 turnos sin coste de mana · +20% Spell Power · +25% danyo critico');
   }
 
+  castAscendance(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'ascendance'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Ascendance', target: 'ascendance', value: 1, duration },
+      ],
+    }));
+    this.charSvc.showToast('🔥 Ascendance activa · 3 turnos: +30% Spell Power, +5% crit y +25% danyo critico (Rayo, Cadena, Choque de Llamas y de Tierra)');
+  }
+
+  castBloodlust(ability: any) {
+    const duration = 3;
+    const apBonus = Math.round(this.charSvc.attackPower() * 0.20);
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'bloodlust' && e.target !== 'bloodlust_ap'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Bloodlust', target: 'bloodlust', value: 20, duration },
+        { id: Date.now() + Math.random() + 1, type: 'buff' as const, name: 'Bloodlust', target: 'attackPower', value: apBonus, duration },
+      ],
+      comboPoints: Math.min(this.charSvc.getMaelstromMax(), (c.comboPoints || 0) + 2),
+    }));
+    this.charSvc.showToast('🩸 Bloodlust · party +20% Attack Power y Spell Power (3 turnos) · +2 Cargas de Maelstorm');
+  }
+
+  castSpiritLink(ability: any) {
+    const duration = 3;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'spirit_link'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Spirit Link Totem', target: 'spirit_link', value: 1, duration },
+      ],
+    }));
+    this.charSvc.showToast('🕸️ Totem de Vinculo Espiritual (3 turnos) · Ola de Sanacion replica 30% a la party · Cadena de Sanacion +20%');
+  }
+
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -1595,6 +1634,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning')) {
       critChance += this.charSvc.talentRank('thundering_strikes') * 5;
     }
+    if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+      critChance += 5;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) {
       let critMult = 1.5;
@@ -1618,6 +1660,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (this.charSvc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult += this.charSvc.talentRank('elemental_fury') * 0.05;
+      }
+      if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+        critMult = critMult * 1.25;
       }
       roll = Math.round(roll * critMult);
     }
@@ -1889,6 +1934,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.03;
       let tidalWaveText = '';
+      let spiritLinkText = '';
+      const spiritLinkActive = this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('spirit_link');
       if (this.charSvc.character().classKey === 'shaman') {
         const twRank = this.charSvc.talentRank('tidal_waves');
         if (twRank > 0 && ability.id === 'chain_heal') {
@@ -1911,6 +1958,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
               activeEffects: (c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
             }));
           }
+        }
+        if (spiritLinkActive && ability.id === 'chain_heal') {
+          healBonus *= 1.20;
+          spiritLinkText = ' · 🕸️ Vínculo: +20% curación';
         }
       }
       let healGraceText = '';
@@ -1963,9 +2014,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         roll = Math.round(roll * healBonus * outMult);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
+        if (spiritLinkActive && ability.id === 'healing_wave') {
+          const replicate = Math.round(roll * 0.30);
+          if (replicate > 0) {
+            this.charSvc.sendHealEvent({ ...ability, name: ability.name + ' (Spirit Link)' }, replicate);
+            spiritLinkText = ' · 🕸️ +' + replicate + ' HP al resto de la party';
+          }
+        }
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + spiritLinkText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
         if (ability.chain) {
@@ -2406,6 +2464,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castIcyVeins(ability);
     } else if (ability.id === 'arcane_power') {
       this.castArcanePower(ability);
+    } else if (ability.id === 'ascendance') {
+      this.castAscendance(ability);
+    } else if (ability.id === 'bloodlust') {
+      this.castBloodlust(ability);
+    } else if (ability.id === 'spirit_link_totem') {
+      this.castSpiritLink(ability);
     } else if (ability.id === 'nature_guardian') {
       const comboMax = this.charSvc.classConfig().comboConfig?.max || 4;
       const baseStars = this.charSvc.classConfig().abilities.find(a => a.id === 'starsurge');

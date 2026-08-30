@@ -140,6 +140,9 @@ export class CharacterService {
     if (this.hasEffect('arcane_power')) {
       sp = Math.round(sp * 1.20);
     }
+    if (this.hasEffect('bloodlust')) {
+      sp = Math.round(sp * 1.20);
+    }
     return sp;
   });
 
@@ -324,6 +327,10 @@ export class CharacterService {
       if (elemMastery > 0) { value *= (1 + elemMastery * 0.02); talentNotes.push(`+${elemMastery * 2}% Maestría`); }
 
       if (this.character().classKey === 'shaman') {
+        if (this.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+          value *= 1.30;
+          talentNotes.push('+30% Ascendance');
+        }
         const tmRank = this.talentRank('totemic_mastery');
         if (tmRank > 0 && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id) && this.totemActive('fire')) {
           value *= (1 + tmRank * 0.05);
@@ -1700,6 +1707,18 @@ export class CharacterService {
   totemActive(slot: 'fire' | 'water'): boolean {
     const totem = this.totemInfo(slot);
     return !!totem && (totem.turns || 0) > 0;
+  }
+
+  spiritLinkTotemData() {
+    const eff = (this.character().activeEffects || []).find(e => e.target === 'spirit_link');
+    if (!eff) return null;
+    const ab = this.classConfig().abilities.find(a => a.id === 'spirit_link_totem');
+    return {
+      name: ab ? ab.name : 'Spirit Link Totem',
+      icon: ab ? ab.icon : '🕸️',
+      iconImg: ab && ab.iconImg ? ab.iconImg : '',
+      turns: eff.duration || 0,
+    };
   }
 
   summonTotem(slot: 'fire' | 'water', type: string, turns: number, min: number, max: number, value?: number) {
