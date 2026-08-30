@@ -24,7 +24,7 @@ export const WARRIOR: CharacterClass = {
 
   talents: [
     { id: 'master_of_weapons', name: 'Master of Weapons', icon: '⚔️', iconImg: 'img/talents/warrior/master_of_weapons.jpg', description: 'Desbloquea el uso de armas a dos manos y permite combinar arma de una mano con off hand. Los stats de ambos se acumulan.', maxRank: 1, tier: 1, requires: null },
-    { id: 'improved_heroic_strike', name: 'Improved Heroic Strike', icon: '⚔️', iconImg: 'img/abilities/rogue/ambush.jpg', description: 'Reduce el coste de ira de Heroic Strike en 1 por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_heroic_strike', name: 'Improved Heroic Strike', icon: '⚔️', iconImg: 'img/abilities/rogue/ambush.jpg', description: 'Reduce el coste de ira de Heroic Strike en 1 por punto y aumenta su daño un 5% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'anticipation', name: 'Anticipation', icon: '🛡️', iconImg: 'img/abilities/warrior/last_stand.jpg', description: 'Aumenta tu armadura física y mágica en 5 por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'endless_rage', name: 'Endless Rage', icon: '🔋', iconImg: 'img/talents/warrior/endless_rage.jpg', description: 'Reduce la ira que pierdes al final del turno en 1 por punto (base 3). Con 3 puntos no pierdes nada.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_bloodrage', name: 'Improved Bloodrage', icon: '🩸', iconImg: 'img/abilities/warrior/bloodrage.jpg', description: 'Aumenta la ira por turno de Blood Rage en 5 por punto.', maxRank: 2, tier: 2, requires: null },

@@ -445,6 +445,11 @@ export class CharacterService {
         minVal = Math.round(minVal * cleaveBonus);
         maxVal = Math.round(maxVal * cleaveBonus);
       }
+      if (a.id === 'heroic_strike') {
+        const ihsBonus = 1 + this.talentRank('improved_heroic_strike') * 0.05;
+        minVal = Math.round(minVal * ihsBonus);
+        maxVal = Math.round(maxVal * ihsBonus);
+      }
       if (['backstab', 'garrote', 'ambush'].includes(a.id)) {
         const oppBonus = 1 + this.talentRank('opportunity') * 0.04;
         minVal = Math.round(minVal * oppBonus);
@@ -945,7 +950,7 @@ export class CharacterService {
       spell_crit_talent: `Crítico hechizos: +${rank}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
       master_of_weapons: `Pasiva: armas 1H + off o 2H equipables`,
-      improved_heroic_strike: `Coste Heroic Strike: −${rank} ira`,
+      improved_heroic_strike: `Coste Heroic Strike: −${rank} ira · +${rank * 5}% daño`,
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,
