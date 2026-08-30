@@ -24,6 +24,8 @@ interface MonsterEffect {
   debuffType?: string;
   sourcePlayer?: string;
   sourceAbility?: string;
+  stackable?: boolean;
+  maxStacks?: number;
 }
 
 interface DmgAbilityLog {
@@ -340,19 +342,29 @@ export class MasterComponent implements OnInit {
       monster.effects = [];
     }
     for (const eff of effects) {
+      if (eff.stackable && eff.type === 'debuff') {
+        const stacks = monster.effects.filter((e) => e.name === eff.name);
+        if (stacks.length >= (eff.maxStacks || 5)) {
+          const toRefresh = stacks.reduce((a, b) => (a.duration <= b.duration ? a : b));
+          toRefresh.duration = eff.duration;
+          toRefresh.sourcePlayer = source?.player;
+          toRefresh.sourceAbility = source?.ability;
+          continue;
+        }
+      }
       if (!eff.stackable) {
         monster.effects = monster.effects.filter((e) => e.name !== eff.name);
       }
       if (eff.type === 'debuff' && this.isDebuffGroup(eff.target || eff.stat)) {
         const key = eff.target || eff.stat;
         const stronger = monster.effects.find(
-          (e) => e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) > (eff.value || 0),
+          (e) => !e.stackable && e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) > (eff.value || 0),
         );
         if (stronger) {
           continue;
         }
         monster.effects = monster.effects.filter(
-          (e) => !(e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) <= (eff.value || 0)),
+          (e) => e.stackable || !(e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) <= (eff.value || 0)),
         );
       }
       monster.effects.push({

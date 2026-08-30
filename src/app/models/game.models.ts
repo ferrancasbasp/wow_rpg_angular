@@ -35,6 +35,8 @@ export interface InflictedEffect {
   target?: string;
   duration: number;
   debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
+  stackable?: boolean;
+  maxStacks?: number;
 }
 
 export interface Buff {
