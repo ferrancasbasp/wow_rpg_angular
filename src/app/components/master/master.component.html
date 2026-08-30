@@ -45,8 +45,6 @@
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
                   <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
-                  <button class="quick-btn debuff-btn" title="Tus curas hacen un 30% menos durante 3 turnos" (click)="quickSendDebuff('Pesadilla', 'healing_outgoing', 30, 3)">💀 Tus curas −30%</button>
-                  <button class="quick-btn debuff-btn" title="Recibes un 30% menos de cura durante 3 turnos" (click)="quickSendDebuff('Mortal Wound', 'healing_received', 30, 3)">💉 Recibes −30%</button>
                 </div>
                 <div class="debuff-type-row">
                   <span class="debuff-type-label">{{ trSvc.t('type') }}</span>
@@ -190,16 +188,6 @@
                         (click)="$event.stopPropagation(); healMonster(monster)"
                         title="Curar"
                       >+</button>
-                      <button
-                        class="monster-btn heal-cut"
-                        (click)="$event.stopPropagation(); applyMonsterDebuff(monster, 'healing_outgoing')"
-                        title="Debuff: sus curas −30% (3 turnos)"
-                      >💀</button>
-                      <button
-                        class="monster-btn heal-cut"
-                        (click)="$event.stopPropagation(); applyMonsterDebuff(monster, 'healing_received')"
-                        title="Debuff: recibe −30% de cura (3 turnos)"
-                      >💉</button>
                       <button
                         class="monster-btn danger"
                         (click)="$event.stopPropagation(); removeMonster(monster.id)"

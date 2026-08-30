@@ -275,13 +275,6 @@
       animation: monster-attack-shake 0.4s ease;
     }
 
-    .monster-btn.heal-cut {
-      font-size: 11px;
-      padding: 2px 5px;
-      background: linear-gradient(180deg, #2a1a2a 0%, #170f17 100%);
-      border: 1px solid #7a4a6a;
-    }
-
     @keyframes monster-attack-shake {
       0%,
       100% {

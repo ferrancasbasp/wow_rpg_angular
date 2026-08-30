@@ -598,20 +598,6 @@ export class MasterComponent implements OnInit {
     }
   }
 
-  applyMonsterDebuff(monster: Monster, target: 'healing_outgoing' | 'healing_received') {
-    if (!monster.effects) monster.effects = [];
-    const name = target === 'healing_outgoing' ? 'Curas reducidas' : 'Cura recibida reducida';
-    monster.effects = monster.effects
-      .filter(e => e.target !== target)
-      .concat([{ type: 'debuff', name, target, value: 30, duration: 3, debuffType: 'none' }]);
-    this.saveMonsters();
-    this.showToast(
-      target === 'healing_outgoing'
-        ? '💀 ' + monster.name + ': sus curas −30% (3 turnos)'
-        : '💉 ' + monster.name + ': recibe −30% de cura (3 turnos)',
-    );
-  }
-
   healMonster(monster: Monster) {
     monster.currentHP = monster.maxHP;
     this.saveMonsters();

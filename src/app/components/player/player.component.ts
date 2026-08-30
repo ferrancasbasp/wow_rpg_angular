@@ -168,7 +168,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ...c,
             activeEffects: [
               ...(c.activeEffects || []).filter(e => e.name !== (event.abilityName || 'Shield')),
-              { id: Date.now() + Math.random(), type: 'buff' as const, name: event.abilityName || 'Shield', target: 'shield', value: event.amount, duration: 99 },
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: event.abilityName || 'Shield', target: 'shield', value: event.amount, duration: 3 },
             ],
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
@@ -1994,7 +1994,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ...c,
             activeEffects: [
               ...(c.activeEffects || []).filter(e => e.target !== 'shield'),
-              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Soul Leech', target: 'shield', value: shieldAmt, duration: 99 },
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Soul Leech', target: 'shield', value: shieldAmt, duration: 3 },
             ],
           }));
           lifestealText += ' · 🛡️ +' + shieldAmt + ' escudo';
