@@ -34,7 +34,7 @@
       grid-template-columns: 1fr 320px;
       gap: 20px;
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 0 auto 20px;
     }
 
     @media (max-width: 900px) {
@@ -1039,7 +1039,7 @@
 
     .dmg-log-panel {
       max-width: 1200px;
-      margin: 0 auto 20px;
+      margin: 20px auto 0;
     }
 
     .dmg-log-grid {

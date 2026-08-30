@@ -103,7 +103,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_defias_pirate_gun: {
-    id: 'elite_defias_pirate_gun', name: 'Elite Defias Pirate (Gun)', level: 16, hp: 920, armor: 50, zone: 'Westfall',
+    id: 'elite_defias_pirate_gun', name: 'Deadshot Marrow', level: 16, hp: 920, armor: 50, zone: 'Westfall',
     imageUrl: 'img/enemies/Elite-Defias-Pirate-gun-16.jpeg', isElite: true,
     attacks: [
       { name: 'Pistol Shot', minDamage: 48, maxDamage: 72, inflictsEffects: [{ type: 'dot', name: 'Sangrado', target: 'hp', value: 12, duration: 3, debuffType: 'disease' }] },
@@ -112,7 +112,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_defias_pirate_mage: {
-    id: 'elite_defias_pirate_mage', name: 'Elite Defias Pirate (Mage)', level: 17, hp: 1050, armor: 30, zone: 'Westfall',
+    id: 'elite_defias_pirate_mage', name: 'Ruzal, Pirata Arcano', level: 17, hp: 1050, armor: 30, zone: 'Westfall',
     imageUrl: 'img/enemies/Elite-Defias-Pirate-mage-17.jpeg', isElite: true,
     attacks: [
       { name: 'Fireball', minDamage: 62, maxDamage: 88, inflictsEffects: [{ type: 'dot', name: 'Quemadura', target: 'hp', value: 14, duration: 3, debuffType: 'magic' }] },
@@ -121,7 +121,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_defias_pirate_sword: {
-    id: 'elite_defias_pirate_sword', name: 'Elite Defias Pirate (Sword)', level: 18, hp: 1180, armor: 70, zone: 'Westfall',
+    id: 'elite_defias_pirate_sword', name: 'Vilhun, Corsario', level: 18, hp: 1180, armor: 70, zone: 'Westfall',
     imageUrl: 'img/enemies/Elite-Defias-Pirtal-sword-18.jpeg', isElite: true,
     attacks: [
       { name: 'Sword Slash', minDamage: 54, maxDamage: 80, inflictsEffects: [{ type: 'dot', name: 'Sangrado', target: 'hp', value: 14, duration: 4, debuffType: 'disease' }] },
@@ -129,7 +129,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_iron_golem: {
-    id: 'elite_iron_golem', name: 'Elite Iron Golem', level: 18, hp: 1450, armor: 90, zone: 'Redridge Mountains',
+    id: 'elite_iron_golem', name: 'Ghonos, Golem de Hierro', level: 18, hp: 1450, armor: 90, zone: 'Redridge Mountains',
     imageUrl: 'img/enemies/Elite-Iron-Golem-18.jpeg', isElite: true,
     attacks: [
       { name: 'Iron Fist', minDamage: 68, maxDamage: 96, inflictsEffects: [{ type: 'status', name: 'Aturdido', target: 'stunned', value: 0, duration: 1, debuffType: 'none' }] },
