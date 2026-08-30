@@ -137,7 +137,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_lv25_dummy: {
-    id: 'elite_lv25_dummy', name: 'Test Dummy Élite Nv.25', level: 25, hp: 4500, armor: 120, magicResist: 60, zone: 'Entrenamiento',
+    id: 'elite_lv25_dummy', name: 'Test Dummy Élite Nv.25', level: 25, hp: 4500, armor: 75, magicResist: 40, zone: 'Entrenamiento',
     imageUrl: 'img/enemies/Elite-Iron-Golem-18.jpeg', isElite: true, description: 'Maniquí de pruebas élite Nv.25: mucha vida y un solo Golpe Básico que pega duro. Para testear builds.',
     attacks: [
       { name: 'Golpe Básico', minDamage: 90, maxDamage: 120 },
