@@ -168,12 +168,21 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   furbolg_dark_mage: {
-    id: 'furbolg_dark_mage', name: 'Furbolg Dark Mage', level: 20, hp: 1850, armor: 70, magicResist: 50, zone: 'Ashenvale',
+    id: 'furbolg_dark_mage', name: 'Vhalgrim, Dark Mage', level: 20, hp: 1850, armor: 70, magicResist: 50, zone: 'Ashenvale',
     imageUrl: 'img/enemies/Furbolg-Dark-Mage_elite-20.jpeg', isElite: true,
     attacks: [
       { name: 'Bola de Oscuridad', minDamage: 58, maxDamage: 84 },
       { name: 'Vampirizar', minDamage: 26, maxDamage: 40, inflictsEffects: [{ type: 'dot', name: 'Drenado', target: 'hp', value: 9, duration: 3, debuffType: 'magic' }] },
       { name: 'Maldición de Sombra', minDamage: 30, maxDamage: 46, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'attackPower', value: 6, duration: 3, debuffType: 'magic' }] },
+    ],
+  },
+  elite_rock_elemental_garzuk: {
+    id: 'elite_rock_elemental_garzuk', name: 'Garzuk, Elemental de Roca', level: 22, hp: 2600, armor: 110, magicResist: 45, zone: 'Redridge Mountains',
+    imageUrl: 'img/enemies/Elite-rock-elemental-Garzuk.jpeg', isElite: true, description: 'Avalancha viviente',
+    attacks: [
+      { name: 'Puñetazo de Roca', minDamage: 70, maxDamage: 100 },
+      { name: 'Desprendimiento', minDamage: 45, maxDamage: 65, inflictsEffects: [{ type: 'status', name: 'Ralentizado', target: 'slowed', value: 0, duration: 2, debuffType: 'none' }] },
+      { name: 'Temblor', minDamage: 40, maxDamage: 60, inflictsEffects: [{ type: 'status', name: 'Aturdido', target: 'stunned', value: 0, duration: 1, debuffType: 'none' }] },
     ],
   },
 };
