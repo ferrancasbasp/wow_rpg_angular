@@ -715,7 +715,7 @@ export class CharacterService {
   }
 
   getBloodrageTickRage(): number {
-    return 3 + this.talentRank('improved_bloodrage') * 5;
+    return 5 + this.talentRank('improved_bloodrage') * 5;
   }
 
   gearStatBonus(key: string): number {
