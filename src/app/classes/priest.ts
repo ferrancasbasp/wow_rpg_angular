@@ -23,8 +23,8 @@ export const PRIEST: CharacterClass = {
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },
 
   talents: [
-    { id: 'healing_focus', name: 'Healing Focus', icon: '💚', iconImg: 'img/talents/priest/healing_focus.jpg', description: 'Aumenta la curación realizada un 2% por punto.', maxRank: 5, tier: 1, requires: null },
-    { id: 'beligerance', name: 'Beligerance', icon: '⚔️', iconImg: 'img/talents/priest/beligerance.jpg', description: 'Tu ataque básico suma el 10% de tu Espiritu al danyo fisico por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'healing_focus', name: 'Healing Focus', icon: '💚', iconImg: 'img/talents/priest/healing_focus.jpg', description: 'Aumenta la curación realizada un 3% por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'beligerance', name: 'Beligerance', icon: '⚔️', iconImg: 'img/talents/priest/beligerance.jpg', description: 'Tu ataque básico suma el 10% de tu Espiritu al danyo fisico por punto. Además, aumenta el Espiritu ganado por nivel un 3% por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'shadow_ally', name: 'Shadow Ally', icon: '🌑', iconImg: 'img/talents/priest/shadow_ally.jpg', description: 'Aumenta el daño de sombra un 3% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'evangelism', name: 'Evangelism', icon: '✨', iconImg: 'img/talents/priest/evangelism.jpg', description: 'Tras lanzar un hechizo sagrado, tu próximo hechizo de sombra se potencia un 3% por punto, y viceversa. Dura 2 turnos. Se trackea como buff.', maxRank: 5, tier: 2, requires: null },
     { id: 'improved_shield', name: 'Improved Power Word: Shield', icon: '🛡️', iconImg: 'img/abilities/priest/power_word_shield.jpg', description: 'Aumenta la absorción de Power Word: Shield un 10% por punto.', maxRank: 3, tier: 2, requires: null },

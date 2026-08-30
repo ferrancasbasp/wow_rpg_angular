@@ -1861,7 +1861,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
-      let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.02;
+      let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.03;
       const resonanceRank = this.charSvc.talentRank('resonance');
       if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
       if (ability.id === 'vivace') {

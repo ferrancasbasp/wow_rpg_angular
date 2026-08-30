@@ -48,7 +48,11 @@ export class CharacterService {
     const level = this.character().level;
     const result = {} as Stats;
     for (const key of Object.values(STAT_KEYS)) {
-      const perLevel = (growth as any)[key] || 0;
+      let perLevel = (growth as any)[key] || 0;
+      if (key === 'espiritu' && this.character().classKey === 'priest') {
+        const belR = this.talentRank('beligerance');
+        if (belR > 0) perLevel = perLevel * (1 + belR * 0.03);
+      }
       result[key] = this.character().baseStats[key] + Math.floor((level - 1) * perLevel);
       result[key] += this.gearStatBonus(key);
       result[key] += this.effectStatBonus(key);
@@ -450,7 +454,7 @@ export class CharacterService {
       if (a.isHot) {
         const baseDuration = a.hotDuration || 1;
         hotDuration = baseDuration + this.talentRank('improved_renew');
-        const healBonus = 1 + this.talentRank('healing_focus') * 0.02;
+        const healBonus = 1 + this.talentRank('healing_focus') * 0.03;
         let rejuvBonus = 1;
         if (a.id === 'rejuvenation') {
           rejuvBonus = 1 + this.talentRank('improved_rejuvenation') * 0.07;
@@ -920,9 +924,9 @@ export class CharacterService {
       initiative: `Combo extra: ${rank * 15}% prob`,
       energetic: `Energía máxima: +${rank * 4}`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
-      healing_focus: `Curación: +${rank * 2}%`,
+      healing_focus: `Curación: +${rank * 3}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
-      beligerance: `Basic Attack: +${rank * 10}% Espiritu como danyo`,
+      beligerance: `Basic Attack: +${rank * 10}% Espiritu como danyo · Espiritu por nivel +${rank * 3}%`,
       evangelism: `Swap holy/shadow: +${rank * 3}% siguiente spell`,
       improved_shield: `PW: Shield: +${rank * 10}% absorción`,
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,
