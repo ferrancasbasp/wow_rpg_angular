@@ -16,7 +16,7 @@ export const SHAMAN: CharacterClass = {
 
   baseStats: { fuerza: 15, agilidad: 10, intelecto: 25, aguante: 20, espiritu: 18 },
   startingLevel: 1,
-  statGrowth: { fuerza: 0.3, agilidad: 0.3, intelecto: 1.2, aguante: 0.8, espiritu: 0.7 },
+  statGrowth: { fuerza: 0.6, agilidad: 0.4, intelecto: 1.5, aguante: 0.9, espiritu: 0.5 },
   armor: 3,
   magicResist: 3,
 
