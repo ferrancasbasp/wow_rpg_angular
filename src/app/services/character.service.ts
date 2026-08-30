@@ -540,7 +540,7 @@ export class CharacterService {
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
       if (a.id === 'power_word_fortitude') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_fortitude') * 0.15));
       if (a.id === 'power_word_shield') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_shield') * 0.10));
-      if (a.id === 'mark_of_the_wild') buffValue = Math.min(7, Math.round(buffValue * (1 + this.talentRank('improved_mark_of_the_wild') * 0.15)));
+      if (a.id === 'mark_of_the_wild') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_mark_of_the_wild') * 0.15));
 
       return {
         ...a,
