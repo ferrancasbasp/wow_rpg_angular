@@ -184,7 +184,7 @@ export class CharacterService {
     const cls = this.classConfig();
     if (!cls.formulas.manaRegen) return 0;
     let regen = cls.formulas.manaRegen(this.finalStats(), this.character().level);
-    regen = Math.round(regen * (1 + this.talentRank('holyness') * 0.05));
+    regen = Math.round(regen * (1 + this.talentRank('holyness') * 0.10));
     return regen;
   });
 
@@ -971,7 +971,7 @@ export class CharacterService {
       improved_shield: `PW: Shield: +${rank * 10}% absorción`,
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,
       improved_pain: `SW: Pain: +${rank * 10}% daño`,
-      holyness: `Regen maná: +${rank * 5}%`,
+      holyness: `Regen maná: +${rank * 10}%`,
       preservation: `Armadura mágica: +${rank * 5} · Spell crit: +${rank}%`,
       improved_mind_blast: `Mind Blast: CD -1 y cast instantaneo${rank > 0 ? ' (activo)' : ''}`,
       improved_inner_fire: `Inner Fire eficacia: +${rank * 20}%`,
