@@ -30,6 +30,11 @@ export const SHAMAN: CharacterClass = {
     { id: 'improved_weapon_imbues', name: 'Imbuements Mejorados', icon: '⚔️', iconImg: '', description: 'Mejora tus Imbuements de Arma. Viento Furioso: +5% de probabilidad de ataque adicional por punto. Lengua de Fuego: +10% de daño de fuego en tus Ataques Básicos por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'ancestral_knowledge', name: 'Conocimiento Ancestral', icon: '📜', iconImg: '', description: 'Aumenta el crecimiento por nivel de Intelecto y reduce el de Fuerza en 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'healing_grace', name: 'Gracia Sanadora', icon: '💚', iconImg: '', description: 'Aumenta la curación realizada por Ola de Sanación y Cadena de Sanación en 10% por punto. Además, estas habilidades tienen un 15% por punto de probabilidad de generar 1 carga de Maelstorm.', maxRank: 3, tier: 1, requires: null },
+    { id: 'elemental_assault', name: 'Asalto Elemental', icon: '👊', iconImg: '', description: 'Aumenta en +10% por punto la probabilidad de que tus Ataques Básicos generen 1 carga de Maelstorm.', maxRank: 3, tier: 2, requires: null },
+    { id: 'improved_totems', name: 'Tótems Mejorados', icon: '🪵', iconImg: '', description: 'Aumenta la efectividad de tus Tótems de Fuego y Agua en 10% por punto, aumentando su daño, curación o maná restaurado según corresponda.', maxRank: 3, tier: 2, requires: null },
+    { id: 'static_shock', name: 'Choque Estático', icon: '⚡', iconImg: '', description: 'Choque de Tierra tiene un 25% por punto de probabilidad de generar 1 carga de Maelstorm adicional.', maxRank: 3, tier: 2, requires: null },
+    { id: 'tidal_focus', name: 'Enfoque de Marea', icon: '🌊', iconImg: '', description: 'Reduce el coste de Maná de Ola de Sanación y Cadena de Sanación en 15% por punto.', maxRank: 2, tier: 2, requires: null },
+    { id: 'erupting_lava', name: 'Lava Eruptiva', icon: '🌋', iconImg: '', description: 'Aumenta el daño inicial y periódico de Choque de Llamas en 15% por punto y aumenta su duración en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
   ],
 
   capstones: [

@@ -528,13 +528,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
   castTotem(ability: any) {
     const slot = ability.totem === 'fire' ? 'fire' : 'water';
     const prev = this.charSvc.totemInfo(slot);
-    this.charSvc.summonTotem(slot, ability.totemType || 'searing', ability.totemTurns || 4, ability.currentMin || 0, ability.currentMax || 0, ability.currentBuffValue || ability.currentMin || 0);
+    const itRank = this.charSvc.talentRank('improved_totems');
+    const totemMult = 1 + itRank * 0.10;
+    this.charSvc.summonTotem(slot, ability.totemType || 'searing', ability.totemTurns || 4, Math.round((ability.currentMin || 0) * totemMult), Math.round((ability.currentMax || 0) * totemMult), Math.round((ability.currentBuffValue || ability.currentMin || 0) * totemMult));
     const slotLabel = ability.totem === 'fire' ? 'Tótem de Fuego' : 'Tótem de Agua';
     const prevText = prev ? ' (sustituye al anterior)' : '';
     const detail = ability.totemType === 'fire_nova'
       ? 'explotará durante tu siguiente turno'
       : 'duración ' + (ability.totemTurns || 4) + ' turnos';
-    this.charSvc.showToast('🪵 ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' · ' + slotLabel + prevText);
+    const multText = itRank > 0 ? ' · efectividad +' + Math.round(itRank * 10) + '%' : '';
+    this.charSvc.showToast('🪵 ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' · ' + slotLabel + prevText + multText);
   }
 
   castWeaponImbue(ability: any) {
@@ -1749,6 +1752,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (ability.spendsCombo) {
       comboText = ' · ' + comboSpent + ' combo gastados';
+    }
+    if (ability.id === 'earth_shock' && this.charSvc.character().classKey === 'shaman') {
+      const ssRank = this.charSvc.talentRank('static_shock');
+      if (ssRank > 0 && Math.random() * 100 < ssRank * 25) {
+        const ssMax = this.charSvc.classConfig().comboConfig?.max || 4;
+        this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(ssMax, (c.comboPoints || 0) + 1) }));
+        comboText += ' · +1 Maelstorm (Static Shock)';
+      }
     }
 
     let focusText = '';

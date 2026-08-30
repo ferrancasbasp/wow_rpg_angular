@@ -338,6 +338,10 @@ export class CharacterService {
       let cost = (ability.costPct || 0) * this.baseMana();
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.03);
+      if (this.character().classKey === 'shaman' && (ability.id === 'healing_wave' || ability.id === 'chain_heal')) {
+        const tidalF = this.talentRank('tidal_focus');
+        if (tidalF > 0) cost *= (1 - tidalF * 0.15);
+      }
       if (ability.type === 'heal' && this.character().classKey === 'bard') {
         const harmonioso = this.talentRank('harmonioso');
         if (harmonioso > 0) cost *= (1 - harmonioso * 0.05);
@@ -473,6 +477,16 @@ export class CharacterService {
         }
         if (a.id === 'garrote') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_garrote') * 0.20));
+        }
+        if (a.id === 'flame_shock' && this.character().classKey === 'shaman') {
+          const eruptRank = this.talentRank('erupting_lava');
+          if (eruptRank > 0) {
+            const eruptMult = 1 + eruptRank * 0.15;
+            minVal = Math.round(minVal * eruptMult);
+            maxVal = Math.round(maxVal * eruptMult);
+            dotTotal = Math.round(dotTotal * eruptMult);
+            dotDuration += eruptRank;
+          }
         }
         dotTick = Math.round(dotTotal / baseDotDuration);
       }
@@ -661,7 +675,11 @@ export class CharacterService {
   }
 
   getEffectiveComboChance(ability: any): number {
-    return ability.generatesComboChance ?? 100;
+    let chance = ability.generatesComboChance ?? 100;
+    if (ability.id === 'basic_attack' && this.character().classKey === 'shaman') {
+      chance += this.talentRank('elemental_assault') * 10;
+    }
+    return chance;
   }
 
   getEffectiveRageGain(ability: any): number {
@@ -888,6 +906,11 @@ export class CharacterService {
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
       healing_grace: `Healing Wave/Chain Heal: +${rank * 10}% · ${rank * 15}% prob. +1 Maelstorm`,
+      elemental_assault: `Basic Attack Maelstorm: +${rank * 10}%`,
+      improved_totems: `Daño/Cura/Maná de tótems: +${rank * 10}%`,
+      static_shock: `Earth Shock: ${rank * 25}% prob. +1 Maelstorm extra`,
+      tidal_focus: `Coste Healing Wave/Chain Heal: −${rank * 15}%`,
+      erupting_lava: `Flame Shock: +${rank * 15}% daño, +${rank} turno${rank > 1 ? 's' : ''} duración`,
       elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
       mana_efficiency: `Coste de maná: −${rank * 3}%`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
