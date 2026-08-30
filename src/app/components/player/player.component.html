@@ -269,7 +269,7 @@
             </button>
           </div>
         }
-        @if (charSvc.character().classKey === 'warrior' && charSvc.talentRank('master_of_weapons') > 0) {
+        @if (charSvc.character().classKey === 'warrior' && charSvc.character().level >= 8) {
           <div class="warrior-weapon-row">
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'dualwield'" (click)="changeWeaponMode('dualwield')">1H + Off</button>
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="changeWeaponMode('twohanded')">2H</button>

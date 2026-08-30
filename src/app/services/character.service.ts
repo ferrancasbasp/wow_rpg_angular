@@ -307,7 +307,7 @@ export class CharacterService {
   readonly totalWeaponDamage = computed<number>(() => {
     const char = this.character();
     if (!char.equipment) return 0;
-    if (char.classKey === 'warrior' && this.talentRank('master_of_weapons') > 0 && this.warriorWeaponMode() === 'twohanded') {
+    if (char.classKey === 'warrior' && char.level >= 8 && this.warriorWeaponMode() === 'twohanded') {
       return char.equipment.twoHand?.weaponDamage || 0;
     }
     if (char.classKey === 'hunter') {
@@ -531,7 +531,7 @@ export class CharacterService {
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
     const isFocus = resType === 'focus';
-    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && (a.capstoneGate ? this.selectedCapstone() === a.capstoneGate : this.trainedRank(a.id) > 0)).map(a => {
+    return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && (a.capstoneGate ? this.selectedCapstone() === a.capstoneGate : a.passive ? this.character().level >= a.requiredLevel : this.trainedRank(a.id) > 0)).map(a => {
       const rank = this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
@@ -564,6 +564,7 @@ export class CharacterService {
   readonly trainableAbilities = computed<Ability[]>(() => {
     return this.classConfig().abilities.filter(a => {
       if (a.capstoneGate) return false;
+      if (a.passive) return false;
       if (a.type === 'utility') {
         if (a.buffRanks) {
           const maxBR = a.buffRanks.filter(br => this.character().level >= br.level).length;
@@ -949,8 +950,7 @@ export class CharacterService {
       frost_power: `Daño Escarcha: +${rank * 2}%`,
       spell_crit_talent: `Crítico hechizos: +${rank}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
-      master_of_weapons: `Pasiva: armas 1H + off o 2H equipables`,
-      improved_heroic_strike: `Coste Heroic Strike: −${rank} ira · +${rank * 5}% daño`,
+      improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,

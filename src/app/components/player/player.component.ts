@@ -2229,6 +2229,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   castUtility(ability: any) {
+    if (ability.passive) {
+      this.charSvc.showToast('Pasiva: ' + ability.name + ' activa');
+      return;
+    }
     const resType = this.charSvc.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
@@ -2920,7 +2924,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   visibleEquipmentSlots(): any[] {
     const classKey = this.charSvc.character().classKey;
     const slots = [...EQUIPMENT_SLOTS];
-    if (classKey === 'warrior' && this.charSvc.talentRank('master_of_weapons') > 0) {
+    if (classKey === 'warrior' && this.charSvc.character().level >= 8) {
       slots.push({
         key: 'twoHand',
         label: 'Dos Manos',
