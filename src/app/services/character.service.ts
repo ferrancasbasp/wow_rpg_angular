@@ -954,7 +954,7 @@ export class CharacterService {
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 6}% AP, −${rank * 2} ira`,
       improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 4} armor Protection`,
-      unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis`,
+      unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
       vitality: `Regen energía: +${rank * 10}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +${rank} energía (+${rank * 2} si crit)`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
