@@ -11,7 +11,7 @@ export const DRUID: CharacterClass = {
     mana: (s, lvl) => 45 + s.intelecto * 15 + lvl * 5,
     spellPower: (s) => Math.round(s.intelecto * 0.35 + s.espiritu * 0.05),
     attackPower: (s) => s.fuerza * 2 + s.agilidad - 20,
-    manaRegen: (s) => Math.round(s.espiritu * 0.35 + 10),
+    manaRegen: (s) => Math.round(s.espiritu * 0.25 + 15),
   },
 
   baseStats: { fuerza: 15, agilidad: 14, intelecto: 18, aguante: 15, espiritu: 20 },
