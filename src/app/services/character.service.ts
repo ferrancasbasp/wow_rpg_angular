@@ -476,11 +476,7 @@ export class CharacterService {
         const baseDuration = a.hotDuration || 1;
         hotDuration = baseDuration + this.talentRank('improved_renew');
         const healBonus = 1 + this.talentRank('healing_focus') * 0.03;
-        let rejuvBonus = 1;
-        if (a.id === 'rejuvenation') {
-          rejuvBonus = 1 + this.talentRank('improved_rejuvenation') * 0.07;
-        }
-        hotTick = Math.round(minVal * healBonus * rejuvBonus / baseDuration);
+        hotTick = Math.round(minVal * healBonus / baseDuration);
         hotTotal = hotTick * hotDuration;
       }
       let dotTick = 0, dotDuration = 0, dotTotal = 0;
@@ -544,7 +540,7 @@ export class CharacterService {
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
       if (a.id === 'power_word_fortitude') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_fortitude') * 0.15));
       if (a.id === 'power_word_shield') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_shield') * 0.10));
-      if (a.id === 'mark_of_the_wild') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_mark_of_the_wild') * 0.15));
+      if (a.id === 'mark_of_the_wild') buffValue = Math.min(7, Math.round(buffValue * (1 + this.talentRank('improved_mark_of_the_wild') * 0.15)));
 
       return {
         ...a,
@@ -982,7 +978,7 @@ export class CharacterService {
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
-      lunar_healing: `Curación: ${rank * 6}% prob. Fase Lunar`,
+      lunar_healing: `Curación: ${rank * 10}% prob. Fase Lunar`,
       improved_moonfire: `Moonfire: +${rank * 10}% daño`,
       improved_rejuvenation: `Rejuvenation: +${rank * 7}% curación`,
       natures_remains: `Coste Wrath/Moonfire: −${rank * 5}%`,
