@@ -143,4 +143,37 @@ export const NPC_REGISTRY: Record<string, Npc> = {
       { name: 'Golpe Básico', minDamage: 90, maxDamage: 120 },
     ],
   },
+  furbolg_lancer: {
+    id: 'furbolg_lancer', name: 'Furbolg Lancer', level: 9, hp: 300, armor: 25, zone: 'Ashenvale',
+    imageUrl: 'img/enemies/Furbolg-lancer-9.jpeg',
+    attacks: [
+      { name: 'Lanzada', minDamage: 20, maxDamage: 34 },
+      { name: 'Alanceo', minDamage: 14, maxDamage: 24 },
+    ],
+  },
+  furbolg_sword_shield: {
+    id: 'furbolg_sword_shield', name: 'Furbolg Espadachín', level: 11, hp: 450, armor: 55, zone: 'Ashenvale',
+    imageUrl: 'img/enemies/Furbolg-sword-shiel-11.jpeg',
+    attacks: [
+      { name: 'Espadazo', minDamage: 30, maxDamage: 48 },
+      { name: 'Golpe de Escudo', minDamage: 18, maxDamage: 28, inflictsEffects: [{ type: 'debuff', name: 'Aturdido', target: 'stunned', value: 0, duration: 1, debuffType: 'none' }] },
+    ],
+  },
+  furbolg_lacer: {
+    id: 'furbolg_lacer', name: 'Furbolg Lacerador', level: 18, hp: 760, armor: 45, zone: 'Ashenvale',
+    imageUrl: 'img/enemies/Furbolg-lacer-add-18.jpeg',
+    attacks: [
+      { name: 'Laceración', minDamage: 28, maxDamage: 44, inflictsEffects: [{ type: 'dot', name: 'Herida Abierta', target: 'hp', value: 10, duration: 3, debuffType: 'none' }] },
+      { name: 'Garra Salvaje', minDamage: 22, maxDamage: 36 },
+    ],
+  },
+  furbolg_dark_mage: {
+    id: 'furbolg_dark_mage', name: 'Furbolg Dark Mage', level: 20, hp: 1850, armor: 70, magicResist: 50, zone: 'Ashenvale',
+    imageUrl: 'img/enemies/Furbolg-Dark-Mage_elite-20.jpeg', isElite: true,
+    attacks: [
+      { name: 'Bola de Oscuridad', minDamage: 58, maxDamage: 84 },
+      { name: 'Vampirizar', minDamage: 26, maxDamage: 40, inflictsEffects: [{ type: 'dot', name: 'Drenado', target: 'hp', value: 9, duration: 3, debuffType: 'magic' }] },
+      { name: 'Maldición de Sombra', minDamage: 30, maxDamage: 46, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'attackPower', value: 6, duration: 3, debuffType: 'magic' }] },
+    ],
+  },
 };
