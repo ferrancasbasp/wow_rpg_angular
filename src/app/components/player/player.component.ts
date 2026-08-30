@@ -1905,6 +1905,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
           (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
+        if (ability.chain) {
+          const chBounces = ability.bounces || 1;
+          const chDecay = ability.chainDecay || 0.6;
+          for (let b = 1; b <= chBounces; b++) {
+            const bHeal = Math.round(roll * Math.pow(chDecay, b));
+            this.charSvc.sendHealEvent({ ...ability, name: ability.name + ' (Salto ' + b + ')' }, bHeal);
+          }
+        }
         if (ability.id === 'healthstone') {
           const ihRank = this.charSvc.talentRank('improved_healthstone');
           if (ihRank > 0) {
@@ -1922,6 +1930,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         roll += poisonDmg;
       }
       let imbueText = '';
+      let chainText = '';
+      if (ability.chain) {
+        chainText = ' · ⛓️ envía ' + (ability.bounces || 1) + ' impacto(s) extra (rebote)';
+      }
       if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
         const shImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
         if (shImbue) {
@@ -2031,7 +2043,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2060,6 +2072,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
             wfComboText = ' · +1 Maelstorm';
           }
           this.charSvc.showToast('💨 Windfury! Ataque adicional ' + roll + ' dano' + wfComboText + ' — ' + this.trSvc.t('sent_to_master'));
+        }
+      }
+      if (ability.chain) {
+        const chBounces = ability.bounces || 1;
+        const chDecay = ability.chainDecay || 0.7;
+        for (let b = 1; b <= chBounces; b++) {
+          const bRoll = Math.round(roll * Math.pow(chDecay, b));
+          this.charSvc.turnDamage.update(d => d + bRoll);
+          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Salto ' + b + ')' }, bRoll, 1, 1);
         }
       }
       const dtRank = this.charSvc.talentRank('double_tap');

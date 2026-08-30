@@ -49,9 +49,6 @@ interface DamageEvent {
   damageType: string;
   damage: number;
   aoe?: boolean;
-  chain?: boolean;
-  bounces?: number;
-  chainDecay?: number;
   effects?: any[];
   assigned?: boolean;
   isHot?: boolean;
@@ -256,37 +253,7 @@ export class MasterComponent implements OnInit {
       this.applyAoeDamage(event);
       return;
     }
-    if (event.chain) {
-      this.applyChainDamage(monster, event);
-      return;
-    }
     this.applySingleDamage(monster, event);
-  }
-
-  applyChainDamage(monster: Monster, event: DamageEvent) {
-    const bounces = event.bounces || 1;
-    const decay = event.chainDecay || 0.7;
-    const alive = this.monsters().filter((m) => m.currentHP > 0);
-    const startIdx = alive.findIndex((m) => m.id === monster.id);
-    const ordered = startIdx >= 0
-      ? [...alive.slice(startIdx), ...alive.slice(0, startIdx)]
-      : alive;
-    const targets = ordered.slice(0, Math.min(ordered.length, bounces + 1));
-    const summary: string[] = [];
-    for (let i = 0; i < targets.length; i++) {
-      const m = targets[i];
-      const baseDmg = Math.round(event.damage * Math.pow(decay, i));
-      const damage = this.applyReduction(m, event, baseDmg);
-      m.currentHP = Math.max(0, m.currentHP - damage);
-      if (i === 0 && event.effects) {
-        this.applyEffectsToMonster(m, event.effects);
-      }
-      summary.push(i > 0 ? m.name + ': -' + damage + ' (salto)' : m.name + ': -' + damage);
-    }
-    this.markEventAssigned(event);
-    this.selectedEventId.set(null);
-    this.saveMonsters();
-    this.showToast('⛓️ ' + event.ability + ': ' + summary.join(' · '));
   }
 
   applySingleDamage(monster: Monster, event: DamageEvent) {
@@ -1025,27 +992,7 @@ export class MasterComponent implements OnInit {
           amount: event.damage,
           timestamp: Date.now(),
         });
-        let chainText = '';
-        if (event.chain) {
-          const bounces = event.bounces || 1;
-          const decay = event.chainDecay || 0.6;
-          const others = this.knownPlayers().filter((t) => t !== target);
-          const chainTargets = others.slice(0, Math.min(others.length, bounces));
-          for (let i = 0; i < chainTargets.length; i++) {
-            const amount = Math.round(event.damage * Math.pow(decay, i + 1));
-            this.firebase.pushData('playerEvents', {
-              target: chainTargets[i],
-              type: 'heal',
-              abilityName: event.ability.replace(' (Cura)', ''),
-              amount,
-              timestamp: Date.now(),
-            });
-          }
-          if (chainTargets.length > 0) {
-            chainText = ' · salta a ' + chainTargets.length + ' aliado(s)';
-          }
-        }
-        this.showToast(`${event.ability} → ${target}: +${event.damage} HP${chainText}`);
+        this.showToast(`${event.ability} → ${target}: +${event.damage} HP`);
       }
     }
 
