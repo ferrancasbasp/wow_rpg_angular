@@ -687,7 +687,7 @@ export class CharacterService {
 
   getEffectiveRageGen(ability: any): number {
     let gen = ability.generatesRage || 0;
-    if (ability.id === 'charge') gen += this.talentRank('improved_charge') * 2;
+    if (ability.id === 'charge') gen += this.talentRank('improved_charge') * 3;
     return gen;
   }
 
@@ -948,7 +948,7 @@ export class CharacterService {
       improved_heroic_strike: `Coste Heroic Strike: −${rank} ira`,
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
-      improved_charge: `Charge: +${rank * 2} ira`,
+      improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,
       cruelty: `Crítico físico: +${rank}%`,
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida · CD -${rank}`,
       improved_cleave: `Cleave: +${rank * 20}% daño`,
