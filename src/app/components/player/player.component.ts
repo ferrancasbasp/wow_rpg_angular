@@ -2167,6 +2167,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
           rendText = ' · 🩸 sangrado ' + rendDot + '/t (' + eff.duration + 't)';
         }
       }
+      let sunderText = '';
+      if (ability.id === 'sunder_armor') {
+        const eff = sendAbility.inflictsEffects && sendAbility.inflictsEffects[0];
+        if (eff) {
+          const sunderRank = ability.currentRank || 1;
+          const shred = (ability.armorShred && ability.armorShred[sunderRank - 1]) || 8;
+          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: shred }] };
+          sunderText = ' · 🛡️ armadura −' + shred;
+        }
+      }
       let woundText = '';
       const woundPct = this.charSvc.getWoundPoisonPercent();
       if (woundPct > 0) {
@@ -2180,7 +2190,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + maelstormText + efCritText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

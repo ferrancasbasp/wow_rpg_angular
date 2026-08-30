@@ -117,6 +117,7 @@ export interface Ability {
   infernalMax?: number;
   blockedStance?: string;
   passive?: boolean;
+  armorShred?: number[];
 
   currentRank?: number;
   currentMin?: number;
