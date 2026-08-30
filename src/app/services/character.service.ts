@@ -401,6 +401,14 @@ export class CharacterService {
         const base = weaponDmg + apBonus;
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
+        if (a.id === 'basic_attack' && this.character().classKey === 'priest') {
+          const belRank = this.talentRank('beligerance');
+          if (belRank > 0) {
+            const spiritDmg = Math.round((this.finalStats().espiritu || 0) * belRank * 0.10);
+            minVal += spiritDmg;
+            maxVal += spiritDmg;
+          }
+        }
       } else if (a.bonusPerRank) {
         const mult = a.weaponMultiplier || 1.0;
         const bonus = a.bonusPerRank[rank - 1] || 0;

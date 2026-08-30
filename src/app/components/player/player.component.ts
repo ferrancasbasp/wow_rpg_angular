@@ -1946,12 +1946,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       }
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
-        const belRank = this.charSvc.talentRank('beligerance');
-        if (belRank > 0) {
-          const spirit = this.charSvc.finalStats().espiritu || 0;
-          const spiritDmg = Math.round(spirit * belRank * 0.10);
-          roll += spiritDmg;
-        }
         const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
         if (ebaRank > 0 && isEnergy) {
           const energyGen = isCrit ? ebaRank * 2 : ebaRank;
@@ -2290,7 +2284,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const lnlVal = [0, 15, 30, 50][lnlRank] || 0;
         this.charSvc.character.update(c => ({
           ...c,
-          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 999, isPercent: false }],
+          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 3, isPercent: false }],
         }));
         lnlText = ' · Lock and Load: Aimed -' + lnlVal + ' Focus';
       }
@@ -2451,7 +2445,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.character.update(c => ({ ...c, currentHP: newHP }));
       }
       if (ability.id === 'inner_focus') {
-        this.charSvc.showToast('🎯 Inner Focus: tu próximo hechizo no cuesta maná y tiene +25% de crítico');
+        this.charSvc.showToast('🎯 Inner Focus: durante 3 turnos tu próximo hechizo no cuesta maná y tiene +25% de crítico');
         return;
       }
       const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
