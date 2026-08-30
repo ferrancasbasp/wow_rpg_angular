@@ -38,7 +38,7 @@ export const PRIEST: CharacterClass = {
   ],
 
   capstones: [
-    { id: 'holy_nova', name: 'Holy Nova', icon: '✨', iconImg: 'img/capstones/priest/holy_nova.jpg', description: 'CD 5. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.' },
+    { id: 'holy_nova', name: 'Holy Nova', icon: '✨', iconImg: 'img/capstones/priest/holy_nova.jpg', description: 'CD 4. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.' },
     { id: 'hope_and_grace', name: 'Hope and Grace', icon: '🕊️', iconImg: 'img/capstones/priest/hope_and_grace.jpg', description: 'Pasiva. Aumenta tu vida en 10 por nivel de personaje y tu Spell Power un 20% de tu Espiritu. Tus ataques basicos te curan un 30% de su dano.' },
     { id: 'dark_star', name: 'Dark Star', icon: '🌑', iconImg: 'img/capstones/priest/dark_star.jpg', description: 'CD 5. Coste: 30% de mana. Un golpe de sombra en area: hace el danyo de un Mind Blast a todos los enemigos y te curas como Dark Mending.' },
   ],
@@ -67,8 +67,8 @@ export const PRIEST: CharacterClass = {
       requiredLevel: 0,
       costPct: 0.35,
       castType: 'instant',
-      cooldown: 5,
-      description: 'CD 5. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.',
+      cooldown: 4,
+      description: 'CD 4. Coste: 35% de mana. Una onda sagrada que cura a todos los aliados y dania a todos los enemigos. El Master aplica los 2 eventos AOE.',
       buff: null,
       capstoneGate: 'holy_nova',
       damageRanges: [{ rank: 1, level: 0, min: 30, max: 45 }],
