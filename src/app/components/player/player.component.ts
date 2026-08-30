@@ -525,6 +525,33 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ' R' + rank + ': +' + value + ' ' + statLabel + ' — Aspect activado (solo puedes tener uno) · Focus ' + this.charSvc.resourceActual() + '/' + this.charSvc.resourceMax());
   }
 
+  castTotem(ability: any) {
+    const slot = ability.totem === 'fire' ? 'fire' : 'water';
+    const prev = this.charSvc.totemInfo(slot);
+    this.charSvc.summonTotem(slot, ability.totemType || 'searing', ability.totemTurns || 4, ability.currentMin || 0, ability.currentMax || 0, ability.currentBuffValue || ability.currentMin || 0);
+    const slotLabel = ability.totem === 'fire' ? 'Tótem de Fuego' : 'Tótem de Agua';
+    const prevText = prev ? ' (sustituye al anterior)' : '';
+    const detail = ability.totemType === 'fire_nova'
+      ? 'explotará durante tu siguiente turno'
+      : 'duración ' + (ability.totemTurns || 4) + ' turnos';
+    this.charSvc.showToast('🪵 ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' · ' + slotLabel + prevText);
+  }
+
+  castWeaponImbue(ability: any) {
+    const imbValue = ability.currentBuffValue;
+    this.charSvc.character.update(c => ({
+      ...c,
+      activeEffects: [
+        ...(c.activeEffects || []).filter(e => e.target !== 'weapon_imbue'),
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: ability.name, target: 'weapon_imbue', value: imbValue, duration: 999, isPercent: false },
+      ],
+    }));
+    const detail = ability.id === 'flametongue_weapon'
+      ? 'tus ataques basicos +' + imbValue + ' danyo de fuego'
+      : 'tus ataques basicos: ' + imbValue + '% Windfury';
+    this.charSvc.showToast('🗡️ ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' (solo un imbuíto de arma)');
+  }
+
   castHolyNova(ability: any) {
     const sp = this.charSvc.spellPower();
     const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
@@ -1126,6 +1153,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.processTotems(oldTurn);
+
     this.charSvc.nextTurn();
     const resType = this.charSvc.resourceConfig().type;
     if (resType === 'rage') {
@@ -1138,6 +1167,87 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else {
       const regen = this.charSvc.manaRegen();
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('mana_regen_turn'));
+    }
+  }
+
+  private processTotems(turn: number) {
+    const me = this.charSvc.character().name || 'Jugador';
+    const now = Date.now();
+
+    const fire = this.charSvc.totemInfo('fire');
+    if (fire && (fire.turns || 0) > 0) {
+      const fired = Math.round((fire.min || 0) + Math.random() * ((fire.max || fire.min || 0) - (fire.min || 0)));
+      if (fire.type === 'fire_nova') {
+        const remaining = (fire.turns || 0) - 1;
+        if (remaining <= 0) {
+          this.charSvc.addTurnDamage(fired);
+          this.firebase.pushData('damageEvents', {
+            player: me,
+            ability: 'Tótem Nova de Fuego (Explosión)',
+            rank: 1,
+            damage: fired,
+            damageType: 'magical',
+            aoe: true,
+            chain: false,
+            effects: null,
+            turn,
+            timestamp: now,
+            assigned: false,
+          });
+          this.charSvc.showToast('💥 Tótem Nova de Fuego: ' + fired + ' danyo en area · se destruye');
+          this.charSvc.updateTotem('fire', null);
+        } else {
+          this.charSvc.updateTotem('fire', remaining);
+        }
+      } else if (fire.type === 'searing') {
+        const remaining = (fire.turns || 0) - 1;
+        this.charSvc.addTurnDamage(fired);
+        this.firebase.pushData('damageEvents', {
+          player: me,
+          ability: 'Tótem Abrasador (Ataque)',
+          rank: 1,
+          damage: fired,
+          damageType: 'magical',
+          aoe: false,
+          chain: false,
+          effects: null,
+          turn,
+          timestamp: now,
+          assigned: false,
+        });
+        this.charSvc.updateTotem('fire', remaining > 0 ? remaining : null);
+        this.charSvc.showToast('🔥 Tótem Abrasador: ' + fired + ' danyo de fuego' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
+      }
+    }
+
+    const water = this.charSvc.totemInfo('water');
+    if (water && (water.turns || 0) > 0) {
+      const remaining = (water.turns || 0) - 1;
+      if (water.type === 'healing_stream') {
+        const healAmt = water.value ?? water.min ?? 0;
+        this.firebase.pushData('damageEvents', {
+          player: me,
+          ability: 'Tótem de Corriente Sanadora (Grupal)',
+          rank: 1,
+          damage: healAmt,
+          damageType: 'heal',
+          aoe: true,
+          chain: false,
+          effects: null,
+          turn,
+          timestamp: now,
+          assigned: false,
+        });
+        this.charSvc.showToast('💧 Tótem de Corriente Sanadora: +' + healAmt + ' HP al grupo' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
+      } else if (water.type === 'mana_spring') {
+        const manaAmt = water.value ?? water.min ?? 0;
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaAmt),
+        }));
+        this.charSvc.showToast('💠 Tótem Manantial de Maná: +' + manaAmt + ' maná' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
+      }
+      this.charSvc.updateTotem('water', remaining > 0 ? remaining : null);
     }
   }
 
@@ -1352,6 +1462,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       cost = 0;
     }
 
+    const maelstormFree = this.charSvc.isMaelstormReady() && ability.castType === 'cast';
+    if (maelstormFree) {
+      cost = Math.round((cost || 0) * 0.5);
+    }
+
     const resourceActual = this.charSvc.resourceActual();
     const resourceMax = this.charSvc.resourceMax();
     const manaActual = this.charSvc.manaActual();
@@ -1369,8 +1484,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
     const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.talentRank('improved_mind_blast') > 0;
-    const maelstormFree = this.charSvc.isMaelstormReady() && ability.castType === 'cast';
-    const actionCost = ability.noGcd ? 0 : (maelstormFree ? 0 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
+    const actionCost = ability.noGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1404,7 +1518,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let maelstormText = '';
     if (maelstormFree) {
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
-      maelstormText = ' · ¡Maelstorm! Lanzamiento instantáneo';
+      maelstormText = ' · ¡Maelstorm! Lanzamiento instantáneo (−50% maná)';
     }
 
     let unyieldingText = '';
@@ -1716,10 +1830,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const displayedTotal = dotTick * ability.dotDuration;
       let directText = '';
-      if (ability.id === 'immolate') {
+      if (ability.id === 'immolate' || ability.id === 'flame_shock') {
         const min = ability.currentMin || 0;
         const max = ability.currentMax || 0;
-        const direct = Math.round((min + Math.floor(Math.random() * (max - min + 1))) / 2);
+        const directRoll = min + Math.floor(Math.random() * (max - min + 1));
+        const direct = ability.id === 'immolate' ? Math.round(directRoll / 2) : directRoll;
         directText = ' +' + direct + ' directo';
         this.charSvc.turnDamage.update(d => d + direct);
         this.charSvc.sendDamageEvent({ ...ability, isDot: false }, direct, 1, 1);
@@ -1805,6 +1920,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const poisonDmg = this.charSvc.getPoisonDamage();
       if (poisonDmg > 0 && ability.damageType === 'physical') {
         roll += poisonDmg;
+      }
+      let imbueText = '';
+      if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
+        const shImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
+        if (shImbue) {
+          if (shImbue.name === 'Arma Lengua de Fuego') {
+            roll += shImbue.value;
+            imbueText = ' · 🔥+' + shImbue.value + ' fuego';
+          } else {
+            imbueText = ' · 💨 Windfury (' + shImbue.value + '%)';
+          }
+        }
       }
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
         const belRank = this.charSvc.talentRank('beligerance');
@@ -1904,7 +2031,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -1920,6 +2047,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.turnDamage.update(d => d + hitRoll);
         }
         this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits);
+      }
+      if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
+        const wfImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue' && e.name === 'Arma Viento Furioso');
+        if (wfImbue && Math.random() * 100 < (wfImbue.value || 20)) {
+          this.charSvc.turnDamage.update(d => d + roll);
+          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
+          let wfComboText = '';
+          const wfComboMax = this.charSvc.classConfig().comboConfig?.max || 4;
+          if (Math.random() * 100 < 20 && (this.charSvc.character().comboPoints || 0) < wfComboMax) {
+            this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(wfComboMax, (c.comboPoints || 0) + 1) }));
+            wfComboText = ' · +1 Maelstorm';
+          }
+          this.charSvc.showToast('💨 Windfury! Ataque adicional ' + roll + ' dano' + wfComboText + ' — ' + this.trSvc.t('sent_to_master'));
+        }
       }
       const dtRank = this.charSvc.talentRank('double_tap');
       if (ability.id === 'arcanic_shot' && dtRank > 0 && Math.random() * 100 < dtRank * 15) {
@@ -2149,6 +2290,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castSummonInfernal(ability);
     } else if (ability.id === 'seed_of_corruption') {
       this.castSeedOfCorruption(ability);
+    } else if (ability.totem) {
+      this.castTotem(ability);
+    } else if (ability.weaponImbue) {
+      this.castWeaponImbue(ability);
     } else if (ability.id === 'demonic_sacrifice') {
       this.castDemonicSacrifice(ability);
     } else if (ability.id === 'holy_nova') {
@@ -2399,7 +2544,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
       const pocket = this.charSvc.talentRank('pocket_shards');
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0 };
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));

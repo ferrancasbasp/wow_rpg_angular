@@ -518,6 +518,8 @@ export class CharacterService {
         currentBuffValue: buffValue,
         currentBuffDuration: a.buff ? a.buff.duration : 1,
         currentBuffStat: a.buff ? a.buff.stat : '',
+        currentMin: Math.round((a.damageRanges?.find(dr => dr.rank === rank)?.min || 0) + (a.spellPowerRatio ? this.spellPower() * a.spellPowerRatio : 0)),
+        currentMax: Math.round((a.damageRanges?.find(dr => dr.rank === rank)?.max || 0) + (a.spellPowerRatio ? this.spellPower() * a.spellPowerRatio : 0)),
       };
     });
   });
@@ -529,6 +531,10 @@ export class CharacterService {
         if (a.buffRanks) {
           const maxBR = a.buffRanks.filter(br => this.character().level >= br.level).length;
           return maxBR > this.trainedRank(a.id);
+        }
+        if (a.damageRanges) {
+          const maxRank = this.maxAvailableRank(a);
+          return maxRank > 0 && this.trainedRank(a.id) < maxRank;
         }
         return this.character().level >= a.requiredLevel && this.trainedRank(a.id) === 0;
       }
@@ -1052,6 +1058,9 @@ export class CharacterService {
         damage,
         damageType: this.hasPoison() && ability.damageType === 'physical' ? 'magical' : (ability.damageType || 'magical'),
         aoe: ability.aoe || false,
+        chain: ability.chain || false,
+        bounces: ability.bounces || 1,
+        chainDecay: ability.chainDecay || 0.7,
         effects,
         turn: this.turnNumber(),
         timestamp: Date.now(),
@@ -1076,6 +1085,9 @@ export class CharacterService {
         damage: healAmount,
         damageType: 'heal',
         aoe: false,
+        chain: ability.chain || false,
+        bounces: ability.bounces || 1,
+        chainDecay: ability.chainDecay || 0.6,
         effects: null,
         isHot: ability.isHot || false,
         hotTick: ability.hotTick || 0,
@@ -1621,6 +1633,31 @@ export class CharacterService {
     if (this.character().classKey !== 'shaman') return false;
     const max = this.classConfig().comboConfig?.max || 4;
     return (this.character().comboPoints || 0) >= max;
+  }
+
+  totemInfo(slot: 'fire' | 'water') {
+    return slot === 'fire' ? this.character().fireTotem : this.character().waterTotem;
+  }
+
+  totemActive(slot: 'fire' | 'water'): boolean {
+    const totem = this.totemInfo(slot);
+    return !!totem && (totem.turns || 0) > 0;
+  }
+
+  summonTotem(slot: 'fire' | 'water', type: string, turns: number, min: number, max: number, value?: number) {
+    const field = slot === 'fire' ? 'fireTotem' : 'waterTotem';
+    this.character.update(c => ({ ...c, [field]: { type, turns, min, max, value } }));
+  }
+
+  updateTotem(slot: 'fire' | 'water', turns: number | null) {
+    const field = slot === 'fire' ? 'fireTotem' : 'waterTotem';
+    const current = this.totemInfo(slot);
+    if (!current) return;
+    if (turns === null || turns <= 0) {
+      this.character.update(c => ({ ...c, [field]: null }));
+    } else {
+      this.character.update(c => ({ ...c, [field]: { ...current, turns } }));
+    }
   }
 
   soulShardMax(): number {

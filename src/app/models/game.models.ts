@@ -98,6 +98,13 @@ export interface Ability {
   bonusPerRank?: number[];
   weaponMultiplier?: number;
   aoe?: boolean;
+  chain?: boolean;
+  bounces?: number;
+  chainDecay?: number;
+  weaponImbue?: boolean;
+  totem?: 'fire' | 'water';
+  totemType?: string;
+  totemTurns?: number;
   requiresStealth?: boolean;
   requiresBehind?: boolean;
   capstoneGate?: string;
@@ -294,6 +301,16 @@ export interface Character {
   activePet?: ActivePet | null;
   companionPet?: ActivePet | null;
   infernalTurnsLeft?: number;
+  fireTotem?: TotemInfo | null;
+  waterTotem?: TotemInfo | null;
+}
+
+export interface TotemInfo {
+  type: string;
+  turns: number;
+  min?: number;
+  max?: number;
+  value?: number;
 }
 
 export interface EffectType {
