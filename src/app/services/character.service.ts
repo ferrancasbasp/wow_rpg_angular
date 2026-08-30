@@ -1273,7 +1273,7 @@ export class CharacterService {
 
   adjustHP(delta: number) {
     this.character.update(c => {
-      const maxHP = Math.round(this.classConfig().formulas.hp(this.finalStats(), c.level));
+      const maxHP = this.maxHP();
       if (c.currentHP === null || c.currentHP === undefined) c.currentHP = maxHP;
       c.currentHP = Math.max(0, Math.min(maxHP, c.currentHP + delta));
       return { ...c };
