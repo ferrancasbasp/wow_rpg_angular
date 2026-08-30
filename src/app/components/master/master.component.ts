@@ -22,6 +22,23 @@ interface MonsterEffect {
   target?: string;
   duration: number;
   debuffType?: string;
+  sourcePlayer?: string;
+  sourceAbility?: string;
+}
+
+interface DmgAbilityLog {
+  ability: string;
+  direct: number;
+  dot: number;
+  hits: number;
+}
+
+interface PlayerDmgLog {
+  player: string;
+  direct: number;
+  dot: number;
+  hits: number;
+  abilities: DmgAbilityLog[];
 }
 
 interface Monster {
@@ -95,6 +112,9 @@ export class MasterComponent implements OnInit {
   DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
   pendingMonsterHeal = signal<{ amount: number; sourceName: string; sourceId: number } | null>(null);
+  damageLog = signal<PlayerDmgLog[]>([]);
+  totalDamageDealt = computed(() => this.damageLog().reduce((s, p) => s + p.direct + p.dot, 0));
+  maxPlayerDamage = computed(() => Math.max(1, ...this.damageLog().map(p => p.direct + p.dot)));
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -260,9 +280,10 @@ export class MasterComponent implements OnInit {
     let damage = event.damage;
     const reductionText = this.getReductionText(monster, event);
     damage = this.applyReduction(monster, event, damage);
+    this.recordPlayerDamage(event.player, event.ability, damage, false);
     monster.currentHP = Math.max(0, monster.currentHP - damage);
     if (event.effects) {
-      this.applyEffectsToMonster(monster, event.effects);
+      this.applyEffectsToMonster(monster, event.effects, { player: event.player, ability: event.ability });
     }
     this.markEventAssigned(event);
     this.selectedEventId.set(null);
@@ -290,9 +311,10 @@ export class MasterComponent implements OnInit {
     const summary: string[] = [];
     for (const monster of alive) {
       const damage = this.applyReduction(monster, event, event.damage);
+      this.recordPlayerDamage(event.player, event.ability, damage, false);
       monster.currentHP = Math.max(0, monster.currentHP - damage);
       if (event.effects) {
-        this.applyEffectsToMonster(monster, event.effects);
+        this.applyEffectsToMonster(monster, event.effects, { player: event.player, ability: event.ability });
       }
       summary.push(monster.name + ': -' + damage);
     }
@@ -313,7 +335,7 @@ export class MasterComponent implements OnInit {
     this.showToast('AOE: ' + summary.join(' · '));
   }
 
-  applyEffectsToMonster(monster: Monster, effects: any[]) {
+  applyEffectsToMonster(monster: Monster, effects: any[], source?: { player?: string; ability?: string }) {
     if (!monster.effects) {
       monster.effects = [];
     }
@@ -333,7 +355,12 @@ export class MasterComponent implements OnInit {
           (e) => !(e.type === 'debuff' && (e.target === key || e.stat === key) && (e.value || 0) <= (eff.value || 0)),
         );
       }
-      monster.effects.push({ ...eff, duration: eff.duration });
+      monster.effects.push({
+        ...eff,
+        duration: eff.duration,
+        sourcePlayer: source?.player,
+        sourceAbility: source?.ability,
+      });
     }
   }
 
@@ -374,6 +401,9 @@ export class MasterComponent implements OnInit {
     for (const eff of monster.effects) {
       if (eff.type === 'dot') {
         dotTotal += eff.value || 0;
+        if (eff.sourcePlayer) {
+          this.recordPlayerDamage(eff.sourcePlayer, eff.sourceAbility || eff.name, eff.value || 0, true);
+        }
       }
       eff.duration--;
       if (eff.duration <= 0) {
@@ -395,6 +425,48 @@ export class MasterComponent implements OnInit {
       return ' (expiró: ' + expired.join(', ') + ')';
     }
     return '';
+  }
+
+  private recordPlayerDamage(player: string | undefined, ability: string | undefined, amount: number, isDot: boolean) {
+    if (!player || !amount || amount <= 0) {
+      return;
+    }
+    const abName = (ability || 'Otro').replace(/\s+\d+$/, '');
+    this.damageLog.update(log => {
+      const pi = log.findIndex(x => x.player === player);
+      if (pi === -1) {
+        return [...log, {
+          player,
+          direct: isDot ? 0 : amount,
+          dot: isDot ? amount : 0,
+          hits: 1,
+          abilities: [{ ability: abName, direct: isDot ? 0 : amount, dot: isDot ? amount : 0, hits: 1 }],
+        }] as PlayerDmgLog[];
+      }
+      const p = log[pi];
+      const ai = p.abilities.findIndex(a => a.ability === abName);
+      const abilityLog: DmgAbilityLog = ai === -1
+        ? { ability: abName, direct: isDot ? 0 : amount, dot: isDot ? amount : 0, hits: 1 }
+        : {
+            ...p.abilities[ai],
+            direct: p.abilities[ai].direct + (isDot ? 0 : amount),
+            dot: p.abilities[ai].dot + (isDot ? amount : 0),
+            hits: p.abilities[ai].hits + 1,
+          };
+      const abilities = ai === -1 ? [...p.abilities, abilityLog] : p.abilities.map((a, i) => (i === ai ? abilityLog : a));
+      const updated: PlayerDmgLog = {
+        ...p,
+        direct: p.direct + (isDot ? 0 : amount),
+        dot: p.dot + (isDot ? amount : 0),
+        hits: p.hits + 1,
+        abilities,
+      };
+      return log.map(x => (x === p ? updated : x));
+    });
+  }
+
+  resetDamageLog() {
+    this.damageLog.set([]);
   }
 
   applyReduction(

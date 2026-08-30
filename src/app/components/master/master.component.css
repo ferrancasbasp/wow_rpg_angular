@@ -1036,3 +1036,132 @@
       padding: 4px 0;
       border-bottom: 1px solid rgba(138, 115, 68, 0.15);
     }
+
+    .dmg-log-panel {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+    }
+
+    .dmg-log-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .dmg-log-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .player-dmg-card {
+      background: var(--bg-input);
+      border: 1px solid rgba(138, 115, 68, 0.2);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+
+    .dmg-player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .dmg-player-name {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+
+    .dmg-player-total {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .dmg-dot-tag {
+      font-size: 11px;
+      color: #b388e0;
+    }
+
+    .dmg-hits {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .dmg-bar-wrap {
+      display: flex;
+      height: 10px;
+      background: var(--bg-dark);
+      border: 1px solid var(--gold-dark);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .dmg-bar-fill {
+      background: linear-gradient(180deg, #c9b27e 0%, #8a7344 100%);
+      height: 100%;
+    }
+
+    .dmg-bar-dot {
+      background: linear-gradient(180deg, #9b59b6 0%, #6a3a8a 100%);
+      height: 100%;
+    }
+
+    .dmg-abilities {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .dmg-ability-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .dmg-ability-name {
+      flex: 0 0 170px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-dim);
+    }
+
+    .dmg-ability-bar-wrap {
+      display: flex;
+      flex: 1;
+      height: 6px;
+      background: var(--bg-dark);
+      border: 1px solid rgba(138, 115, 68, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .dmg-ability-bar {
+      background: rgba(201, 178, 126, 0.55);
+      height: 100%;
+    }
+
+    .dmg-ability-bar-dot {
+      background: rgba(155, 89, 182, 0.65);
+      height: 100%;
+    }
+
+    .dmg-ability-total {
+      flex: 0 0 auto;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .dmg-ability-dot-label {
+      font-size: 10px;
+      color: #b388e0;
+      font-weight: 400;
+    }

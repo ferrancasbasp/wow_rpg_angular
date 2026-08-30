@@ -358,6 +358,63 @@
       </div>
     </div>
 
+    <div class="wow-panel dmg-log-panel">
+      <div class="panel-title">
+        Daño Infligido ({{ totalDamageDealt() }})
+        @if (damageLog().length > 0) {
+          <button class="clear-btn small" (click)="resetDamageLog()">{{ trSvc.t('clear') }}</button>
+        }
+      </div>
+      <div class="panel-body">
+        @if (damageLog().length > 0) {
+          <div class="dmg-log-grid">
+            @for (p of damageLog(); track p.player) {
+              <div class="player-dmg-card">
+                <div class="dmg-player-header">
+                  <span class="dmg-player-name">{{ p.player }}</span>
+                  <span class="dmg-player-total">
+                    {{ p.direct + p.dot }}
+                    @if (p.dot > 0) {
+                      <span class="dmg-dot-tag">+{{ p.dot }} DoT</span>
+                    }
+                    <span class="dmg-hits">· {{ p.hits }} golpe(s)</span>
+                  </span>
+                </div>
+                <div class="dmg-bar-wrap">
+                  @if (p.direct > 0) {
+                    <div class="dmg-bar-fill" [style.flex-basis.%]="(p.direct / maxPlayerDamage()) * 100"></div>
+                  }
+                  @if (p.dot > 0) {
+                    <div class="dmg-bar-dot" [style.flex-basis.%]="(p.dot / maxPlayerDamage()) * 100"></div>
+                  }
+                </div>
+                <div class="dmg-abilities">
+                  @for (a of p.abilities; track a.ability) {
+                    <div class="dmg-ability-row">
+                      <span class="dmg-ability-name" [title]="a.ability">{{ a.ability }}</span>
+                      <div class="dmg-ability-bar-wrap">
+                        @if (a.direct > 0) {
+                          <div class="dmg-ability-bar" [style.flex-basis.%]="(a.direct / (p.direct + p.dot)) * 100"></div>
+                        }
+                        @if (a.dot > 0) {
+                          <div class="dmg-ability-bar-dot" [style.flex-basis.%]="(a.dot / (p.direct + p.dot)) * 100"></div>
+                        }
+                      </div>
+                      <span class="dmg-ability-total">{{ a.direct + a.dot }}
+                        @if (a.dot > 0) { <span class="dmg-ability-dot-label">({{ a.dot }} DoT)</span> }
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="damage-empty">Aún no hay daño registrado. Asigna eventos a los monstruos y todo el daño (directo + DoT) se acumulará aquí.</div>
+        }
+      </div>
+    </div>
+
     @if (toastMessage()) {
       <div class="toast">{{ toastMessage() }}</div>
     }
