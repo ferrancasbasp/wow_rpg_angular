@@ -1633,6 +1633,24 @@ export class CharacterService {
     return slot === 'fire' ? this.character().fireTotem : this.character().waterTotem;
   }
 
+  totemData(slot: 'fire' | 'water') {
+    const t = this.totemInfo(slot);
+    if (!t) return null;
+    const idMap: Record<string, string> = {
+      searing: 'searing_totem',
+      fire_nova: 'fire_nova_totem',
+      healing_stream: 'healing_stream_totem',
+      mana_spring: 'mana_spring_totem',
+    };
+    const ab = this.classConfig().abilities.find(a => a.id === idMap[t.type]);
+    return {
+      name: ab ? ab.name : t.type,
+      icon: ab ? ab.icon : '🪵',
+      iconImg: ab && ab.iconImg ? ab.iconImg : '',
+      turns: t.turns || 0,
+    };
+  }
+
   totemActive(slot: 'fire' | 'water'): boolean {
     const totem = this.totemInfo(slot);
     return !!totem && (totem.turns || 0) > 0;

@@ -866,6 +866,34 @@
       cursor: not-allowed;
     }
 
+    .totem-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+      padding-left: 2px;
+      margin-top: 6px;
+    }
+    .totem-inline {
+      gap: 6px;
+    }
+    .totem-icon-img {
+      border-color: rgba(255, 140, 60, 0.5);
+    }
+    .totem-countdown {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: #ffd180;
+      background: rgba(255, 120, 40, 0.15);
+      border: 1px solid rgba(255, 150, 70, 0.4);
+      border-radius: 8px;
+      padding: 1px 6px;
+    }
+    .totem-label {
+      color: #ffcc80;
+    }
+
     .combo-warlock {
       gap: 6px;
     }
