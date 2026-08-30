@@ -1467,7 +1467,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     const maelstormFree = this.charSvc.isMaelstormReady() && ability.castType === 'cast';
     if (maelstormFree) {
-      cost = Math.round((cost || 0) * 0.5);
+      cost = Math.round((cost || 0) * 0.5 * (1 - this.charSvc.talentRank('maelstrom_efficiency') * 0.15));
     }
 
     const resourceActual = this.charSvc.resourceActual();
@@ -1487,7 +1487,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
     const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.talentRank('improved_mind_blast') > 0;
-    const actionCost = ability.noGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
+    const maelstormNoGcd = maelstormFree && this.charSvc.character().classKey === 'shaman' && this.charSvc.talentRank('maelstrom_mastery') > 0;
+    const actionCost = ability.noGcd || maelstormNoGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1521,7 +1522,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let maelstormText = '';
     if (maelstormFree) {
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
-      maelstormText = ' · ¡Maelstorm! Lanzamiento instantáneo (−50% maná)';
+      maelstormText = maelstormNoGcd
+        ? ' · ¡Maelstorm! Lanzamiento sin GCD y (−50% maná)'
+        : ' · ¡Maelstorm! Lanzamiento instantáneo (−50% maná)';
     }
 
     let unyieldingText = '';
@@ -1613,11 +1616,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
         critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.15);
       }
+      if (this.charSvc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+        critMult += this.charSvc.talentRank('elemental_fury') * 0.05;
+      }
       roll = Math.round(roll * critMult);
     }
     let efCritText = '';
     if (isCrit && this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning') && this.charSvc.talentRank('elemental_focus') > 0) {
-      const efMax = this.charSvc.classConfig().comboConfig?.max || 4;
+      const efMax = this.charSvc.getMaelstromMax();
       this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(efMax, (c.comboPoints || 0) + 1) }));
       efCritText = ' · +1 Maelstorm (crit)';
     }
@@ -1742,7 +1748,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           const initChance = this.charSvc.talentRank('initiative') * 15;
           if (Math.random() * 100 < initChance) comboGen += 1;
         }
-        const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
+        const comboMax = this.charSvc.getMaelstromMax();
         const newCombo = Math.min(comboMax, (this.charSvc.character().comboPoints || 0) + comboGen);
         this.charSvc.character.update(c => ({ ...c, comboPoints: newCombo }));
         comboText = ' · ' + newCombo + ' ' + (this.charSvc.classConfig().comboConfig
@@ -1756,7 +1762,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.id === 'earth_shock' && this.charSvc.character().classKey === 'shaman') {
       const ssRank = this.charSvc.talentRank('static_shock');
       if (ssRank > 0 && Math.random() * 100 < ssRank * 25) {
-        const ssMax = this.charSvc.classConfig().comboConfig?.max || 4;
+        const ssMax = this.charSvc.getMaelstromMax();
         this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(ssMax, (c.comboPoints || 0) + 1) }));
         comboText += ' · +1 Maelstorm (Static Shock)';
       }
@@ -1882,13 +1888,38 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.03;
+      let tidalWaveText = '';
+      if (this.charSvc.character().classKey === 'shaman') {
+        const twRank = this.charSvc.talentRank('tidal_waves');
+        if (twRank > 0 && ability.id === 'chain_heal') {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
+              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Tidal Waves', target: 'tidal_waves', value: 10 * twRank, duration: 3, isPercent: false },
+            ],
+          }));
+          tidalWaveText = ' · Tidal Waves: siguiente Healing Wave +' + (10 * twRank) + '%';
+        }
+        if (ability.id === 'healing_wave' && this.charSvc.hasEffect('tidal_waves')) {
+          const twBuff = (this.charSvc.character().activeEffects || []).find(e => e.target === 'tidal_waves');
+          if (twBuff) {
+            healBonus *= (1 + (twBuff.value || 0) / 100);
+            tidalWaveText = ' · Tidal Waves +' + (twBuff.value || 0) + '%';
+            this.charSvc.character.update(c => ({
+              ...c,
+              activeEffects: (c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
+            }));
+          }
+        }
+      }
       let healGraceText = '';
       if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'healing_wave' || ability.id === 'chain_heal')) {
         const hgRank = this.charSvc.talentRank('healing_grace');
         if (hgRank > 0) {
           healBonus *= (1 + hgRank * 0.10);
           if (Math.random() * 100 < hgRank * 15) {
-            const hgMax = this.charSvc.classConfig().comboConfig?.max || 4;
+            const hgMax = this.charSvc.getMaelstromMax();
             this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(hgMax, (c.comboPoints || 0) + 1) }));
             healGraceText = ' · +1 Maelstorm';
           }
@@ -1918,7 +1949,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -1934,7 +1965,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
         if (ability.chain) {
@@ -2096,7 +2127,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.turnDamage.update(d => d + roll);
           this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
           let wfComboText = '';
-          const wfComboMax = this.charSvc.classConfig().comboConfig?.max || 4;
+          const wfComboMax = this.charSvc.getMaelstromMax();
           if (Math.random() * 100 < 20 && (this.charSvc.character().comboPoints || 0) < wfComboMax) {
             this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(wfComboMax, (c.comboPoints || 0) + 1) }));
             wfComboText = ' · +1 Maelstorm';

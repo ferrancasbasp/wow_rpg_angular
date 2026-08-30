@@ -323,6 +323,18 @@ export class CharacterService {
       const elemMastery = this.talentRank('elemental_mastery');
       if (elemMastery > 0) { value *= (1 + elemMastery * 0.02); talentNotes.push(`+${elemMastery * 2}% Maestría`); }
 
+      if (this.character().classKey === 'shaman') {
+        const tmRank = this.talentRank('totemic_mastery');
+        if (tmRank > 0 && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id) && this.totemActive('fire')) {
+          value *= (1 + tmRank * 0.05);
+          talentNotes.push(`+${tmRank * 5}% Tótem`);
+        }
+        if (tmRank > 0 && (ability.id === 'healing_wave' || ability.id === 'chain_heal') && this.totemActive('water')) {
+          value *= (1 + tmRank * 0.05);
+          talentNotes.push(`+${tmRank * 5}% Tótem`);
+        }
+      }
+
       if (ability.school === 'Escarcha') {
         const fp = this.talentRank('frost_power');
         if (fp > 0) { value *= (1 + fp * 0.02); talentNotes.push(`+${fp * 2}% Escarcha`); }
@@ -911,6 +923,11 @@ export class CharacterService {
       static_shock: `Earth Shock: ${rank * 25}% prob. +1 Maelstorm extra`,
       tidal_focus: `Coste Healing Wave/Chain Heal: −${rank * 15}%`,
       erupting_lava: `Flame Shock: +${rank * 15}% daño, +${rank} turno${rank > 1 ? 's' : ''} duración`,
+      maelstrom_efficiency: `Maelstrom: coste extra −${rank * 15}%`,
+      maelstrom_mastery: `Máximo 5 cargas · Maelstrom sin GCD`,
+      elemental_fury: `Daño crítico Rayo/Cadena/Choques: +${rank * 5}%`,
+      totemic_mastery: `Con Tótem Fuego: +${rank * 5}% SP Rayo/Cadena/Choques · Con Tótem Agua: +${rank * 5}% SP curas`,
+      tidal_waves: `Tras Chain Heal: siguiente Healing Wave +${rank * 10}%`,
       elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
       mana_efficiency: `Coste de maná: −${rank * 3}%`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
@@ -1647,10 +1664,15 @@ export class CharacterService {
     return this.character().soulShards || 0;
   }
 
+  getMaelstromMax(): number {
+    const base = this.classConfig().comboConfig?.max || 4;
+    if (this.character().classKey !== 'shaman') return base;
+    return base + this.talentRank('maelstrom_mastery');
+  }
+
   isMaelstormReady(): boolean {
     if (this.character().classKey !== 'shaman') return false;
-    const max = this.classConfig().comboConfig?.max || 4;
-    return (this.character().comboPoints || 0) >= max;
+    return (this.character().comboPoints || 0) >= this.getMaelstromMax();
   }
 
   totemInfo(slot: 'fire' | 'water') {
