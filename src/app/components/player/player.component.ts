@@ -1586,6 +1586,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
       critChance += this.charSvc.talentRank('destruction_specialization') * 5;
     }
+    if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning')) {
+      critChance += this.charSvc.talentRank('thundering_strikes') * 5;
+    }
     const isCrit = Math.random() * 100 < critChance;
     if (isCrit) {
       let critMult = 1.5;
@@ -1608,6 +1611,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.15);
       }
       roll = Math.round(roll * critMult);
+    }
+    let efCritText = '';
+    if (isCrit && this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning') && this.charSvc.talentRank('elemental_focus') > 0) {
+      const efMax = this.charSvc.classConfig().comboConfig?.max || 4;
+      this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(efMax, (c.comboPoints || 0) + 1) }));
+      efCritText = ' · +1 Maelstorm (crit)';
     }
     if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') {
       const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
@@ -1862,6 +1871,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.03;
+      let healGraceText = '';
+      if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'healing_wave' || ability.id === 'chain_heal')) {
+        const hgRank = this.charSvc.talentRank('healing_grace');
+        if (hgRank > 0) {
+          healBonus *= (1 + hgRank * 0.10);
+          if (Math.random() * 100 < hgRank * 15) {
+            const hgMax = this.charSvc.classConfig().comboConfig?.max || 4;
+            this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(hgMax, (c.comboPoints || 0) + 1) }));
+            healGraceText = ' · +1 Maelstorm';
+          }
+        }
+      }
       const resonanceRank = this.charSvc.talentRank('resonance');
       if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
       if (ability.id === 'vivace') {
@@ -1886,7 +1907,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
       } else {
@@ -1902,7 +1923,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
         this.charSvc.sendHealEvent(ability, roll);
         if (ability.chain) {
@@ -1938,10 +1959,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const shImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
         if (shImbue) {
           if (shImbue.name === 'Arma Lengua de Fuego') {
-            roll += shImbue.value;
-            imbueText = ' · 🔥+' + shImbue.value + ' fuego';
+            const iwiRank = this.charSvc.talentRank('improved_weapon_imbues');
+            const imbDmg = Math.round(shImbue.value * (1 + iwiRank * 0.10));
+            roll += imbDmg;
+            imbueText = ' · 🔥+' + imbDmg + ' fuego';
           } else {
-            imbueText = ' · 💨 Windfury (' + shImbue.value + '%)';
+            const wfDisplay = (shImbue.value || 20) + this.charSvc.talentRank('improved_weapon_imbues') * 5;
+            imbueText = ' · 💨 Windfury (' + wfDisplay + '%)';
           }
         }
       }
@@ -2037,7 +2061,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText + efCritText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2056,7 +2080,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
         const wfImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue' && e.name === 'Arma Viento Furioso');
-        if (wfImbue && Math.random() * 100 < (wfImbue.value || 20)) {
+        const wfChance = wfImbue ? (wfImbue.value || 20) + this.charSvc.talentRank('improved_weapon_imbues') * 5 : 0;
+        if (wfImbue && Math.random() * 100 < wfChance) {
           this.charSvc.turnDamage.update(d => d + roll);
           this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
           let wfComboText = '';

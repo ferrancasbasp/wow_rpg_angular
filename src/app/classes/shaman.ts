@@ -25,12 +25,11 @@ export const SHAMAN: CharacterClass = {
   comboConfig: { label: 'Maelstorm Charges', icon: '⚡', max: 4 },
 
   talents: [
-    { id: 'elemental_focus', name: 'Enfoque Elemental', icon: '🔮', iconImg: '', description: 'Reduce el coste de maná de todos tus hechizos un 2% por punto.', maxRank: 5, tier: 1, requires: null },
-    { id: 'convection', name: 'Convección', icon: '🌀', iconImg: '', description: 'Aumenta el daño de todos tus hechizos un 3% por punto.', maxRank: 5, tier: 1, requires: null },
-    { id: 'improved_lightning_bolt', name: 'Descarga Mejorada', icon: '⚡', iconImg: '', description: 'Aumenta el daño de Descarga de Rayo un 5% por punto.', maxRank: 3, tier: 2, requires: { id: 'convection', points: 2 } },
-    { id: 'call_of_thunder', name: 'Llamada del Trueno', icon: '🌩️', iconImg: '', description: 'Aumenta tu probabilidad de crítico con hechizos un 1% por punto.', maxRank: 3, tier: 2, requires: { id: 'elemental_focus', points: 2 } },
-    { id: 'lightning_mastery', name: 'Maestría de Rayos', icon: '💫', iconImg: '', description: 'Aumenta el daño de todos tus hechizos de Naturaleza un 5% por punto.', maxRank: 3, tier: 3, requires: { id: 'improved_lightning_bolt', points: 2 } },
-    { id: 'storm_power', name: 'Poder de Tormenta', icon: '🌪️', iconImg: '', description: 'Aumenta tu Poder de Hechizo total un 10% por punto.', maxRank: 2, tier: 3, requires: { id: 'call_of_thunder', points: 2 } },
+    { id: 'thundering_strikes', name: 'Trueno Atronador', icon: '⚡', iconImg: '', description: 'Aumenta la probabilidad de golpe crítico de tus Descarga de Rayo y Cadena de Rayos en 5% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'elemental_focus', name: 'Enfoque Elemental', icon: '🔮', iconImg: '', description: 'Requiere Trueno Atronador 2/2. Los golpes críticos de Descarga de Rayo y Cadena de Rayos generan 1 carga de Maelstorm.', maxRank: 1, tier: 1, requires: { id: 'thundering_strikes', points: 2 } },
+    { id: 'improved_weapon_imbues', name: 'Imbuements Mejorados', icon: '⚔️', iconImg: '', description: 'Mejora tus Imbuements de Arma. Viento Furioso: +5% de probabilidad de ataque adicional por punto. Lengua de Fuego: +10% de daño de fuego en tus Ataques Básicos por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'ancestral_knowledge', name: 'Conocimiento Ancestral', icon: '📜', iconImg: '', description: 'Aumenta el crecimiento por nivel de Intelecto y reduce el de Fuerza en 10% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'healing_grace', name: 'Gracia Sanadora', icon: '💚', iconImg: '', description: 'Aumenta la curación realizada por Ola de Sanación y Cadena de Sanación en 10% por punto. Además, estas habilidades tienen un 15% por punto de probabilidad de generar 1 carga de Maelstorm.', maxRank: 3, tier: 1, requires: null },
   ],
 
   capstones: [

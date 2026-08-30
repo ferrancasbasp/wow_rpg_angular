@@ -53,6 +53,13 @@ export class CharacterService {
         const belR = this.talentRank('beligerance');
         if (belR > 0) perLevel = perLevel * (1 + belR * 0.03);
       }
+      if (this.character().classKey === 'shaman') {
+        const akRank = this.talentRank('ancestral_knowledge');
+        if (akRank > 0) {
+          if (key === 'intelecto') perLevel = perLevel * (1 + akRank * 0.10);
+          if (key === 'fuerza') perLevel = perLevel * (1 - akRank * 0.10);
+        }
+      }
       result[key] = this.character().baseStats[key] + Math.floor((level - 1) * perLevel);
       result[key] += this.gearStatBonus(key);
       result[key] += this.effectStatBonus(key);
@@ -111,8 +118,6 @@ export class CharacterService {
 
   readonly spellPower = computed<number>(() => {
     let sp = this.baseSpellPower();
-    const stormPower = this.talentRank('storm_power');
-    sp = Math.round(sp * (1 + stormPower * 0.10));
     const balanceOfNature = this.talentRank('balance_of_nature');
     if (balanceOfNature > 0) {
       sp += Math.round(this.finalStats().espiritu * 0.10 * balanceOfNature);
@@ -141,7 +146,7 @@ export class CharacterService {
   readonly spellCrit = computed<string>(() => {
     const fromInt = this.finalStats().intelecto / 60;
     const fromLevel = this.character().level * 0.02;
-    const fromTalent = this.talentRank('call_of_thunder') + this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
+    const fromTalent = this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
     const fromBuff = this.effectStatBonus('spellCrit');
     const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
@@ -315,19 +320,6 @@ export class CharacterService {
       let value = (ability.baseDamage || 0) + this.spellPower() * (ability.spellPowerRatio || 0);
       const talentNotes: string[] = [];
 
-      const convection = this.talentRank('convection');
-      if (convection > 0) { value *= (1 + convection * 0.03); talentNotes.push(`+${convection * 3}% Conv.`); }
-
-      if (ability.school === 'Naturaleza') {
-        const lm = this.talentRank('lightning_mastery');
-        if (lm > 0) { value *= (1 + lm * 0.05); talentNotes.push(`+${lm * 5}% Maestría`); }
-      }
-
-      if (ability.id === 'lightning_bolt') {
-        const ilb = this.talentRank('improved_lightning_bolt');
-        if (ilb > 0) { value *= (1 + ilb * 0.05); talentNotes.push(`+${ilb * 5}% Descarga`); }
-      }
-
       const elemMastery = this.talentRank('elemental_mastery');
       if (elemMastery > 0) { value *= (1 + elemMastery * 0.02); talentNotes.push(`+${elemMastery * 2}% Maestría`); }
 
@@ -344,8 +336,6 @@ export class CharacterService {
       }
 
       let cost = (ability.costPct || 0) * this.baseMana();
-      const ef = this.talentRank('elemental_focus');
-      if (ef > 0) cost *= (1 - ef * 0.02);
       const me = this.talentRank('mana_efficiency');
       if (me > 0) cost *= (1 - me * 0.03);
       if (ability.type === 'heal' && this.character().classKey === 'bard') {
@@ -893,12 +883,11 @@ export class CharacterService {
     const rank = this.talentRank(talentId);
     if (rank === 0) return '';
     const texts: Record<string, string> = {
-      elemental_focus: `Coste de maná: −${rank * 2}%`,
-      convection: `Daño de hechizos: +${rank * 3}%`,
-      improved_lightning_bolt: `Daño Descarga de Rayo: +${rank * 5}%`,
-      call_of_thunder: `Crítico de hechizos: +${rank}%`,
-      lightning_mastery: `Daño Naturaleza: +${rank * 5}%`,
-      storm_power: `Poder de Hechizo: +${rank * 10}%`,
+      thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
+      elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
+      improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
+      ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
+      healing_grace: `Healing Wave/Chain Heal: +${rank * 10}% · ${rank * 15}% prob. +1 Maelstorm`,
       elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
       mana_efficiency: `Coste de maná: −${rank * 3}%`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
