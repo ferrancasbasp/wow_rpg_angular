@@ -14,7 +14,7 @@ export const PRIEST: CharacterClass = {
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 15),
   },
 
-  baseStats: { fuerza: 12, agilidad: 15, intelecto: 22, aguante: 15, espiritu: 25 },
+  baseStats: { fuerza: 12, agilidad: 15, intelecto: 22, aguante: 15, espiritu: 28 },
   startingLevel: 1,
   statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 1.6, aguante: 0.7, espiritu: 1.65 },
   armor: 0,
