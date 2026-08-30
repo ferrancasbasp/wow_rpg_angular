@@ -114,6 +114,7 @@ export interface Ability {
   infernalMin?: number;
   infernalMax?: number;
   blockedStance?: string;
+  passive?: boolean;
 
   currentRank?: number;
   currentMin?: number;
