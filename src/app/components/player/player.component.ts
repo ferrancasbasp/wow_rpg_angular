@@ -2158,6 +2158,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
           serpentText = ' · 🐍 Serpent Sting ' + serpentTick + '/t (4t)';
         }
       }
+      let rendText = '';
+      if (ability.id === 'rend') {
+        const eff = sendAbility.inflictsEffects && sendAbility.inflictsEffects[0];
+        if (eff) {
+          const rendDot = (ability as any).currentDotValue || eff.value || 8;
+          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: rendDot }] };
+          rendText = ' · 🩸 sangrado ' + rendDot + '/t (' + eff.duration + 't)';
+        }
+      }
       let woundText = '';
       const woundPct = this.charSvc.getWoundPoisonPercent();
       if (woundPct > 0) {
@@ -2171,7 +2180,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + maelstormText + efCritText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + maelstormText + efCritText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

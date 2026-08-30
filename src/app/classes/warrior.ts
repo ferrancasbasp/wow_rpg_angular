@@ -25,6 +25,8 @@ export const WARRIOR: CharacterClass = {
   talents: [
     { id: 'improved_heroic_strike', name: 'Improved Heroic Strike', icon: '⚔️', iconImg: 'img/abilities/rogue/ambush.jpg', description: 'Reduce el coste de ira de Heroic Strike en 1 por punto y aumenta su daño un 5% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'anticipation', name: 'Anticipation', icon: '🛡️', iconImg: 'img/abilities/warrior/last_stand.jpg', description: 'Aumenta tu armadura física y mágica en 5 por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_rend', name: 'Improved Rend', icon: '🩸', iconImg: 'img/abilities/warrior/rend.jpg', description: 'Aumenta el daño de Rend un 35% por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'improved_taunt', name: 'Improved Taunt', icon: '🗯️', iconImg: 'img/abilities/warrior/taunt.jpg', description: 'Taunt ya no consume cooldown global (GCD).', maxRank: 1, tier: 1, requires: { id: 'anticipation', points: 3 } },
     { id: 'endless_rage', name: 'Endless Rage', icon: '🔋', iconImg: 'img/talents/warrior/endless_rage.jpg', description: 'Reduce la ira que pierdes al final del turno en 1 por punto (base 3). Con 3 puntos no pierdes nada.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_bloodrage', name: 'Improved Bloodrage', icon: '🩸', iconImg: 'img/abilities/warrior/bloodrage.jpg', description: 'Aumenta la ira por turno de Blood Rage en 5 por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'improved_charge', name: 'Improved Charge', icon: '🏃', iconImg: 'img/abilities/warrior/charge.jpg', description: 'Aumenta la ira generada por Charge en 3 por punto y hace un daño extra del 15% del Heroic Strike por punto.', maxRank: 2, tier: 2, requires: null },

@@ -477,6 +477,8 @@ export class CharacterService {
         maxVal = Math.round(maxVal * shadowMasteryBonus);
       }
       const dotRange = a.dotRanges?.find(dr => dr.rank === rank);
+      let rendDotMult = 1;
+      if (a.id === 'rend') rendDotMult = 1 + this.talentRank('improved_rend') * 0.35;
       let hotTick = 0, hotDuration = 0, hotTotal = 0;
       if (a.isHot) {
         const baseDuration = a.hotDuration || 1;
@@ -516,7 +518,7 @@ export class CharacterService {
         currentRank: rank,
         currentMin: minVal,
         currentMax: maxVal,
-        currentDotValue: dotRange ? dotRange.value : (a.inflictsEffects ? a.inflictsEffects[0].value : 0),
+        currentDotValue: dotRange ? Math.round((dotRange.value || 0) * rendDotMult) : (a.inflictsEffects ? Math.round((a.inflictsEffects[0].value || 0) * rendDotMult) : 0),
         currentDotDuration: dotRange ? dotRange.duration : (a.inflictsEffects ? a.inflictsEffects[0].duration : 0),
         hotTick, hotDuration, hotTotal, dotTick, dotDuration, dotTotal,
         scaledCost: Math.round((a as any).computedCost * (1 + (rank - 1) * 0.15)),
@@ -552,6 +554,7 @@ export class CharacterService {
         ...a,
         currentRank: rank,
         scaledCost: cost,
+        noGcd: a.noGcd || (a.id === 'taunt' && this.talentRank('improved_taunt') > 0),
         currentBuffValue: buffValue,
         currentBuffDuration: a.buff ? a.buff.duration : 1,
         currentBuffStat: a.buff ? a.buff.stat : '',
@@ -951,6 +954,8 @@ export class CharacterService {
       spell_crit_talent: `Crítico hechizos: +${rank}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
       improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
+      improved_rend: `Rend: +${rank * 35}% daño`,
+      improved_taunt: `Taunt sin GCD`,
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno`,
       improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,
