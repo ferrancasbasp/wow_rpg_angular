@@ -8,7 +8,7 @@ export const WARLOCK: CharacterClass = {
 
   formulas: {
     hp: (s, lvl) => 30 + s.aguante * 9 + lvl * 5,
-    mana: (s, lvl) => 40 + s.intelecto * 18 + lvl * 6,
+    mana: (s, lvl) => 40 + s.intelecto * 15 + lvl * 5,
     spellPower: (s) => Math.round(s.intelecto * 0.45),
     attackPower: (s) => 0,
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 12),

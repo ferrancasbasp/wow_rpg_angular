@@ -8,7 +8,7 @@ export const SHAMAN: CharacterClass = {
 
   formulas: {
     hp: (s, lvl) => 40 + s.aguante * 10 + lvl * 5,
-    mana: (s, lvl) => 30 + s.intelecto * 15 + lvl * 3,
+    mana: (s, lvl) => 30 + s.intelecto * 15 + lvl * 5,
     spellPower: (s) => Math.round(s.intelecto * 0.3),
     attackPower: (s) => s.fuerza * 2,
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 15),

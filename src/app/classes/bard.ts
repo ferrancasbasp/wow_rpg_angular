@@ -8,7 +8,7 @@ export const BARD: CharacterClass = {
 
   formulas: {
     hp: (s, lvl) => 30 + s.aguante * 8 + lvl * 5,
-    mana: (s, lvl) => 60 + s.intelecto * 18 + lvl * 5,
+    mana: (s, lvl) => 60 + s.intelecto * 15 + lvl * 5,
     spellPower: (s) => Math.round(s.intelecto * 0.3 + s.agilidad * 0.3),
     attackPower: (s) => s.agilidad * 1.5,
     manaRegen: (s) => Math.round(s.espiritu * 0.1 + 5),
