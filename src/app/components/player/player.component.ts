@@ -1525,8 +1525,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const icyVeinsInstant = this.charSvc.hasEffect('icy_veins') && ability.school === 'Escarcha' && ability.castType === 'cast';
     const backdraftInstant = ability.id === 'immolate' && this.charSvc.talentRank('backdraft') > 0;
     const mindBlastInstant = ability.id === 'mind_blast' && this.charSvc.talentRank('improved_mind_blast') > 0;
+    const lockAndLoadInstant = ability.id === 'aimed_shot' && this.charSvc.hasEffect('lock_and_load');
     const maelstormNoGcd = maelstormFree && this.charSvc.character().classKey === 'shaman' && this.charSvc.talentRank('maelstrom_mastery') > 0;
-    const actionCost = ability.noGcd || maelstormNoGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant) ? 1 : 2));
+    const actionCost = ability.noGcd || maelstormNoGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant || lockAndLoadInstant) ? 1 : 2));
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1628,7 +1629,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
       const hawkActive = (this.charSvc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
-      if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 2;
+      if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 4;
     }
     if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
       critChance += this.charSvc.talentRank('destruction_specialization') * 5;
@@ -2439,12 +2440,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const lnlRank = this.charSvc.talentRank('lock_and_load');
       let lnlText = '';
       if (lnlRank > 0) {
-        const lnlVal = [0, 15, 30, 50][lnlRank] || 0;
-        this.charSvc.character.update(c => ({
-          ...c,
-          activeEffects: [...(c.activeEffects || []), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: lnlVal, duration: 3, isPercent: false }],
-        }));
-        lnlText = ' · Lock and Load: Aimed -' + lnlVal + ' Focus';
+        const lnlChance = [0, 35, 70, 100][lnlRank] || 0;
+        if (Math.random() * 100 < lnlChance) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [...(c.activeEffects || []).filter(e => e.name !== 'Lock and Load'), { id: Date.now(), type: 'buff', name: 'Lock and Load', target: 'lock_and_load', value: 1, duration: 3, isPercent: false }],
+          }));
+          lnlText = ' · 🧨 Lock and Load: tu siguiente Aimed Shot es Instant';
+        }
       }
       this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master' + lnlText);
       return;
