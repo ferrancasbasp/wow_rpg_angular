@@ -25,7 +25,7 @@ export const HUNTER: CharacterClass = {
   talents: [
     { id: 'ranged_weapon_spec', name: 'Ranged Weapon Specialization', icon: '🏹', iconImg: 'img/talents/hunter/ranged_weapon_spec.jpg', description: 'Aumenta el dano de Auto Shot, Arcane Shot, Aimed Shot y Multi-Shot un 5% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'bestial_discipline', name: 'Bestial Discipline', icon: '🐺', iconImg: 'img/talents/hunter/bestial_discipline.jpg', description: 'Aumenta el dano de los ataques basicos de tu pet un 10% por punto y el Focus que generan en +2/+4/+5.', maxRank: 3, tier: 1, requires: null },
-    { id: 'improved_aspect_of_the_hawk', name: 'Improved Aspect of the Hawk', icon: '🦅', iconImg: 'img/abilities/hunter/aspect_of_the_hawk.jpg', description: 'Mientras Aspect of the Hawk esta activo, +2% por punto de probabilidad de critico para tus ataques a distancia.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_aspect_of_the_hawk', name: 'Improved Aspect of the Hawk', icon: '🦅', iconImg: 'img/abilities/hunter/aspect_of_the_hawk.jpg', description: 'Mientras Aspect of the Hawk esta activo, +4% por punto de probabilidad de critico para tus ataques a distancia.', maxRank: 3, tier: 1, requires: null },
     { id: 'survivalist', name: 'Survivalist', icon: '❤️', iconImg: 'img/talents/hunter/survivalist.jpg', description: 'Aumenta tu vida maxima un 3% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'serpent_spread', name: 'Serpent Spread', icon: '🐍', iconImg: 'img/talents/hunter/serpent_spread.jpg', description: 'Multi-Shot aplica Serpent Sting a todos los enemigos con una efectividad del 15% por punto de su dano normal.', maxRank: 4, tier: 2, requires: null },
     { id: 'improved_kill_command', name: 'Improved Kill Command', icon: '🐾', iconImg: 'img/abilities/hunter/kill_command.jpg', description: 'Reduce el cooldown de Kill Command en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
@@ -34,7 +34,7 @@ export const HUNTER: CharacterClass = {
     { id: 'double_tap', name: 'Double Tap', icon: '✨', iconImg: 'img/talents/hunter/double_tap.jpg', description: 'Arcane Shot tiene un 15% por punto de probabilidad de dispararse una segunda vez gratis (mismo dano, genera focus).', maxRank: 3, tier: 3, requires: null },
     { id: 'mortal_shots', name: 'Mortal Shots', icon: '💀', iconImg: 'img/talents/hunter/mortal_shots.jpg', description: 'Aumenta el dano de los criticos de tus disparos un 15% por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'ferocious_inspiration', name: 'Ferocious Inspiration', icon: '🦁', iconImg: 'img/talents/hunter/ferocious_inspiration.jpg', description: 'Mejora tus pets: Furious Howl tambien da a la party con 50% por punto de eficacia; Growl da Thick Skin (+5/+10/+15 armor) al Bear 3 turnos.', maxRank: 3, tier: 3, requires: null },
-    { id: 'lock_and_load', name: 'Lock and Load', icon: '🧨', iconImg: 'img/talents/hunter/lock_and_load.jpg', description: 'Tras usar Frost Trap, tu siguiente Aimed Shot cuesta 15/30/50 Focus menos.', maxRank: 3, tier: 3, requires: null },
+    { id: 'lock_and_load', name: 'Lock and Load', icon: '🧨', iconImg: 'img/talents/hunter/lock_and_load.jpg', description: 'Después de utilizar Frost Trap, tienes un 35%/70%/100% de probabilidad de que tu siguiente Aimed Shot se convierta en Instant y solo consuma 1 acción.', maxRank: 3, tier: 3, requires: null },
   ],
 
   capstones: [
