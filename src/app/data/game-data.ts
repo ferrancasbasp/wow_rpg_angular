@@ -135,6 +135,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     if (cls.name === 'Warrior') {
       equipment.mainHand = { name: 'Espada de Acero', bonus: { ...emptyBonus, fuerza: 2 }, weaponDamage: 4 };
       equipment.twoHand = { name: 'Gran Hacha', bonus: { ...emptyBonus, fuerza: 3 }, weaponDamage: 7 };
+      equipment.offHand = { name: 'Escudo Tosco', bonus: { ...emptyBonus, aguante: 1 }, weaponDamage: 0, defense: 5 };
     } else if (cls.name === 'Rogue') {
       equipment.mainHand = { name: 'Daga Afilada', bonus: { ...emptyBonus, agilidad: 1 }, weaponDamage: 3 };
       equipment.offHand = { name: 'Daga de Novato', bonus: { ...emptyBonus, agilidad: 1 }, weaponDamage: 3 };

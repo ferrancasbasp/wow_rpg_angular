@@ -253,6 +253,12 @@ export class CharacterService {
     let total = this.classConfig().armor || 0;
     total += this.talentRank('anticipation') * 5;
     if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 4;
+    const gear = this.character().equipment;
+    if (gear) {
+      for (const slot of Object.values(gear)) {
+        total += (slot as any).defense || 0;
+      }
+    }
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
