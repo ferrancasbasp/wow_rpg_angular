@@ -1932,7 +1932,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + hotTick + '/turno · ' +
         ability.hotDuration + 't (' + hotTotal + ' total)' + lunarText + evText + noteText +
-        ' — ' + this.trSvc.t('sent_to_master')
+        ' — 🩹 HoT sobre ti'
       );
       this.charSvc.sendHealEvent(ability, hotTotal);
     } else if (ability.isDot) {

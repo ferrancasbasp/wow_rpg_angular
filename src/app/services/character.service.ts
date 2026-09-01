@@ -1203,14 +1203,29 @@ export class CharacterService {
   }
 
    sendHealEvent(ability: any, healAmount: number) {
+    const isHot = !!ability.isHot;
+    const hotDuration = ability.hotDuration || 3;
+    let appliedHotTick = 0;
+    if (isHot) {
+      appliedHotTick = Math.max(1, Math.round((healAmount || 0) / hotDuration));
+      this.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => !(e.type === 'hot' && e.name === ability.name)),
+          { id: Date.now() + Math.random(), type: 'hot' as const, name: ability.name, target: 'hp', value: appliedHotTick, duration: hotDuration },
+        ],
+      }));
+    }
     if (this.simMode()) {
-      if (healAmount > 0) {
+      if (isHot) {
+        this.simCombat.pushLog(`${ability.name}: HoT +${appliedHotTick}/turno · ${hotDuration}t`);
+      } else if (healAmount > 0) {
         this.character.update(c => ({
           ...c,
           currentHP: Math.min(this.maxHP(), (c.currentHP || 0) + healAmount),
         }));
+        this.simCombat.pushLog(`+${healAmount} ${ability.name || 'Curación'}`);
       }
-      this.simCombat.pushLog(`+${healAmount} ${ability.name || 'Curación'}`);
       return;
     }
     this.registerPlayer();
