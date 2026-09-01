@@ -46,15 +46,15 @@ export class SimCombatService {
       id: def?.id || 'sim_dummy',
       name: def?.name || 'Test Dummy Élite Nv.25',
       level: def?.level ?? 25,
-      maxHP: def?.maxHP ?? 4500,
-      currentHP: def?.maxHP ?? 4500,
+      maxHP: def?.maxHP ?? 3000,
+      currentHP: def?.maxHP ?? 3000,
       armor: def?.armor ?? 75,
       magicResist: def?.magicResist ?? 40,
       imageUrl: def?.imageUrl || 'img/enemies/Elite-Iron-Golem-18.jpeg',
       description: def?.description,
       attacks: (def?.attacks && def.attacks.length)
         ? def.attacks.map((a: any) => ({ ...a }))
-        : [{ name: 'Golpe Básico', minDamage: 90, maxDamage: 120 }],
+        : [{ name: 'Golpe Básico', minDamage: 81, maxDamage: 108 }],
       effects: [],
     });
     this.log.set([]);
