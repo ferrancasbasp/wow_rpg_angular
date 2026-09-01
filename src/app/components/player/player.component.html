@@ -454,11 +454,11 @@
             <div class="ability-grid">
             @for (ability of charSvc.unlockedUtility(); track ability.id) {
               <div class="ability-card"
-                   [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0)"
+                   [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0) || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf')"
                    [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
                 <div class="ability-icon castable"
                      [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                     [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0"
+                     [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0 || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf')"
                      [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                      (click)="castUtility(ability)">
                    @if (ability.iconImg) {

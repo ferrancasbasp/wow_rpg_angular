@@ -983,20 +983,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else if (ability.id === 'furious_howl') {
         const rank = ability.currentRank || 1;
         const buffRank = ability.buffRanks?.find((br: any) => br.rank === rank);
-        const howlPct = buffRank ? buffRank.value : 15;
+        const howlPct = buffRank ? buffRank.value : 10;
         this.charSvc.character.update(c => ({
           ...c,
           activeEffects: [
             ...(c.activeEffects || []).filter(e => e.name !== 'Furious Howl'),
-            { id: Date.now(), type: 'buff' as const, name: 'Furious Howl', target: 'furious_howl', value: howlPct, duration: 3, isPercent: true },
+            { id: Date.now(), type: 'buff' as const, name: 'Furious Howl', target: 'attackPower', value: howlPct, duration: 3, isPercent: true },
           ],
         }));
-        this.charSvc.showToast(ability.name + ': +' + howlPct + '% dano al Hunter y al Wolf durante 3 turnos');
+        this.charSvc.showToast(ability.name + ': +' + howlPct + '% Attack Power al Hunter y al Wolf durante 3 turnos');
         const fiRank = this.charSvc.talentRank('ferocious_inspiration');
         if (fiRank > 0) {
-          const partyVal = Math.round(howlPct * 0.5 * fiRank);
-          this.charSvc.sendBuffEvent({ ...ability, name: 'Furious Howl', currentBuffStat: 'attackPower', currentBuffValue: partyVal, currentBuffDuration: 3, buff: { stat: 'attackPower', duration: 3, isPercent: false }, partyBuff: true } as any);
-          this.charSvc.showToast(ability.name + ': 🎵 Ferocious Inspiration — party +' + partyVal + ' Attack Power (3 turnos) — enviado al Master');
+          const effectiveness = fiRank >= 2 ? 1 : 0.5;
+          const partyPct = Math.round(howlPct * effectiveness);
+          this.charSvc.sendBuffEvent({ ...ability, name: 'Furious Howl', currentBuffStat: 'attackPower', currentBuffValue: partyPct, currentBuffDuration: 3, buff: { stat: 'attackPower', duration: 3, isPercent: true }, partyBuff: true } as any);
+          this.charSvc.showToast(ability.name + ': 🎵 Ferocious Inspiration — party +' + partyPct + '% Attack Power (3 turnos) — enviado al Master');
         }
       } else if (ability.id === 'growl') {
         const myName = (this.charSvc.character().name || '').trim();
@@ -1016,7 +1017,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast(ability.name + ': el enemigo ataca al Bear durante 3 turnos — enviado al Master');
         const fiRank = this.charSvc.talentRank('ferocious_inspiration');
         if (fiRank > 0) {
-          const thickVal = [0, 5, 10, 15][fiRank] || 0;
+          const thickVal = [0, 8, 15][fiRank] || 0;
           this.charSvc.character.update(c => ({
             ...c,
             activeEffects: [
@@ -1700,7 +1701,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         critMult = critMult * 1.25;
       }
       if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
-        critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.15);
+        critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.05);
       }
       if (this.charSvc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult += this.charSvc.talentRank('elemental_fury') * 0.05;
@@ -2767,7 +2768,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
       const pocket = this.charSvc.talentRank('pocket_shards');
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(pocket, (c.soulShards || 0)), currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
+      const shardMax = this.charSvc.soulShardMax();
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: Math.min(shardMax, Math.max(pocket, (c.soulShards || 0))), currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
@@ -2973,7 +2975,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const type = this.charSvc.resourceConfig().type;
     if (type === 'rage') return 'linear-gradient(180deg, #c0392b 0%, #8b2e1e 100%)';
     if (type === 'energy') return 'linear-gradient(180deg, #f1c40f 0%, #b7950b 100%)';
-    if (type === 'focus') return 'linear-gradient(180deg, #aad372 0%, #79b54a 100%)';
+    if (type === 'focus') return 'linear-gradient(180deg, #ffa94d 0%, #cc7000 100%)';
     return 'linear-gradient(180deg, #3498db 0%, #2471a3 100%)';
   }
 
