@@ -497,8 +497,10 @@ export class CharacterService {
           const base = (a.baseDamage || 0) + this.spellPower() * (a.spellPowerRatio || 0);
           if (base > 0) spellMult = compDamage / base;
         }
-        minVal = dmgRange ? Math.round((dmgRange.min + dmgBonus + spBonus) * spellMult) : 0;
-        maxVal = dmgRange ? Math.round((dmgRange.max + dmgBonus + spBonus) * spellMult) : 0;
+        const weaponMult = a.weaponMultiplier || 0;
+        const meleeWeaponBonus = (isPhysical && weaponMult > 0) ? (weaponDmg * weaponMult + apBonus) : 0;
+        minVal = dmgRange ? Math.round((dmgRange.min + meleeWeaponBonus + spBonus) * spellMult) : 0;
+        maxVal = dmgRange ? Math.round((dmgRange.max + meleeWeaponBonus + spBonus) * spellMult) : 0;
       }
       if (a.id === 'cleave') {
         const cleaveBonus = 1 + this.talentRank('improved_cleave') * 0.20;
