@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular
 import { CharacterService } from '../../services/character.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { TranslationService } from '../../services/translation.service';
+import { SimCombatService } from '../../services/sim-combat.service';
 import { onChildAdded, ref, off } from 'firebase/database';
 import { ClassRegistryService } from '../../services/class-registry.service';
 import {
@@ -29,6 +30,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   trSvc = inject(TranslationService);
   private firebase = inject(FirebaseService);
   private classRegistry = inject(ClassRegistryService);
+  private simCombat = inject(SimCombatService);
 
   MAX_LEVEL = MAX_LEVEL;
   STAT_ICONS = STAT_ICONS;
@@ -374,7 +376,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const lowHp = (this.charSvc.character().currentHP ?? this.charSvc.maxHP()) / this.charSvc.maxHP() < 0.5;
     if (lowHp) heal = Math.round(heal * 2);
     const myName = this.charSvc.character().name || 'Jugador';
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: myName,
       ability: ability.name,
       rank: ability.currentRank || 1,
@@ -408,7 +410,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const playerName = (this.charSvc.character().name || '').trim();
     const petPlayerName = playerName ? playerName + ' — ' + pet.name : '';
     this.charSvc.addTurnDamage(dmg);
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: petPlayerName,
       ability: ability.name,
       rank: ability.currentRank || 1,
@@ -437,7 +439,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const total = totalMin + Math.floor(Math.random() * (totalMax - totalMin + 1));
     const tick = Math.max(1, Math.round(total / 3));
     this.charSvc.addTurnDamage(total);
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: this.charSvc.character().name || 'Jugador',
       ability: ability.name,
       rank: rnk ? rnk.rank : 1,
@@ -470,7 +472,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       roll = Math.round(roll * (1.10 + this.charSvc.talentRank('improved_stances') * 0.02));
     }
     this.charSvc.addTurnDamage(roll);
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: this.charSvc.character().name || 'Jugador',
       ability: ability.name,
       rank: 1,
@@ -563,7 +565,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const myName = this.charSvc.character().name || 'Jugador';
     const turn = this.charSvc.turnNumber();
     const now = Date.now();
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: myName,
       ability: ability.name,
       rank: ability.currentRank || 1,
@@ -575,7 +577,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: now,
       assigned: false,
     });
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: myName,
       ability: ability.name + ' (Cura)',
       rank: ability.currentRank || 1,
@@ -612,7 +614,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
     const boosted = Math.round(dotTick * 1.10);
-    this.firebase.pushData('damageEvents', {
+    this.sendDamagePayload({
       player: this.charSvc.character().name || 'Jugador',
       ability: ability.name,
       rank: ability.currentRank || 1,
@@ -937,7 +939,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const rank = ability.currentRank || 1;
         const dmg = ability.currentBuffValue || 40;
         this.charSvc.addTurnDamage(dmg);
-        this.firebase.pushData('damageEvents', {
+        this.sendDamagePayload({
           player: this.charSvc.character().name || 'Jugador',
           ability: ability.name,
           rank: rank,
@@ -955,7 +957,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else if (ability.id === 'voidwalker_taunt') {
         const myName = (this.charSvc.character().name || '').trim();
         const petPlayerName = myName ? myName + ' — Voidwalker' : '';
-        this.firebase.pushData('damageEvents', {
+        this.sendDamagePayload({
           player: this.charSvc.character().name || 'Jugador',
           ability: ability.name,
           rank: ability.currentRank || 1,
@@ -999,7 +1001,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else if (ability.id === 'growl') {
         const myName = (this.charSvc.character().name || '').trim();
         const petPlayerName = myName ? myName + ' — Bear' : '';
-        this.firebase.pushData('damageEvents', {
+        this.sendDamagePayload({
           player: this.charSvc.character().name || 'Jugador',
           ability: ability.name,
           rank: ability.currentRank || 1,
@@ -1044,7 +1046,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else {
           const sacrificePct = 15 * grimoireRank;
           const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
-          this.firebase.pushData('damageEvents', {
+          this.sendDamagePayload({
             player: this.charSvc.character().name || 'Jugador',
             ability: ability.name,
             rank: ability.currentRank || 1,
@@ -1121,6 +1123,42 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(this.trSvc.t('movement_used'));
   }
 
+  private sendDamagePayload(payload: any) {
+    if (this.charSvc.simMode()) {
+      if ((payload.damageType || '') === 'heal' && (payload.damage || 0) > 0) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + payload.damage),
+        }));
+        this.simCombat.pushLog(`+${payload.damage} ${payload.ability || 'Curación'}`);
+        return;
+      }
+      if (this.simCombat.enemy() && !this.simCombat.enemy()!.currentHP) {
+        this.simCombat.pushLog('El dummy ya está derrotado');
+        return;
+      }
+      this.simCombat.applyPlayerHit(payload);
+      return;
+    }
+    this.firebase.pushData('damageEvents', payload);
+  }
+
+  private simDummyTurn() {
+    const enemy = this.simCombat.enemy();
+    if (!enemy) return;
+    const tickText = this.simCombat.processEnemyTick(enemy);
+    if (tickText) this.simCombat.pushLog(`⏳ ${tickText}`);
+    this.simCombat.enemy.update((e) => ({ ...(e as any), currentHP: enemy.currentHP }));
+    if (enemy.currentHP <= 0) return;
+    const atk = this.simCombat.rollAttack(enemy, 0);
+    this.simCombat.pushLog(`👹 ${enemy.name} usa ${atk.name}`);
+    if (atk.inflictsEffects) {
+      this.simCombat.applyEffectsToEnemy(enemy, atk.inflictsEffects, { player: enemy.name, ability: atk.name });
+      this.simCombat.enemy.update((e) => ({ ...(e as any), effects: enemy.effects.map((x: any) => ({ ...x })) }));
+    }
+    this.hpAction(atk.roll, atk.damageType);
+  }
+
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
     this.processEffects();
@@ -1139,7 +1177,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.addTurnDamage(petAttack.damage);
       const focusText = petAttack.focusGain > 0 ? ' · +' + petAttack.focusGain + ' Focus' : '';
       this.charSvc.showToast(`👹 ${petAttack.name}: ${petAttack.damage} danyo de ${petAttack.school}` + focusText);
-      this.firebase.pushData('damageEvents', {
+      this.sendDamagePayload({
         player: this.charSvc.character().name || 'Jugador',
         ability: petAttack.name + ' (Pet)',
         rank: 1,
@@ -1158,7 +1196,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.addTurnDamage(companionAttack.damage);
       const focusText = companionAttack.focusGain > 0 ? ' · +' + companionAttack.focusGain + ' Focus' : '';
       this.charSvc.showToast(`🐾 ${companionAttack.name}: ${companionAttack.damage} danyo de ${companionAttack.school}` + focusText);
-      this.firebase.pushData('damageEvents', {
+      this.sendDamagePayload({
         player: this.charSvc.character().name || 'Jugador',
         ability: companionAttack.name + ' (Companion)',
         rank: 1,
@@ -1176,7 +1214,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (infernalAttack) {
       this.charSvc.addTurnDamage(infernalAttack.damage);
       this.charSvc.showToast(`🔥 ${infernalAttack.name}: ${infernalAttack.damage} danyo de ${infernalAttack.school}`);
-      this.firebase.pushData('damageEvents', {
+      this.sendDamagePayload({
         player: this.charSvc.character().name || 'Jugador',
         ability: infernalAttack.name + ' (Infernal)',
         rank: 1,
@@ -1209,6 +1247,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const regen = this.charSvc.manaRegen();
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('mana_regen_turn'));
     }
+    if (this.charSvc.simMode()) {
+      this.simDummyTurn();
+    }
   }
 
   private processTotems(turn: number) {
@@ -1222,7 +1263,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const remaining = (fire.turns || 0) - 1;
         if (remaining <= 0) {
           this.charSvc.addTurnDamage(fired);
-          this.firebase.pushData('damageEvents', {
+          this.sendDamagePayload({
             player: me,
             ability: 'Tótem Nova de Fuego (Explosión)',
             rank: 1,
@@ -1243,7 +1284,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else if (fire.type === 'searing') {
         const remaining = (fire.turns || 0) - 1;
         this.charSvc.addTurnDamage(fired);
-        this.firebase.pushData('damageEvents', {
+        this.sendDamagePayload({
           player: me,
           ability: 'Tótem Abrasador (Ataque)',
           rank: 1,
@@ -1266,7 +1307,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const remaining = (water.turns || 0) - 1;
       if (water.type === 'healing_stream') {
         const healAmt = water.value ?? water.min ?? 0;
-        this.firebase.pushData('damageEvents', {
+        this.sendDamagePayload({
           player: me,
           ability: 'Tótem de Corriente Sanadora (Grupal)',
           rank: 1,

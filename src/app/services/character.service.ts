@@ -2,18 +2,78 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet, Capstone } from '../models/game.models';
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
+import { SimCombatService } from './sim-combat.service';
 import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, STORAGE_KEY, EQUIPMENT_SLOTS } from '../data/game-data';
 
 @Injectable({ providedIn: 'root' })
 export class CharacterService {
   private classRegistry = inject(ClassRegistryService);
   private firebase = inject(FirebaseService);
+  private simCombat = inject(SimCombatService);
 
   readonly character = signal<Character>(createDefaultCharacter('shaman', this.classRegistry.getAll()));
   readonly toastMessage = signal('');
   readonly turnNumber = signal(1);
   readonly turnDamage = signal(0);
   readonly actionsUsed = signal(0);
+
+  readonly simMode = signal(false);
+  private simBackup: {
+    char: Character;
+    turn: number;
+    turnDamage: number;
+    actionsUsed: number;
+    stance: string;
+    weaponMode: string;
+  } | null = null;
+
+  private deepClone<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  enterSim() {
+    if (this.simMode()) return;
+    this.simMode.set(true);
+    this.simBackup = {
+      char: this.deepClone(this.character()),
+      turn: this.turnNumber(),
+      turnDamage: this.turnDamage(),
+      actionsUsed: this.actionsUsed(),
+      stance: this.warriorStance(),
+      weaponMode: this.warriorWeaponMode(),
+    };
+    this.character.set(this.deepClone(this.simBackup.char));
+    this.turnNumber.set(1);
+    this.turnDamage.set(0);
+    this.actionsUsed.set(0);
+    this.warriorStance.set(this.simBackup.stance);
+    this.warriorWeaponMode.set(this.simBackup.weaponMode);
+    this.simCombat.reset();
+  }
+
+  exitSim() {
+    if (!this.simMode() || !this.simBackup) return;
+    this.simMode.set(false);
+    this.character.set(this.simBackup.char);
+    this.turnNumber.set(this.simBackup.turn);
+    this.turnDamage.set(this.simBackup.turnDamage);
+    this.actionsUsed.set(this.simBackup.actionsUsed);
+    this.warriorStance.set(this.simBackup.stance);
+    this.warriorWeaponMode.set(this.simBackup.weaponMode);
+    this.simBackup = null;
+    this.simCombat.reset();
+  }
+
+  resetSim() {
+    if (!this.simMode() || !this.simBackup) return;
+    this.character.set(this.deepClone(this.simBackup.char));
+    this.turnNumber.set(1);
+    this.turnDamage.set(0);
+    this.actionsUsed.set(0);
+    this.warriorStance.set(this.simBackup.stance);
+    this.warriorWeaponMode.set(this.simBackup.weaponMode);
+    this.simCombat.reset();
+  }
 
   addTurnDamage(amount: number) {
     this.turnDamage.update(n => n + amount);
@@ -1048,6 +1108,7 @@ export class CharacterService {
   // ==================== LOCALSTORAGE ====================
 
   saveToLocalStorage() {
+    if (this.simMode()) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.character()));
     } catch (e) {
@@ -1095,6 +1156,22 @@ export class CharacterService {
   }
 
   sendDamageEvent(ability: any, damage: number, hitNum: number = 1, totalHits: number = 1) {
+    if (this.simMode()) {
+      let effects: any = null;
+      if (ability.isDot) {
+        effects = [{ type: 'dot', name: ability.name, value: ability.dotTick, duration: ability.dotDuration, debuffType: ability.debuffType || 'none', stackable: ability.stackable ?? false }];
+      } else if (ability.inflictsEffects) {
+        effects = ability.inflictsEffects.map((eff: any) => ({ ...eff }));
+      }
+      this.simCombat.applyPlayerHit({
+        player: this.character().name || 'Jugador',
+        ability: totalHits > 1 ? `${ability.name} (${hitNum}/${totalHits})` : ability.name,
+        damage,
+        damageType: this.hasPoison() && ability.damageType === 'physical' ? 'magical' : (ability.damageType || 'magical'),
+        effects,
+      });
+      return;
+    }
     this.registerPlayer();
     try {
       let effects: any = null;
@@ -1126,6 +1203,16 @@ export class CharacterService {
   }
 
    sendHealEvent(ability: any, healAmount: number) {
+    if (this.simMode()) {
+      if (healAmount > 0) {
+        this.character.update(c => ({
+          ...c,
+          currentHP: Math.min(this.maxHP(), (c.currentHP || 0) + healAmount),
+        }));
+      }
+      this.simCombat.pushLog(`+${healAmount} ${ability.name || 'Curación'}`);
+      return;
+    }
     this.registerPlayer();
     try {
       this.firebase.pushData('damageEvents', {
@@ -1150,6 +1237,10 @@ export class CharacterService {
   }
 
   sendBuffEvent(ability: any, buffValueOverride?: number) {
+    if (this.simMode()) {
+      this.simCombat.pushLog(`${ability.name || 'Buff'} aplicado`);
+      return;
+    }
     this.registerPlayer();
     try {
       this.firebase.pushData('damageEvents', {

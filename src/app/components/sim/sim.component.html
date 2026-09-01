@@ -1,0 +1,80 @@
+@if (enemyReady()) {
+  <div class="sim-bg"></div>
+
+  <div class="sim-header">
+    <div class="sim-title">Entrenamiento</div>
+    <div class="sim-subtitle">Modo SIM · Sandbox</div>
+    <button class="sim-reset-btn" (click)="reset()" title="Restablece la simulación (lee tu build actual)">
+      ↺ Reiniciar simulacion
+    </button>
+  </div>
+
+  <div class="sim-warning">
+    🛡️ Estás en modo <b>sandbox</b>: tus golpes van al dummy y este te devuelve el golpe.
+    Nada de lo que ocurra aquí afecta a tu ficha guardada (ya vuelves a ella al salir).
+  </div>
+
+  <div class="sim-layout">
+    @if (enemy(); as e) {
+      <div class="sim-enemy-card">
+        <div class="monster-portrait">
+          @if (e.level) {
+            <span class="monster-level-badge">Nv. {{ e.level }}</span>
+          }
+          @if (e.imageUrl) {
+            <img [src]="e.imageUrl" class="monster-portrait-img" (error)="onImageError($event)" />
+          } @else {
+            <span class="monster-portrait-icon">🎯</span>
+          }
+          <div class="monster-name-bar">
+            <span class="monster-name">{{ e.name }}</span>
+            <span class="monster-stats">
+              Armadura {{ e.armor }} · Resist mágica {{ e.magicResist }}
+            </span>
+          </div>
+        </div>
+
+        <div class="monster-info">
+          <div class="hp-bar-track">
+            <div
+              class="hp-bar-fill"
+              [class.hp-low]="hpPercent() <= 25"
+              [class.hp-mid]="hpPercent() > 25 && hpPercent() <= 60"
+              [style.width]="hpPercent() + '%'"
+            ></div>
+            <div class="hp-bar-text">{{ e.currentHP }} / {{ e.maxHP }} · {{ hpPercent() }}%</div>
+          </div>
+
+          @if (e.effects && e.effects.length > 0) {
+            <div class="sim-effects">
+              @for (eff of e.effects; track $index) {
+                <span class="effect-chip" [class]="eff.type">
+                  {{ eff.type === 'dot' ? '🩸' : '' }} {{ eff.name }}
+                  @if ((eff.value || 0) > 0) {
+                    <span> {{ eff.value }}</span>
+                  }
+                  <span class="effect-dur">{{ eff.duration }}t</span>
+                </span>
+              }
+            </div>
+          } @else {
+            <div class="sim-effects-empty">Sin efectos activos</div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="sim-log-card">
+      <div class="sim-log-title">Registro de combate</div>
+      <div class="sim-log-body">
+        @for (line of log(); track $index) {
+          <div class="sim-log-line">{{ line }}</div>
+        } @empty {
+          <div class="sim-log-empty">Pulsa Fin de Turno para empezar.</div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<app-player />
