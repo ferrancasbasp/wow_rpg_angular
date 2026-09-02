@@ -1252,6 +1252,19 @@ export class CharacterService {
     }
   }
 
+  private simRunMeta() {
+    const capstoneId = this.selectedCapstone();
+    const cap = this.capstones().find((x: any) => x.id === capstoneId);
+    return {
+      clase: this.character().classKey || '',
+      nivel: this.character().level || 0,
+      turnos: this.turnNumber(),
+      hpFinal: Math.max(0, this.hpActual()),
+      enemigo: this.simCombat.enemy()?.name || '',
+      capstone: cap ? cap.name : '',
+    };
+  }
+
   sendDamageEvent(ability: any, damage: number, hitNum: number = 1, totalHits: number = 1) {
     if (this.simMode()) {
       let effects: any = null;
@@ -1266,7 +1279,7 @@ export class CharacterService {
         damage,
         damageType: this.hasPoison() && ability.damageType === 'physical' ? 'magical' : (ability.damageType || 'magical'),
         effects,
-      });
+      }, this.simRunMeta());
       return;
     }
     this.registerPlayer();

@@ -1,6 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { SIM_SHEET_URL } from '../data/sim-config';
-import { CharacterService } from './character.service';
 
 const STORAGE_KEY = 'sim_runs_pending';
 
@@ -17,6 +16,15 @@ export interface SimRun {
   topHabilidades: string;
   enemigo: string;
   capstone: string;
+}
+
+export interface SimRunMeta {
+  clase?: string;
+  nivel?: number;
+  turnos?: number;
+  hpFinal?: number;
+  enemigo?: string;
+  capstone?: string;
 }
 
 export interface SimAttackDef {
@@ -59,7 +67,6 @@ export interface SimEnemy {
 export class SimCombatService {
   readonly enemy = signal<SimEnemy | null>(null);
   readonly log = signal<string[]>([]);
-  private charSvc = inject(CharacterService);
   readonly pendingCount = signal(0);
   readonly syncState = signal<'ok' | 'syncing' | 'off' | 'pending'>('off');
   readonly lastSyncError = signal('');
@@ -108,11 +115,11 @@ export class SimCombatService {
     this.healTotal += amount;
   }
 
-  recordRun(result: 'victoria' | 'derrota' | 'abandonado', meta?: { clase?: string; nivel?: number; turnos?: number; hpFinal?: number; enemigo?: string; capstone?: string }) {
+  recordRun(result: 'victoria' | 'derrota' | 'abandonado', meta?: SimRunMeta) {
     if (this.ended) return;
     this.ended = true;
     const enemy = this.enemy();
-    const merged = meta ?? this.defaultMeta();
+    const m = meta || {};
     const top = [...this.damageByAbility.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
@@ -120,36 +127,23 @@ export class SimCombatService {
       .join(' · ');
     const run: SimRun = {
       fecha: new Date().toISOString(),
-      clase: merged.clase || '',
-      nivel: merged.nivel ?? 0,
+      clase: m.clase || '',
+      nivel: m.nivel ?? 0,
       resultado: result,
-      turnos: merged.turnos ?? this.lastTurns,
+      turnos: m.turnos ?? this.lastTurns,
       danoTotal: this.damageTotal,
       danoPorTurno: this.lastTurns > 0 ? Math.round(this.damageTotal / this.lastTurns) : 0,
       curaTotal: Math.round(this.healTotal),
-      hpFinal: merged.hpFinal ?? 0,
+      hpFinal: m.hpFinal ?? 0,
       topHabilidades: top,
-      enemigo: merged.enemigo || enemy?.name || '',
-      capstone: merged.capstone || '',
+      enemigo: m.enemigo || enemy?.name || '',
+      capstone: m.capstone || '',
     };
     const pending = this.loadPending();
     pending.push(run);
     this.storePending(pending);
     this.pushLog(`📝 Run registrado (${this.pendingCount()} pendiente${this.pendingCount() === 1 ? '' : 's'})`);
     this.syncPending();
-  }
-
-  private defaultMeta() {
-    const capstoneId = this.charSvc.selectedCapstone();
-    const cap = this.charSvc.capstones().find((x: any) => x.id === capstoneId);
-    return {
-      clase: this.charSvc.character().classKey || '',
-      nivel: this.charSvc.character().level || 0,
-      turnos: this.charSvc.turnNumber(),
-      hpFinal: Math.max(0, this.charSvc.hpActual()),
-      enemigo: this.enemy()?.name || '',
-      capstone: cap ? cap.name : '',
-    };
   }
 
   async syncPending() {
@@ -330,7 +324,7 @@ export class SimCombatService {
     };
   }
 
-  applyPlayerHit(payload: { player?: string; ability: string; damage: number; damageType?: string; effects?: any[] | null }) {
+  applyPlayerHit(payload: { player?: string; ability: string; damage: number; damageType?: string; effects?: any[] | null }, meta?: SimRunMeta) {
     const enemy = this.enemy();
     if (!enemy) {
       this.pushLog('No hay enemigo en la simulación');
@@ -351,15 +345,15 @@ export class SimCombatService {
     this.pushLog(`${payload.ability}: -${reduced} (${enemy.name})${effText}`);
     if (enemy.currentHP <= 0 && !this.ended) {
       this.pushLog(`🏆 ${enemy.name} derrotado`);
-      this.recordRun('victoria');
+      this.recordRun('victoria', meta);
     }
   }
 
-  checkWin() {
+  checkWin(meta?: SimRunMeta) {
     const enemy = this.enemy();
     if (enemy && enemy.currentHP <= 0 && !this.ended) {
       this.pushLog(`🏆 ${enemy.name} derrotado`);
-      this.recordRun('victoria');
+      this.recordRun('victoria', meta);
     }
   }
 }

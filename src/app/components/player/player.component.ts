@@ -1141,7 +1141,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.simCombat.pushLog('El dummy ya está derrotado');
         return;
       }
-      this.simCombat.applyPlayerHit(payload);
+      this.simCombat.applyPlayerHit(payload, this.simMeta());
       return;
     }
     this.firebase.pushData('damageEvents', payload);
@@ -1151,6 +1151,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const id = this.charSvc.selectedCapstone();
     const cap = this.charSvc.capstones().find((c: any) => c.id === id);
     return cap ? cap.name : '';
+  }
+
+  private simMeta() {
+    return {
+      clase: this.charSvc.character().classKey || '',
+      nivel: this.charSvc.character().level || 0,
+      turnos: this.charSvc.turnNumber(),
+      hpFinal: Math.max(0, this.charSvc.hpActual()),
+      enemigo: this.simCombat.enemy()?.name || '',
+      capstone: this.capstoneName(),
+    };
   }
 
   private simDummyTurn() {
@@ -1274,16 +1285,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.simMode()) {
       this.simDummyTurn();
       this.simCombat.setTurns(this.charSvc.turnNumber());
-      this.simCombat.checkWin();
+      this.simCombat.checkWin(this.simMeta());
       if (this.charSvc.hpActual() <= 0) {
-        this.simCombat.recordRun('derrota', {
-          clase: this.charSvc.character().classKey || '',
-          nivel: this.charSvc.character().level || 0,
-          turnos: this.charSvc.turnNumber(),
-          hpFinal: 0,
-          enemigo: this.simCombat.enemy()?.name || '',
-          capstone: this.capstoneName(),
-        });
+        this.simCombat.recordRun('derrota', this.simMeta());
       }
     }
   }
