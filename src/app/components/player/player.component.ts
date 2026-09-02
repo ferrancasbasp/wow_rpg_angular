@@ -2709,11 +2709,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'inner_fire') {
         const iifRank = this.charSvc.talentRank('improved_inner_fire');
         const innerVal = Math.round((ability.currentBuffValue || 5) * (1 + iifRank * 0.20));
-        const innerAp = innerVal * 4;
+        const innerAp = Math.round(innerVal * 3);
         this.charSvc.character.update(c => ({
           ...c,
           activeEffects: [
-            ...(c.activeEffects || []).filter(e => e.name !== 'Inner Fire'),
+            ...(c.activeEffects || []).filter(e => e.name !== 'Inner Fire' && e.name !== 'Inner Fire (AP)'),
             { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Inner Fire', target: 'armor', value: innerVal, duration: 15, isPercent: false },
             { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Inner Fire (AP)', target: 'attackPower', value: innerAp, duration: 15, isPercent: false },
           ],
