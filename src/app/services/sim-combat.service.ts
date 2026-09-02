@@ -13,6 +13,7 @@ export interface SimRun {
   danoPorTurno: number;
   curaTotal: number;
   hpFinal: number;
+  hpBoss: number;
   topHabilidades: string;
   enemigo: string;
   capstone: string;
@@ -135,6 +136,7 @@ export class SimCombatService {
       danoPorTurno: this.lastTurns > 0 ? Math.round(this.damageTotal / this.lastTurns) : 0,
       curaTotal: Math.round(this.healTotal),
       hpFinal: m.hpFinal ?? 0,
+      hpBoss: result === 'derrota' ? (enemy?.currentHP ?? 0) : 0,
       topHabilidades: top,
       enemigo: m.enemigo || enemy?.name || '',
       capstone: m.capstone || '',
