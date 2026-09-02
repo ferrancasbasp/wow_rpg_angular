@@ -1182,6 +1182,9 @@ export class CharacterService {
           } else if (ab.manaGemRanks && ab.manaGemRanks.length) {
             const maxMR = ab.manaGemRanks.filter(br => c.level >= br.level).length;
             if (maxMR > (c.trainedRanks[ab.id] || 0)) c.trainedRanks[ab.id] = (c.trainedRanks[ab.id] || 0) + 1;
+          } else if (ab.damageRanges) {
+            const maxRank = this.maxAvailableRank(ab);
+            if (maxRank > (c.trainedRanks[ab.id] || 0)) c.trainedRanks[ab.id] = (c.trainedRanks[ab.id] || 0) + 1;
           } else if (c.level >= ab.requiredLevel && (c.trainedRanks[ab.id] || 0) === 0) {
             c.trainedRanks[ab.id] = 1;
           }
