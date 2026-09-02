@@ -44,7 +44,7 @@ export const MAGE: CharacterClass = {
 
   talents: [
     { id: 'elemental_mastery', name: 'Elemental Mastery', icon: '🔥', iconImg: 'img/talents/mage/elemental_mastery.jpg', description: 'Aumenta el daño de todos tus hechizos un 2% por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'combat_snacks', name: 'Combat Snacks', icon: '🍖', iconImg: 'img/talents/mage/arcane_efficiency.jpg', description: 'Al final de tu turno regeneras un 1,5% de tu maná y vida máximos por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'combat_snacks', name: 'Combat Snacks', icon: '🍖', iconImg: 'img/talents/mage/combat_snacks.jpg', description: 'Al final de tu turno regeneras un 1,5% de tu maná y vida máximos por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_frostbolt', name: 'Improved Frostbolt', icon: '❄️', iconImg: 'img/abilities/mage/frostbolt.jpg', description: 'Aumenta el daño de Frostbolt un 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'ignite', name: 'Ignite', icon: '🔥', iconImg: 'img/talents/mage/ignite.jpg', description: 'Un golpe critico con un hechizo de Fuego prende un DoT ardiente del 8% del daño por punto durante 3 turnos. Los Ignites se apilan como DoTs independientes.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_arcane_intellect', name: 'Improved Arcane Intellect', icon: '🧠', iconImg: 'img/abilities/mage/arcane_intellect.jpg', description: 'Aumenta el efecto de Arcane Intellect un 15% por punto.', maxRank: 2, tier: 2, requires: null },
