@@ -134,24 +134,6 @@ export class SimCombatService {
     this.syncPending();
   }
 
-  private async postRun(run: SimRun): Promise<boolean> {
-    const url = `${SIM_SHEET_URL}?run=${encodeURIComponent(JSON.stringify(run))}`;
-    try {
-      const res = await fetch(url, { method: 'GET' });
-      const txt = await res.text();
-      if (txt.startsWith('OK')) return true;
-      this.lastSyncError.set(txt.slice(0, 300));
-      return txt.startsWith('ERROR') ? false : true;
-    } catch {
-      const frame = document.createElement('iframe');
-      frame.style.display = 'none';
-      frame.src = url;
-      document.body.appendChild(frame);
-      setTimeout(() => frame.remove(), 10000);
-      return true;
-    }
-  }
-
   async syncPending() {
     if (!SIM_SHEET_URL) {
       this.syncState.set('off');
@@ -162,21 +144,22 @@ export class SimCombatService {
       this.syncState.set('ok');
       return;
     }
-    this.syncState.set('syncing');
     this.lastSyncError.set('');
-    let sent = 0;
-    const remaining: SimRun[] = [];
+    let opened = 0;
     for (const run of pending) {
-      if (await this.postRun(run)) {
-        sent++;
-      } else {
-        remaining.push(run);
-      }
+      const url = `${SIM_SHEET_URL}?run=${encodeURIComponent(JSON.stringify(run))}`;
+      const w = window.open(url, '_blank');
+      if (w) opened++;
     }
-    this.storePending(remaining);
-    this.syncState.set(remaining.length > 0 ? 'pending' : 'ok');
-    if (this.lastSyncError()) this.pushLog(`⚠ Hoja: ${this.lastSyncError()}`);
-    if (sent > 0) this.pushLog(`⬆ ${sent} run(s) subidos a la hoja`);
+    if (opened === pending.length) {
+      this.storePending([]);
+      this.syncState.set('ok');
+      this.pushLog(`⬆ ${opened} run(s) subidos a la hoja (pestañas)`);
+    } else {
+      this.syncState.set('pending');
+      this.lastSyncError.set('El navegador bloqueo las pestañas: pulsa Subir manualmente');
+      this.pushLog(`⚠ Hoja: ${this.lastSyncError()}`);
+    }
   }
 
   reset(def?: Partial<SimEnemy>) {
