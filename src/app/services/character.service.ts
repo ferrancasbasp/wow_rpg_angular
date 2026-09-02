@@ -279,7 +279,7 @@ export class CharacterService {
 
   readonly magicResistTotal = computed<number>(() => {
     let total = this.classConfig().magicResist || 0;
-    total += this.talentRank('magic_resistance');
+    total += this.talentRank('magic_resistance') * 5;
     total += this.talentRank('preservation') * 5;
     total += this.talentRank('anticipation') * 5;
     const effects = this.character().activeEffects;
@@ -424,14 +424,16 @@ export class CharacterService {
         if (ifb > 0 && ability.id === 'frostbolt') { value *= (1 + ifb * 0.10); talentNotes.push(`+${ifb * 10}% Imp Frostbolt`); }
       }
 
+      let cost = (ability.costPct || 0) * this.baseMana();
+
       if (ability.castType === 'cast') {
         const cm = this.talentRank('casting_master');
-        if (cm > 0) { value *= (1 + cm * 0.05); talentNotes.push(`+${cm * 5}% Casting Master`); }
+        if (cm > 0) {
+          value *= (1 + cm * 0.05);
+          cost *= (1 - cm * 0.05);
+          talentNotes.push(`+${cm * 5}% Casting Master`);
+        }
       }
-
-      let cost = (ability.costPct || 0) * this.baseMana();
-      const me = this.talentRank('mana_efficiency');
-      if (me > 0) cost *= (1 - me * 0.03);
       if (this.character().classKey === 'shaman' && (ability.id === 'healing_wave' || ability.id === 'chain_heal')) {
         const tidalF = this.talentRank('tidal_focus');
         if (tidalF > 0) cost *= (1 - tidalF * 0.15);
@@ -1020,12 +1022,13 @@ export class CharacterService {
       totemic_mastery: `Con Tótem Fuego: +${rank * 5}% SP Rayo/Cadena/Choques · Con Tótem Agua: +${rank * 5}% SP curas`,
       tidal_waves: `Tras Chain Heal: siguiente Healing Wave +${rank * 10}%`,
       elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
-      mana_efficiency: `Coste de maná: −${rank * 3}%`,
+      combat_snacks: `Final de turno: +${rank * 1.5}% vida y maná`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
-      improved_frost_armor: `Frost Armor: +${rank * 10}%`,
+      improved_frost_armor: `Frost Armor: +${rank * 15}%`,
+      improved_mana_gem: `Mana Gem: +${rank * 25}%`,
       improved_frostbolt: `Daño Frostbolt: +${rank * 10}%`,
-      casting_master: `Daño casteos: +${rank * 5}%`,
-      magic_resistance: `Armadura mágica: +${rank}, Crítico instant: +${rank}%`,
+      casting_master: `Daño casteos: +${rank * 5}% · coste −${rank * 5}%`,
+      magic_resistance: `Armadura mágica: +${rank * 5}, Crítico instant: +${rank}%`,
       improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''}`,
       frost_power: `Daño Escarcha: +${rank * 2}%`,
       spell_crit_talent: `Crítico hechizos: +${rank}%`,

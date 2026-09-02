@@ -1171,6 +1171,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const oldTurn = this.charSvc.turnNumber();
     this.processEffects();
 
+    if (this.charSvc.character().classKey === 'mage') {
+      const snacks = this.charSvc.talentRank('combat_snacks');
+      if (snacks > 0) {
+        const hpSnack = Math.round(this.charSvc.maxHP() * 0.015 * snacks);
+        const manaSnack = Math.round(this.charSvc.maxMana() * 0.015 * snacks);
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + hpSnack),
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaSnack),
+        }));
+        this.charSvc.showToast('🍖 Combat Snacks: +' + hpSnack + ' vida · +' + manaSnack + ' mana');
+      }
+    }
+
     if (this.charSvc.hasEffect('arcane_power')) {
       const restored = Math.round(this.charSvc.maxMana() * 0.20);
       this.charSvc.character.update(c => ({
@@ -2355,7 +2369,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.useAction(actionCost);
       const rank = Math.max(1, this.charSvc.trainedRank(ability.id));
       const entry = ability.manaGemRanks.find((r: any) => r.rank === rank) || ability.manaGemRanks[ability.manaGemRanks.length - 1];
-      const gained = entry.value || 0;
+      const gained = Math.round((entry.value || 0) * (1 + this.charSvc.talentRank('improved_mana_gem') * 0.25));
       this.charSvc.character.update(c => ({
         ...c,
         currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + gained),
@@ -2655,6 +2669,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (ability.id === 'power_word_fortitude') {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_fortitude') * 0.15));
+      }
+      if (ability.id === 'frost_armor') {
+        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_frost_armor') * 0.15));
       }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
