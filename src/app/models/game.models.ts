@@ -120,6 +120,7 @@ export interface Ability {
   requiresStealth?: boolean;
   requiresBehind?: boolean;
   capstoneGate?: string;
+  talentGate?: string;
   stunDuration?: number;
   infernalTurns?: number;
   infernalMin?: number;

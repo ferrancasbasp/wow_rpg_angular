@@ -401,7 +401,7 @@ export class CharacterService {
 
   readonly computedAbilities = computed<Ability[]>(() => {
     const cls = this.classConfig();
-    return cls.abilities.filter(a => a.type !== 'utility').map(ability => {
+    return cls.abilities.filter(a => a.type !== 'utility' && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(ability => {
       let value = (ability.baseDamage || 0) + this.spellPower() * (ability.spellPowerRatio || 0);
       const talentNotes: string[] = [];
 
@@ -510,8 +510,8 @@ export class CharacterService {
   readonly unlockedAbilities = computed<Ability[]>(() => {
     const weaponDmg = this.totalWeaponDamage();
     const apBonus = Math.round(this.attackPower() / 7);
-    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0).map(a => {
-      const rank = this.trainedRank(a.id);
+    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0 && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(a => {
+      const rank = a.talentGate ? this.maxAvailableRank(a) : this.trainedRank(a.id);
       const dmgRange = a.damageRanges?.find(dr => dr.rank === rank);
       const isPhysical = a.damageType === 'physical';
       const noWeaponScaling = a.dotScales || a.baseDamage === 0 || a.noWeaponScaling;
@@ -612,7 +612,7 @@ export class CharacterService {
           dotDuration += this.talentRank('dot_master');
         }
         dotTotal = minVal;
-        if (a.id === 'shadow_word_pain') {
+        if (a.id === 'shadow_word_pain' || a.id === 'devouring_plague') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_pain') * 0.10));
         }
         if (a.id === 'garrote') {
@@ -693,6 +693,7 @@ export class CharacterService {
   readonly trainableAbilities = computed<Ability[]>(() => {
     return this.classConfig().abilities.filter(a => {
       if (a.capstoneGate) return false;
+      if (a.talentGate) return false;
       if (a.passive) return false;
       if (a.type === 'utility') {
         if (a.buffRanks) {
@@ -942,6 +943,8 @@ export class CharacterService {
     if (!talent || !this.canAddTalent(talent)) return;
     this.character.update(c => {
       c.talents[id] = (c.talents[id] || 0) + 1;
+      const gated = this.classConfig().abilities.filter(a => a.talentGate === id && this.trainedRank(a.id) === 0);
+      for (const g of gated) c.trainedRanks[g.id] = 1;
       return { ...c };
     });
   }
@@ -969,7 +972,11 @@ export class CharacterService {
     }
     this.character.update(c => {
       c.talents[id]--;
-      if (c.talents[id] === 0) delete c.talents[id];
+      if (c.talents[id] === 0) {
+        delete c.talents[id];
+        const gated = this.classConfig().abilities.filter(a => a.talentGate === id);
+        for (const g of gated) delete c.trainedRanks[g.id];
+      }
       return { ...c };
     });
   }
