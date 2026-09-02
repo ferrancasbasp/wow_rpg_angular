@@ -704,6 +704,7 @@ export class TranslationService {
     priest_improved_mind_blast: { es: 'Requiere Shadow Ally al maximo. Mind Blast tiene CD -1 y su cast se vuelve instantaneo.', en: 'Requires max Shadow Ally. Mind Blast CD -1 and instant cast.' },
     priest_improved_inner_fire: { es: 'Aumenta la eficacia de Inner Fire un 20% por punto: mas Armor y Attack Power.', en: 'Increases Inner Fire efficiency by 20% per point: more Armor and Attack Power.' },
     priest_improved_renew: { es: 'Aumenta la duración de Renew 1 turno por punto.', en: 'Increases the duration of Renew by 1 turn per point.' },
+    priest_renegade_the_light: { es: 'Abrazas la oscuridad: tus hechizos Sagrados cuestan un 15% más de maná por punto, pero tus hechizos de Sombra infligen un 10% más de daño por punto.', en: 'Embrace the darkness: your Holy spells cost 15% more mana per point, but your Shadow spells deal 10% more damage per point.' },
     druid_improved_mark_of_the_wild: { es: 'Aumenta el efecto de Mark of the Wild un 15% por punto.', en: 'Increases the effect of Mark of the Wild by 15% per point.' },
     druid_improved_wrath: { es: 'Aumenta el daño de Wrath un 3% por punto.', en: 'Increases Wrath damage by 3% per point.' },
     druid_lunar_healing: { es: 'Tus hechizos de curación tienen un 10% de probabilidad por punto de otorgarte una Moon Shard y reducen su coste de maná un 5% por punto.', en: 'Your healing spells have a 10% chance per point to grant you a Moon Shard and reduce their mana cost by 5% per point.' },

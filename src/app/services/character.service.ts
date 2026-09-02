@@ -497,6 +497,10 @@ export class CharacterService {
         const lh = this.talentRank('lunar_healing');
         if (lh > 0) cost *= (1 - lh * 0.05);
       }
+      if (ability.category === 'holy' && this.character().classKey === 'priest') {
+        const rtl = this.talentRank('renegade_the_light');
+        if (rtl > 0) cost *= (1 + rtl * 0.15);
+      }
 
       return {
         ...ability,
@@ -578,7 +582,7 @@ export class CharacterService {
         maxVal = Math.round(maxVal * aggressionBonus);
       }
       if (a.category === 'shadow') {
-        const shadowBonus = 1 + this.talentRank('shadow_ally') * 0.03;
+        const shadowBonus = (1 + this.talentRank('shadow_ally') * 0.03) * (1 + this.talentRank('renegade_the_light') * 0.10);
         minVal = Math.round(minVal * shadowBonus);
         maxVal = Math.round(maxVal * shadowBonus);
       }
@@ -1122,6 +1126,7 @@ export class CharacterService {
       improved_mind_blast: `Mind Blast: CD -1 y cast instantaneo${rank > 0 ? ' (activo)' : ''}`,
       improved_inner_fire: `Inner Fire eficacia: +${rank * 20}%`,
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
+      renegade_the_light: `Holy: coste +${rank * 15}% · Shadow: daño +${rank * 10}%`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
       lunar_healing: `Curación: ${rank * 10}% prob. Moon Shard · −${rank * 5}% coste`,
