@@ -1807,7 +1807,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsCombo) {
       comboSpent = this.charSvc.character().comboPoints || 0;
       const equinoxRank = this.charSvc.talentRank('equinox');
-      const fragPower = 0.35 * (1 + equinoxRank * 0.10);
+      const fragPower = 0.30 * (1 + equinoxRank * 0.10);
       const aoeMult = ability.aoe ? 0.5 : 1.0;
       roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
@@ -1817,7 +1817,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsSunShards) {
       sunShardsSpent = this.charSvc.getSunShards() || 0;
       const equinoxRank = this.charSvc.talentRank('equinox');
-      const fragPower = 0.35 * (1 + equinoxRank * 0.10);
+      const fragPower = 0.30 * (1 + equinoxRank * 0.10);
       const aoeMult = ability.aoe ? 0.5 : 1.0;
       roll = Math.round(roll * (1 + (sunShardsSpent) * fragPower * aoeMult));
       this.charSvc.character.update(c => ({ ...c, sunShards: 0 }));
