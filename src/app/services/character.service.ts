@@ -359,7 +359,7 @@ export class CharacterService {
   readonly resourceMax = computed<number>(() => {
     const rc = this.resourceConfig();
     if (rc.type === 'rage') return rc.max || 100;
-    if (rc.type === 'energy') return (rc.max || 100) + this.talentRank('energetic') * 4;
+    if (rc.type === 'energy') return rc.max || 100;
     if (rc.type === 'focus') return rc.max || 100;
     return this.maxMana();
   });
@@ -539,14 +539,19 @@ export class CharacterService {
         maxVal = Math.round(maxVal * ihsBonus);
       }
       if (['backstab', 'garrote', 'ambush'].includes(a.id)) {
-        const oppBonus = 1 + this.talentRank('opportunity') * 0.04;
+        const oppBonus = 1 + this.talentRank('opportunity') * 0.05;
         minVal = Math.round(minVal * oppBonus);
         maxVal = Math.round(maxVal * oppBonus);
       }
       if (a.id === 'basic_attack' && this.character().classKey === 'rogue') {
-        const ebaBonus = 1 + this.talentRank('energetic_basic_attack') * 0.02;
+        const ebaBonus = 1 + this.talentRank('energetic_basic_attack') * 0.03;
         minVal = Math.round(minVal * ebaBonus);
         maxVal = Math.round(maxVal * ebaBonus);
+      }
+      if (['sinister_strike', 'eviscerate'].includes(a.id)) {
+        const aggressionBonus = 1 + this.talentRank('aggression') * 0.02;
+        minVal = Math.round(minVal * aggressionBonus);
+        maxVal = Math.round(maxVal * aggressionBonus);
       }
       if (a.category === 'shadow') {
         const shadowBonus = 1 + this.talentRank('shadow_ally') * 0.03;
@@ -1055,16 +1060,17 @@ export class CharacterService {
       improved_battle_shout: `Battle Shout: +${rank * 6}% AP, −${rank * 2} ira`,
       improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 4} armor Protection`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
-      vitality: `Regen energía: +${rank * 10}%`,
-      energetic_basic_attack: `Basic Attack: +${rank * 2}% daño, +${rank} energía (+${rank * 2} si crit)`,
+      vitality: `Regen energía: +${(rank * (50 / 3)).toFixed(1)}%`,
+      energetic_basic_attack: `Basic Attack: +${rank * 3}% daño, +${rank * 2} energía (+${rank * 4} si crit)`,
       ruthlessness: `Coste finishers: −${rank * 2} energía`,
+      lethality: `Daño crítico: +${rank * 3}%`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
-      improved_slice_and_dice: `Slice and Dice: +${rank * 3} turnos duración`,
-      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 4}%`,
+      improved_slice_and_dice: `Slice and Dice: +${rank * 1} turnos duración`,
+      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 5}%`,
       precision: `Crítico físico: +${rank}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
       initiative: `Combo extra: ${rank * 15}% prob`,
-      energetic: `Energía máxima: +${rank * 4}`,
+      aggression: `Daño Sinister Strike/Eviscerate: +${rank * 2}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 3}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
@@ -1521,7 +1527,7 @@ export class CharacterService {
     this.turnDamage.set(0);
     this.actionsUsed.set(0);
     if (this.resourceConfig().type === 'energy') {
-      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * 0.10));
+      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 3)));
       this.character.update(c => {
         c.currentEnergy = Math.min(this.resourceMax(), (c.currentEnergy || 0) + regen);
         return { ...c };

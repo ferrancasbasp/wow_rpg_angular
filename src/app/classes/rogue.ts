@@ -29,17 +29,18 @@ export const ROGUE: CharacterClass = {
   },
 
   talents: [
-    { id: 'vitality', name: 'Vitality', icon: '⚡', iconImg: 'img/talents/rogue/vitality.jpg', description: 'Aumenta la regeneración de energía al final del turno un 10% por punto.', maxRank: 5, tier: 1, requires: null },
-    { id: 'energetic_basic_attack', name: 'Energetic Basic Attack', icon: '👊', iconImg: 'img/abilities/rogue/basic_attack.jpg', description: 'Aumenta el daño de Basic Attack un 2% por punto. Basic Attack genera 1 energía (2 si es crítico).', maxRank: 5, tier: 1, requires: null },
+    { id: 'vitality', name: 'Vitality', icon: '⚡', iconImg: 'img/talents/rogue/vitality.jpg', description: 'Aumenta la regeneración de energía al final del turno un 16.67% por punto (máximo 50% a rango 3).', maxRank: 3, tier: 1, requires: null },
+    { id: 'energetic_basic_attack', name: 'Energetic Basic Attack', icon: '👊', iconImg: 'img/abilities/rogue/basic_attack.jpg', description: 'Aumenta el daño de Basic Attack un 3% por punto. Basic Attack genera 2 energía por punto (4 por punto si es crítico).', maxRank: 3, tier: 1, requires: null },
     { id: 'ruthlessness', name: 'Ruthlessness', icon: '🎯', iconImg: 'img/talents/rogue/ruthlessness.jpg', description: 'Reduce el coste de energía de tus finishers en 2 por punto.', maxRank: 5, tier: 1, requires: null },
+    { id: 'lethality', name: 'Lethality', icon: '☠️', iconImg: 'img/talents/rogue/lethality.jpg', description: 'Aumenta el daño de los golpes críticos un 3% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_backstab', name: 'Improved Backstab', icon: '🔪', iconImg: 'img/abilities/rogue/backstab.jpg', description: 'Reduce el coste de energía de Backstab en 3 por punto.', maxRank: 3, tier: 2, requires: null },
-    { id: 'improved_slice_and_dice', name: 'Improved Slice and Dice', icon: '⚔️', iconImg: 'img/abilities/rogue/slice_and_dice.jpg', description: 'Aumenta la duración de Slice and Dice en 3 turnos por punto.', maxRank: 2, tier: 2, requires: null },
-    { id: 'opportunity', name: 'Opportunity', icon: '🗡️', iconImg: 'img/talents/rogue/opportunity.jpg', description: 'Aumenta el daño de Backstab, Garrote y Ambush un 4% por punto.', maxRank: 5, tier: 2, requires: null },
+    { id: 'improved_slice_and_dice', name: 'Improved Slice and Dice', icon: '⚔️', iconImg: 'img/abilities/rogue/slice_and_dice.jpg', description: 'Aumenta la duración de Slice and Dice en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
+    { id: 'opportunity', name: 'Opportunity', icon: '🗡️', iconImg: 'img/talents/rogue/opportunity.jpg', description: 'Aumenta el daño de Backstab, Garrote y Ambush un 5% por punto.', maxRank: 2, tier: 3, requires: null },
     { id: 'precision', name: 'Precision', icon: '🎯', iconImg: 'img/talents/rogue/precision.jpg', description: 'Aumenta tu probabilidad de crítico físico un 1% por punto.', maxRank: 5, tier: 2, requires: null },
+    { id: 'improved_garrote', name: 'Improved Garrote', icon: '🩹', iconImg: 'img/abilities/rogue/garrote.jpg', description: 'Requiere Opportunity al máximo. Aumenta el daño del bleed de Garrote un 20% y añade efecto de silencio al enemigo.', maxRank: 1, tier: 3, requires: { id: 'opportunity', points: 2 } },
     { id: 'endurance', name: 'Endurance', icon: '💨', iconImg: 'img/talents/rogue/endurance.jpg', description: 'Reduce el cooldown de Evasión y Sprint en 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
-    { id: 'improved_garrote', name: 'Improved Garrote', icon: '🩹', iconImg: 'img/abilities/rogue/garrote.jpg', description: 'Aumenta el daño del bleed de Garrote un 20% y añade efecto de silencio al enemigo.', maxRank: 1, tier: 3, requires: null },
     { id: 'initiative', name: 'Initiative', icon: '⚡', iconImg: 'img/talents/rogue/initiative.jpg', description: 'Sinister Strike tiene un 15% de probabilidad por punto de generar un punto de combo extra.', maxRank: 3, tier: 3, requires: null },
-    { id: 'energetic', name: 'Energetic', icon: '🔋', iconImg: 'img/talents/rogue/energetic.jpg', description: 'Aumenta tu energía máxima en 4 por punto.', maxRank: 5, tier: 3, requires: null },
+    { id: 'aggression', name: 'Aggression', icon: '🔥', iconImg: 'img/talents/rogue/aggression.jpg', description: 'Aumenta el daño de Sinister Strike y Eviscerate un 2% por punto.', maxRank: 5, tier: 2, requires: null },
   ],
 
   capstones: [
