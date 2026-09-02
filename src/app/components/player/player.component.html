@@ -354,11 +354,11 @@
           <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
-                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0))"
+                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
               <div class="ability-icon castable"
                    [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || charSvc.getCooldown(ability.id) > 0"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || charSvc.getCooldown(ability.id) > 0 || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                    [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                    (click)="castSpell(ability)">
                  @if (ability.iconImg) {
