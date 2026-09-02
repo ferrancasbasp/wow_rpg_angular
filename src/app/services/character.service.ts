@@ -1195,7 +1195,7 @@ export class CharacterService {
   }
 
   equipTestGear() {
-    const bonus = { fuerza: 0, agilidad: 0, intelecto: 0, aguante: 3, espiritu: 2 };
+    const bonus = { fuerza: 1, agilidad: 1, intelecto: 1, aguante: 3, espiritu: 2 };
     const updates: any = {};
     for (const slot of ['head', 'chest', 'hands', 'legs', 'feet']) {
       (updates as any)[slot] = { name: 'Test Gear', bonus: { ...bonus }, defense: (slot === 'chest' || slot === 'hands') ? 3 : 0 };
