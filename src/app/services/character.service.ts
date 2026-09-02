@@ -209,7 +209,7 @@ export class CharacterService {
   readonly spellCrit = computed<string>(() => {
     const fromInt = this.finalStats().intelecto / 60;
     const fromLevel = this.character().level * 0.02;
-    const fromTalent = this.talentRank('spell_crit_talent') + this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
+    const fromTalent = this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
     const fromBuff = this.effectStatBonus('spellCrit');
     const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
@@ -419,12 +419,21 @@ export class CharacterService {
 
       if (ability.school === 'Escarcha') {
         const fp = this.talentRank('frost_power');
-        if (fp > 0) { value *= (1 + fp * 0.02); talentNotes.push(`+${fp * 2}% Escarcha`); }
+        if (fp > 0) { value *= (1 + fp * 0.10); talentNotes.push(`+${fp * 10}% Escarcha`); }
         const ifb = this.talentRank('improved_frostbolt');
         if (ifb > 0 && ability.id === 'frostbolt') { value *= (1 + ifb * 0.10); talentNotes.push(`+${ifb * 10}% Imp Frostbolt`); }
       }
 
       let cost = (ability.costPct || 0) * this.baseMana();
+
+      if (ability.id === 'arcane_missiles' || ability.id === 'arcane_explosion') {
+        const at = this.talentRank('arcane_torrent');
+        if (at > 0) {
+          value *= (1 + at * 0.10);
+          cost *= (1 + at * 0.10);
+          talentNotes.push(`+${at * 10}% Arcane Torrent`);
+        }
+      }
 
       if (ability.castType === 'cast') {
         const cm = this.talentRank('casting_master');
@@ -744,6 +753,7 @@ export class CharacterService {
   getEffectiveCooldown(ability: Ability): number {
     let cd = ability.cooldown;
     if (ability.id === 'fire_blast') cd -= this.talentRank('improved_fire_blast');
+    if (ability.id === 'cone_of_cold') cd -= this.talentRank('improved_cone_of_cold');
     if (ability.id === 'blink') cd -= this.talentRank('improved_blink');
     if (['evasion', 'sprint'].includes(ability.id)) cd -= this.talentRank('endurance');
     if (ability.id === 'kill_command') cd -= this.talentRank('improved_kill_command');
@@ -887,7 +897,7 @@ export class CharacterService {
   checkClearcasting(): boolean {
     const cc = this.talentRank('clearcasting');
     if (cc <= 0) return false;
-    return Math.random() * 100 < cc * 2;
+    return Math.random() * 100 < cc * 2.5;
   }
 
   // ==================== TALENT METHODS ====================
@@ -1029,10 +1039,11 @@ export class CharacterService {
       improved_frostbolt: `Daño Frostbolt: +${rank * 10}%`,
       casting_master: `Daño casteos: +${rank * 5}% · coste −${rank * 5}%`,
       magic_resistance: `Armadura mágica: +${rank * 5}, Crítico instant: +${rank}%`,
-      improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''}`,
-      frost_power: `Daño Escarcha: +${rank * 2}%`,
-      spell_crit_talent: `Crítico hechizos: +${rank}%`,
-      clearcasting: `Prob. hechizo gratuito: ${rank * 2}%`,
+      improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''} · Crítico: +${rank * 10}%`,
+      frost_power: `Daño Escarcha: +${rank * 10}%`,
+      improved_cone_of_cold: `Cone of Cold: CD −${rank} turno${rank > 1 ? 's' : ''} · daño +${rank * 15}%`,
+      arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 10}%`,
+      clearcasting: `Prob. hechizo gratuito: ${rank * 2.5}%`,
       improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
       improved_rend: `Rend: +${rank * 35}% daño`,
       improved_taunt: `Taunt sin GCD`,

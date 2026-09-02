@@ -1693,6 +1693,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 1;
     }
+    if (ability.id === 'fire_blast' && this.charSvc.character().classKey === 'mage') {
+      critChance += this.charSvc.talentRank('improved_fire_blast') * 10;
+    }
     if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'warrior') {
       critChance += this.charSvc.talentRank('unyielding_strikes') * 1;
     }
