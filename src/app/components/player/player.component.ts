@@ -2506,6 +2506,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (ability.spendsCombo && (this.charSvc.character().comboPoints || 0) === 0) {
+      this.charSvc.showToast(this.trSvc.t('no_combo_pts'));
+      return;
+    }
+
     this.charSvc.useAction(actionCost);
 
     if (isRage) {
