@@ -513,9 +513,11 @@ export class CharacterService {
         }
         const weaponMult = a.weaponMultiplier || 0;
         const meleeWeaponBonus = (isPhysical && weaponMult > 0) ? (weaponDmg * weaponMult + apBonus) : 0;
-        const bowBonus = a.id === 'arcanic_shot' ? (weaponDmg + apBonus) : 0;
-        minVal = dmgRange ? Math.round((dmgRange.min + meleeWeaponBonus + bowBonus + spBonus) * spellMult) : 0;
-        maxVal = dmgRange ? Math.round((dmgRange.max + meleeWeaponBonus + bowBonus + spBonus) * spellMult) : 0;
+        const isArcan = a.id === 'arcanic_shot';
+        const bowBonus = isArcan ? Math.round((weaponDmg + apBonus) * 0.5) : 0;
+        const flatMult = isArcan ? 0.5 : 1;
+        minVal = dmgRange ? Math.round((dmgRange.min * flatMult + meleeWeaponBonus + bowBonus + spBonus) * spellMult) : 0;
+        maxVal = dmgRange ? Math.round((dmgRange.max * flatMult + meleeWeaponBonus + bowBonus + spBonus) * spellMult) : 0;
       }
       if (a.id === 'cleave') {
         const cleaveBonus = 1 + this.talentRank('improved_cleave') * 0.20;
