@@ -91,6 +91,8 @@ export interface Ability {
   generatesShard?: number;
   spendsShards?: boolean;
   shardCost?: number;
+  generatesSunShard?: number;
+  spendsSunShards?: boolean;
   modulateNotes?: number;
   restoresManaPct?: number;
   isDot?: boolean;
@@ -230,6 +232,7 @@ export interface CharacterClass {
   magicResist: number;
   resource: ResourceConfig;
   comboConfig?: ComboConfig;
+  sunComboConfig?: ComboConfig;
   talents: Talent[];
   capstones?: Capstone[];
   abilities: Ability[];
@@ -306,6 +309,7 @@ export interface Character {
   comboPoints: number;
   musicalNotes?: number[];
   soulShards?: number;
+  sunShards?: number;
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;
   equipment: Equipment;

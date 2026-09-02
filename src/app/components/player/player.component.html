@@ -158,6 +158,14 @@
                 <div class="combo-point" [class.active]="n <= (charSvc.character().comboPoints || 0)"></div>
               }
             </div>
+            @if (charSvc.classConfig().sunComboConfig) {
+              <span class="combo-label sun-combo-label">{{ charSvc.classConfig().sunComboConfig!.icon + ' ' + charSvc.classConfig().sunComboConfig!.label }}</span>
+              <div class="combo-points">
+                @for (n of sunShardPointArray(); track n) {
+                  <div class="combo-point sun-combo-point" [class.active]="n <= (charSvc.getSunShards() || 0)"></div>
+                }
+              </div>
+            }
             @if (charSvc.character().classKey === 'rogue' && charSvc.isStealthed()) {
               <img src="img/abilities/rogue/ability_stealth.jpg" class="stealth-icon" [title]="trSvc.t('stealth')" (error)="onImgError($event)">
             }

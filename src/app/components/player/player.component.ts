@@ -227,6 +227,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.charSvc.soulShardMax() }, (_, i) => i + 1);
   }
 
+  sunShardPointArray(): number[] {
+    return Array.from({ length: this.charSvc.sunShardsMax() }, (_, i) => i + 1);
+  }
+
   actionSlotArray(): number[] {
     return Array.from({ length: this.charSvc.maxActions() }, (_, i) => i + 1);
   }
@@ -1632,6 +1636,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (ability.spendsSunShards && (this.charSvc.getSunShards() || 0) === 0) {
+      this.charSvc.showToast(this.trSvc.t('no_sun_shards'));
+      return;
+    }
+
     if (this.charSvc.isStealthed()) {
       this.charSvc.character.update(c => ({ ...c, activeEffects: (c.activeEffects || []).filter(e => e.target !== 'stealth') }));
       this.charSvc.showToast(this.trSvc.t('stealth_off'));
@@ -1742,7 +1751,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
         critMult = critMult * 1.25;
       }
-      if (this.charSvc.hasEffect('arcane_power')) {
+    if (this.charSvc.character().classKey === 'druid') {
+      const sorRank = this.charSvc.talentRank('stone_of_rhythms');
+      if (sorRank > 0 && (this.charSvc.getSunShards() || 0) > 0 && Math.random() * 100 < sorRank * 15) {
+        const manaGain = Math.round(this.charSvc.maxMana() * 0.05);
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGain),
+          sunShards: (c.sunShards || 0) - 1,
+        }));
+        this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (5%)');
+      }
+    }
+
+    if (this.charSvc.hasEffect('arcane_power')) {
         critMult = critMult * 1.25;
       }
       if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
@@ -1785,10 +1807,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.spendsCombo) {
       comboSpent = this.charSvc.character().comboPoints || 0;
       const equinoxRank = this.charSvc.talentRank('equinox');
-      const fragMult = 1 + equinoxRank * 0.15;
+      const fragPower = 0.35 * (1 + equinoxRank * 0.10);
       const aoeMult = ability.aoe ? 0.5 : 1.0;
-      roll = Math.round(roll * (1 + (comboSpent - 1) * fragMult * aoeMult));
+      roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
       this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
+    }
+
+    let sunShardsSpent = 0;
+    if (ability.spendsSunShards) {
+      sunShardsSpent = this.charSvc.getSunShards() || 0;
+      const equinoxRank = this.charSvc.talentRank('equinox');
+      const fragPower = 0.35 * (1 + equinoxRank * 0.10);
+      const aoeMult = ability.aoe ? 0.5 : 1.0;
+      roll = Math.round(roll * (1 + (sunShardsSpent) * fragPower * aoeMult));
+      this.charSvc.character.update(c => ({ ...c, sunShards: 0 }));
     }
 
     let conduitText = '';
@@ -1888,6 +1920,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       rageText = ' · +' + rageGen + ' ira';
     }
 
+    let fotwText = '';
     let comboText = '';
     if (ability.generatesCombo) {
       const comboChance = this.charSvc.getEffectiveComboChance(ability);
@@ -1907,6 +1940,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (ability.spendsCombo) {
       comboText = ' · ' + comboSpent + ' combo gastados';
+    }
+
+    let sunShardText = '';
+    if (ability.generatesSunShard) {
+      this.charSvc.addSunShard(ability.generatesSunShard);
+      const sunShardMax = this.charSvc.sunShardsMax();
+      const sunShards = this.charSvc.getSunShards();
+      sunShardText = ' · +' + ability.generatesSunShard + ' ☀️ (' + sunShards + '/' + sunShardMax + ')';
+    }
+    if (ability.spendsSunShards) {
+      const sunShardMax = this.charSvc.sunShardsMax();
+      sunShardText = ' · ' + sunShardsSpent + ' ☀️ consumidos';
     }
     if (ability.id === 'earth_shock' && this.charSvc.character().classKey === 'shaman') {
       const ssRank = this.charSvc.talentRank('static_shock');
@@ -1973,7 +2018,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ...c,
           comboPoints: Math.min(comboMax, (c.comboPoints || 0) + 1),
         }));
-        lunarText = ' · +1 Fase Lunar';
+        lunarText = ' · +1 Moon Shard';
       }
       let hotTotal = ability.hotTotal;
       if (evText) {
@@ -1981,9 +2026,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         hotTotal = Math.round(hotTotal * boost);
       }
       const hotTick = Math.round(hotTotal / ability.hotDuration);
+      let germText = '';
+      if (ability.id === 'rejuvenation' && this.charSvc.talentRank('germination') > 0) {
+        const germTotal = Math.round(hotTotal * 0.5);
+        const germTick = Math.max(1, Math.round(germTotal / ability.hotDuration));
+        this.charSvc.sendHealEvent({ ...ability, id: 'germination', name: 'Germination', isHot: true, hotDuration: ability.hotDuration }, germTotal);
+        germText = ' · 🌸 Germination ' + germTick + '/turno (' + germTotal + ' total, 50%)';
+      }
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + hotTick + '/turno · ' +
-        ability.hotDuration + 't (' + hotTotal + ' total)' + lunarText + evText + noteText +
+        ability.hotDuration + 't (' + hotTotal + ' total)' + germText + lunarText + evText + noteText +
         ' — 🩹 HoT sobre ti'
       );
       this.charSvc.sendHealEvent(ability, hotTotal);
@@ -2031,7 +2083,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
+          ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + comboText + sunShardText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
         );
         this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
@@ -2094,7 +2146,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ...c,
           comboPoints: Math.min(comboMax, (c.comboPoints || 0) + 1),
         }));
-        lunarText = ' · +1 Fase Lunar';
+        lunarText = ' · +1 Moon Shard';
       }
       const outMult = this.charSvc.healingOutgoingMult();
       const outNote = outMult < 1 ? ' (curas −' + Math.round((1 - outMult) * 100) + '%)' : '';
@@ -2183,6 +2235,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
             currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + energyGen),
           }));
           rageText = ' · +' + energyGen + ' energia';
+        }
+        const fotwRank = this.charSvc.talentRank('first_of_the_wild');
+        if (fotwRank > 0 && this.charSvc.character().classKey === 'druid') {
+          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.01);
+          const resourceMax = this.charSvc.resourceMax();
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentMana: Math.min(resourceMax, (c.currentMana || 0) + manaGain),
+          }));
+          fotwText = ' · +' + manaGain + ' maná (First of the Wild)';
         }
       }
       this.charSvc.turnDamage.update(d => d + roll);
@@ -2284,7 +2346,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + comboText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2621,23 +2683,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (ability.id === 'spirit_link_totem') {
       this.castSpiritLink(ability);
     } else if (ability.id === 'nature_guardian') {
-      const comboMax = this.charSvc.classConfig().comboConfig?.max || 4;
-      const baseStars = this.charSvc.classConfig().abilities.find(a => a.id === 'starsurge');
-      if (baseStars) {
-        const sRank = this.charSvc.maxAvailableRank(baseStars);
-        const sDr = (baseStars.damageRanges || []).filter(d => d.rank === sRank).pop() || (baseStars.damageRanges || [])[baseStars.damageRanges!.length - 1];
-        const sp = Math.round(this.charSvc.spellPower() * (baseStars.spellPowerRatio || 1));
-        const stars = {
-          ...baseStars,
-          currentRank: sRank,
-          currentMin: (sDr?.min || 0) + sp,
-          currentMax: (sDr?.max || 0) + sp,
-          scaledCost: Math.round((baseStars.costPct || 0) * this.charSvc.maxMana()),
-        };
-        this.charSvc.character.update(c => ({ ...c, comboPoints: comboMax }));
-        this.charSvc.showToast(ability.name + ': Fases Lunares al maximo · Starsurge potenciado');
-        this.castSpell(stars);
-      }
+      const moonMax = this.charSvc.getMaelstromMax();
+      const sunMax = this.charSvc.sunShardsMax();
+      this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(moonMax, (c.comboPoints || 0) + 2), sunShards: Math.min(sunMax, (c.sunShards || 0) + 2) }));
+      this.charSvc.showToast(this.trSvc.t('druid_nature_guardian_toast'));
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
     } else if (ability.id === 'life_tap') {

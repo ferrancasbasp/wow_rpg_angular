@@ -369,6 +369,27 @@
       clip-path: inset(0 0 0 0);
     }
 
+    .sun-combo-label {
+      margin-left: 10px;
+    }
+    .sun-combo-point {
+      border-color: rgba(255,200,120,0.3);
+    }
+    .combo-point.sun-combo-point.active {
+      border-color: #ffb347;
+      box-shadow: 0 0 10px rgba(255,179,71,0.6);
+    }
+    .combo-point.sun-combo-point.active::before {
+      background: radial-gradient(circle at 35% 35%, #ffe9a8 0%, #ffb347 60%, #e07b00 100%);
+    }
+    .sun-combo-point.active:nth-child(1)::before,
+    .sun-combo-point.active:nth-child(2)::before,
+    .sun-combo-point.active:nth-child(3)::before,
+    .sun-combo-point.active:nth-child(4)::before,
+    .sun-combo-point.active:nth-child(5)::before {
+      clip-path: inset(0 0 0 0);
+    }
+
     .combo-shaman .combo-point.active {
       border-color: #1e4d8c;
       box-shadow: 0 0 10px rgba(30,77,140,0.5);

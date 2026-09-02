@@ -167,6 +167,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     currentFocus: 100,
     comboPoints: 0,
     soulShards: 0,
+    sunShards: 0,
     trainedRanks: {},
     currentCooldowns: {},
     equipment,

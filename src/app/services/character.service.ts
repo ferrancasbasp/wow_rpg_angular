@@ -180,7 +180,7 @@ export class CharacterService {
     let sp = this.baseSpellPower();
     const balanceOfNature = this.talentRank('balance_of_nature');
     if (balanceOfNature > 0) {
-      sp += Math.round(this.finalStats().espiritu * 0.10 * balanceOfNature);
+      sp += Math.round(this.finalStats().espiritu * 0.06 * balanceOfNature);
     }
     if (this.selectedCapstone() === 'hope_and_grace') {
       sp += Math.round(this.finalStats().espiritu * 0.20);
@@ -211,9 +211,10 @@ export class CharacterService {
     const fromLevel = this.character().level * 0.02;
     const fromTalent = this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
     const fromBuff = this.effectStatBonus('spellCrit');
-    const fromMoonkin = this.hasEffect('moonkin') ? 5 : 0;
+    const fromMoonkin = this.hasEffect('moonkin') ? 6 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
-    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin + fromDemonic).toFixed(2);
+    const fromEclipse = (this.character().sunShards || 0) * 2.5;
+    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin + fromDemonic + fromEclipse).toFixed(2);
   });
 
   readonly meleeCrit = computed<string>(() => {
@@ -267,6 +268,9 @@ export class CharacterService {
         total += (slot as any).defense || 0;
       }
     }
+    if (this.selectedCapstone() === 'gift_of_the_wild') {
+      total += this.character().level;
+    }
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -282,6 +286,9 @@ export class CharacterService {
     total += this.talentRank('magic_resistance') * 5;
     total += this.talentRank('preservation') * 5;
     total += this.talentRank('anticipation') * 5;
+    if (this.selectedCapstone() === 'gift_of_the_wild') {
+      total += this.character().level;
+    }
     const effects = this.character().activeEffects;
     if (effects) {
       for (const eff of effects) {
@@ -424,6 +431,11 @@ export class CharacterService {
 
       let cost = (ability.costPct || 0) * this.baseMana();
 
+      if (this.character().classKey === 'druid') {
+        const eclipseMoon = (this.character().comboPoints || 0) * 2.5;
+        if (eclipseMoon > 0) cost *= (1 - eclipseMoon / 100);
+      }
+
       if (ability.id === 'arcane_missiles' || ability.id === 'arcane_explosion') {
         const at = this.talentRank('arcane_torrent');
         if (at > 0) {
@@ -463,13 +475,21 @@ export class CharacterService {
       }
       if (ability.id === 'moonfire') {
         const im = this.talentRank('improved_moonfire');
-        if (im > 0) { value *= (1 + im * 0.10); talentNotes.push(`+${im * 10}% Moonfire`); }
+        if (im > 0) { value *= (1 + im * 0.10); cost *= (1 - im * 0.05); talentNotes.push(`+${im * 10}% Moonfire`); }
+      }
+      if (ability.id === 'sunfire') {
+        const isf = this.talentRank('improved_sunfire');
+        if (isf > 0) { value *= (1 + isf * 0.10); talentNotes.push(`+${isf * 10}% Sunfire`); }
+      }
+      if (ability.id === 'hurricane') {
+        const ih = this.talentRank('improved_hurricane');
+        if (ih > 0) { value *= (1 + ih * 0.20); talentNotes.push(`+${ih * 20}% Hurricane`); }
       }
       if (ability.id === 'rejuvenation') {
         const ir = this.talentRank('improved_rejuvenation');
         if (ir > 0) { value *= (1 + ir * 0.07); talentNotes.push(`+${ir * 7}% Rejuv`); }
       }
-      if (['wrath', 'moonfire'].includes(ability.id)) {
+      if (['wrath', 'starfire'].includes(ability.id)) {
         const nr = this.talentRank('natures_remains');
         if (nr > 0) cost *= (1 - nr * 0.05);
       }
@@ -602,6 +622,13 @@ export class CharacterService {
             maxVal = Math.round(maxVal * eruptMult);
             dotTotal = Math.round(dotTotal * eruptMult);
             dotDuration += eruptRank;
+          }
+        }
+        if (a.id === 'sunfire') {
+          const isf = this.talentRank('improved_sunfire');
+          if (isf > 0) {
+            dotTotal = Math.round(dotTotal * (1 + isf * 0.10));
+            dotDuration += isf;
           }
         }
         dotTick = Math.round(dotTotal / baseDotDuration);
@@ -1086,13 +1113,17 @@ export class CharacterService {
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
-      lunar_healing: `Curación: ${rank * 10}% prob. Fase Lunar`,
-      improved_moonfire: `Moonfire: +${rank * 10}% daño`,
+      lunar_healing: `Curación: ${rank * 10}% prob. Moon Shard`,
+      improved_moonfire: `Moonfire: +${rank * 10}% daño, −${rank * 5}% coste`,
       improved_rejuvenation: `Rejuvenation: +${rank * 7}% curación`,
-      natures_remains: `Coste Wrath/Moonfire: −${rank * 5}%`,
-      balance_of_nature: `Poder de hechizo: +${rank * 10}% Espíritu`,
-      equinox: `Fases Lunares: +${rank * 15}% daño bonus`,
+      natures_remains: `Coste Wrath/Starfire: −${rank * 5}%`,
+      germination: `Rejuvenation: +50% potencia en 2º aliado`,
+      first_of_the_wild: `Basic Attack: +${rank}% maná total`,
+      balance_of_nature: `Poder de hechizo: +${rank * 6}% Espíritu`,
+      equinox: `Starsurge/Sunfall: +${rank * 10}% efecto por shard`,
+      improved_hurricane: `Hurricane: +${rank * 20}% daño`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
+      stone_of_rhythms: `Fin turno: ${rank * 15}% gasta 1 Sun Shard → +5% maná`,
       improved_staccato: `Staccato: +${rank * 5}% danyo, −${rank * 10}% mana`,
       quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
@@ -1229,6 +1260,7 @@ export class CharacterService {
           parsed.baseStats = { ...cls.baseStats };
           if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
           if (parsed.soulShards === undefined) parsed.soulShards = 0;
+          if (parsed.sunShards === undefined) parsed.sunShards = 0;
           if (!parsed.musicalNotes) parsed.musicalNotes = [];
           this.character.set(parsed);
         }
@@ -1904,6 +1936,21 @@ export class CharacterService {
 
   getShards(): number {
     return this.character().soulShards || 0;
+  }
+
+  getSunShards(): number {
+    return this.character().sunShards || 0;
+  }
+
+  sunShardsMax(): number {
+    return this.classConfig().sunComboConfig?.max || 4;
+  }
+
+  addSunShard(amount: number) {
+    this.character.update(c => ({
+      ...c,
+      sunShards: Math.min(this.sunShardsMax(), (c.sunShards || 0) + amount),
+    }));
   }
 
   getMaelstromMax(): number {
