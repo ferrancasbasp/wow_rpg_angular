@@ -2351,6 +2351,27 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (ability.manaGemRanks) {
+      this.charSvc.useAction(actionCost);
+      const rank = Math.max(1, this.charSvc.trainedRank(ability.id));
+      const entry = ability.manaGemRanks.find((r: any) => r.rank === rank) || ability.manaGemRanks[ability.manaGemRanks.length - 1];
+      const gained = entry.value || 0;
+      this.charSvc.character.update(c => ({
+        ...c,
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + gained),
+      }));
+      const effCd = this.charSvc.getEffectiveCooldown(ability);
+      if (effCd > 0) {
+        this.charSvc.character.update(c => {
+          if (!c.currentCooldowns) c.currentCooldowns = {};
+          c.currentCooldowns[ability.id] = effCd;
+          return { ...c };
+        });
+      }
+      this.charSvc.showToast(ability.name + ' R' + rank + ': +' + gained + ' mana');
+      return;
+    }
+
     if (ability.id === 'stealth') {
       if (this.charSvc.isStealthed()) {
         this.charSvc.character.update(c => ({ ...c, activeEffects: (c.activeEffects || []).filter(e => e.target !== 'stealth') }));

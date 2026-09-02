@@ -1113,6 +1113,9 @@ export class CharacterService {
           if (ab.buffRanks) {
             const maxBR = ab.buffRanks.filter(br => c.level >= br.level).length;
             if (maxBR > (c.trainedRanks[ab.id] || 0)) c.trainedRanks[ab.id] = maxBR > (c.trainedRanks[ab.id] || 0) ? (c.trainedRanks[ab.id] || 0) + 1 : (c.trainedRanks[ab.id] || 0);
+          } else if (ab.manaGemRanks && ab.manaGemRanks.length) {
+            const maxMR = ab.manaGemRanks.filter(br => c.level >= br.level).length;
+            if (maxMR > (c.trainedRanks[ab.id] || 0)) c.trainedRanks[ab.id] = (c.trainedRanks[ab.id] || 0) + 1;
           } else if (c.level >= ab.requiredLevel && (c.trainedRanks[ab.id] || 0) === 0) {
             c.trainedRanks[ab.id] = 1;
           }

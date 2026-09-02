@@ -17,6 +17,12 @@ export interface DamageRange {
   max: number;
 }
 
+export interface ManaGemRank {
+  rank: number;
+  level: number;
+  value: number;
+}
+
 export interface BuffRank {
   rank: number;
   level: number;
@@ -96,6 +102,7 @@ export interface Ability {
   inflictsEffects?: InflictedEffect[];
   buff?: Buff | null;
   buffRanks?: BuffRank[];
+  manaGemRanks?: ManaGemRank[];
   usesWeaponDamage?: boolean;
   noWeaponScaling?: boolean;
   bonusPerRank?: number[];
