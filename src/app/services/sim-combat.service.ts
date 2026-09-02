@@ -135,27 +135,40 @@ export class SimCombatService {
   }
 
   private async postRun(run: SimRun): Promise<boolean> {
+    const timeout = (ms: number, signal: AbortController) => {
+      const t = setTimeout(() => signal.abort(), ms);
+      return () => clearTimeout(t);
+    };
     try {
+      const ac = new AbortController();
+      const clear = timeout(15000, ac);
       const res = await fetch(SIM_SHEET_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(run),
+        signal: ac.signal,
       });
+      clear();
       const txt = await res.text();
       if (txt === 'OK') return true;
-      this.lastSyncError.set(txt.slice(0, 300));
+      this.lastSyncError.set(`respuesta: ${txt.slice(0, 300)}`);
       return false;
-    } catch {
+    } catch (err) {
+      const ac2 = new AbortController();
+      const clear2 = timeout(15000, ac2);
       try {
         await fetch(SIM_SHEET_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(run),
+          signal: ac2.signal,
         });
+        clear2();
         return true;
-      } catch (err) {
-        this.lastSyncError.set(String(err).slice(0, 300));
+      } catch (err2) {
+        clear2();
+        this.lastSyncError.set(String(err2).slice(0, 300));
         return false;
       }
     }
