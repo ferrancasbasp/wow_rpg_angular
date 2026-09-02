@@ -1058,7 +1058,7 @@ export class CharacterService {
       tidal_focus: `Coste Healing Wave/Chain Heal: −${rank * 15}%`,
       erupting_lava: `Flame Shock: +${rank * 15}% daño, +${rank} turno${rank > 1 ? 's' : ''} duración`,
       maelstrom_efficiency: `Maelstrom: coste extra −${rank * 15}%`,
-      maelstrom_mastery: `Máximo 5 cargas · Maelstrom sin GCD`,
+      maelstrom_mastery: `Máximo 4 cargas · Maelstrom sin GCD`,
       elemental_fury: `Daño crítico Rayo/Cadena/Choques: +${rank * 5}%`,
       totemic_mastery: `Con Tótem Fuego: +${rank * 5}% SP Rayo/Cadena/Choques · Con Tótem Agua: +${rank * 5}% SP curas`,
       tidal_waves: `Tras Chain Heal: siguiente Healing Wave +${rank * 10}%`,
@@ -1954,7 +1954,7 @@ export class CharacterService {
   }
 
   getMaelstromMax(): number {
-    const base = this.classConfig().comboConfig?.max || 4;
+    const base = this.classConfig().comboConfig?.max || 3;
     if (this.character().classKey !== 'shaman') return base;
     return base + this.talentRank('maelstrom_mastery');
   }
