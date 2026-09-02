@@ -13,7 +13,7 @@
             <input [value]="charSvc.character().name" (input)="onNameInput($event)" class="char-name-input" [placeholder]="trSvc.t('nombre')">
             <div class="char-meta">
               <span class="level-display">Nv {{ charSvc.character().level }}</span>
-              <button class="debug-lvl-btn" (click)="instantLevel25()" title="Debug: subir a nivel 25">⚡25</button>
+              <button class="debug-lvl-btn" (click)="instantLevel25()" title="Debug: subir a nivel 25 + equipar Test Gear">⚡25</button>
               <select [value]="charSvc.character().classKey" (change)="onClassChange($event)" class="class-select">
                 @for (entry of classEntries; track entry[0]) {
                   <option [value]="entry[0]" [selected]="entry[0] === charSvc.character().classKey">{{ entry[1].name }}</option>
