@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { SIM_SHEET_URL } from '../data/sim-config';
+import { CharacterService } from './character.service';
 
 const STORAGE_KEY = 'sim_runs_pending';
 
@@ -58,6 +59,7 @@ export interface SimEnemy {
 export class SimCombatService {
   readonly enemy = signal<SimEnemy | null>(null);
   readonly log = signal<string[]>([]);
+  private charSvc = inject(CharacterService);
   readonly pendingCount = signal(0);
   readonly syncState = signal<'ok' | 'syncing' | 'off' | 'pending'>('off');
   readonly lastSyncError = signal('');
@@ -110,6 +112,7 @@ export class SimCombatService {
     if (this.ended) return;
     this.ended = true;
     const enemy = this.enemy();
+    const merged = meta ?? this.defaultMeta();
     const top = [...this.damageByAbility.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
@@ -117,23 +120,36 @@ export class SimCombatService {
       .join(' · ');
     const run: SimRun = {
       fecha: new Date().toISOString(),
-      clase: meta?.clase || '',
-      nivel: meta?.nivel ?? 0,
+      clase: merged.clase || '',
+      nivel: merged.nivel ?? 0,
       resultado: result,
-      turnos: meta?.turnos ?? this.lastTurns,
+      turnos: merged.turnos ?? this.lastTurns,
       danoTotal: this.damageTotal,
       danoPorTurno: this.lastTurns > 0 ? Math.round(this.damageTotal / this.lastTurns) : 0,
       curaTotal: Math.round(this.healTotal),
-      hpFinal: meta?.hpFinal ?? 0,
+      hpFinal: merged.hpFinal ?? 0,
       topHabilidades: top,
-      enemigo: meta?.enemigo || enemy?.name || '',
-      capstone: meta?.capstone || '',
+      enemigo: merged.enemigo || enemy?.name || '',
+      capstone: merged.capstone || '',
     };
     const pending = this.loadPending();
     pending.push(run);
     this.storePending(pending);
     this.pushLog(`📝 Run registrado (${this.pendingCount()} pendiente${this.pendingCount() === 1 ? '' : 's'})`);
     this.syncPending();
+  }
+
+  private defaultMeta() {
+    const capstoneId = this.charSvc.selectedCapstone();
+    const cap = this.charSvc.capstones().find((x: any) => x.id === capstoneId);
+    return {
+      clase: this.charSvc.character().classKey || '',
+      nivel: this.charSvc.character().level || 0,
+      turnos: this.charSvc.turnNumber(),
+      hpFinal: Math.max(0, this.charSvc.hpActual()),
+      enemigo: this.enemy()?.name || '',
+      capstone: cap ? cap.name : '',
+    };
   }
 
   async syncPending() {
