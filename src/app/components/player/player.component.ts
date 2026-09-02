@@ -1810,7 +1810,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const fragPower = 0.30 * (1 + equinoxRank * 0.10);
       const aoeMult = ability.aoe ? 0.5 : 1.0;
       roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
-      this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
+      this.charSvc.character.update(c => {
+        const ftRank = this.charSvc.talentRank('finishing_touch');
+        if (ftRank > 0) {
+          const comboMax = this.charSvc.getMaelstromMax();
+          return {
+            ...c,
+            comboPoints: Math.min(comboMax, 1),
+            currentEnergy: Math.min(this.charSvc.resourceMax(), (c.currentEnergy || 0) + 15),
+          };
+        }
+        return { ...c, comboPoints: 0 };
+      });
     }
 
     let sunShardsSpent = 0;

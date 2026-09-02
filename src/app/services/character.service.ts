@@ -668,7 +668,7 @@ export class CharacterService {
       if (isRage) cost = buffRank ? (buffRank.costRage ?? a.costRage ?? 0) : (a.costRage || 0);
       else if (isEnergy) {
         cost = buffRank ? (buffRank.costEnergy ?? a.costEnergy ?? 0) : (a.costEnergy || 0);
-        if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 2);
+        if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 5);
       }
       else if (isFocus) cost = buffRank ? (buffRank.costFocus ?? a.costFocus ?? 0) : (a.costFocus || 0);
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
@@ -811,7 +811,7 @@ export class CharacterService {
 
   getEffectiveEnergyCost(ability: any): number {
     let cost = ability.costEnergy || 0;
-    if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 2;
+    if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 5;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
     return Math.max(0, cost);
   }
@@ -1104,7 +1104,8 @@ export class CharacterService {
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
       vitality: `Regen energía: +${(rank * (50 / 3)).toFixed(1)}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 3}% daño, +${rank * 2} energía (+${rank * 4} si crit)`,
-      ruthlessness: `Coste finishers: −${rank * 2} energía`,
+      ruthlessness: `Coste finishers: −${rank * 5} energía`,
+      finishing_touch: `Tras finisher: +1 combo · +15 energía`,
       lethality: `Daño crítico: +${rank * 3}%`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
       improved_slice_and_dice: `Slice and Dice: +${rank * 1} turnos duración`,
