@@ -1251,6 +1251,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (this.charSvc.simMode()) {
       this.simDummyTurn();
+      this.simCombat.setTurns(this.charSvc.turnNumber());
+      this.simCombat.checkWin();
+      if (this.charSvc.hpActual() <= 0) {
+        this.simCombat.recordRun('derrota', {
+          clase: this.charSvc.character().classKey || '',
+          nivel: this.charSvc.character().level || 0,
+          turnos: this.charSvc.turnNumber(),
+          hpFinal: 0,
+          enemigo: this.simCombat.enemy()?.name || '',
+        });
+      }
     }
   }
 

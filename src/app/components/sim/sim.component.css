@@ -51,6 +51,21 @@
   background: rgba(138,115,68,0.25); box-shadow: 0 0 12px var(--gold-glow);
 }
 
+.sim-sync-btn {
+  margin-top: 8px;
+  font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+  color: var(--text-dim); background: var(--bg-panel);
+  border: 1px solid var(--gold-dark); border-radius: 6px;
+  padding: 6px 14px; cursor: pointer;
+  transition: var(--transition, all 0.2s ease);
+}
+.sim-sync-btn:hover {
+  background: rgba(138,115,68,0.25); box-shadow: 0 0 12px var(--gold-glow);
+  color: var(--gold-light);
+}
+.sim-sync-btn.sim-sync-ok { color: var(--success); border-color: rgba(95,168,95,0.5); }
+.sim-sync-btn.sim-sync-pending { color: var(--danger); border-color: rgba(196,81,81,0.5); }
+
 .sim-warning {
   max-width: 760px; margin: 12px auto 0; padding: 8px 14px;
   background: rgba(196,81,81,0.08); border: 1px solid rgba(196,81,81,0.35);

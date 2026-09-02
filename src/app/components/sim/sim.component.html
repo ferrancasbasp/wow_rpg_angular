@@ -7,6 +7,20 @@
     <button class="sim-reset-btn" (click)="reset()" title="Restablece la simulación (lee tu build actual)">
       ↺ Reiniciar simulacion
     </button>
+    <button
+      class="sim-sync-btn"
+      [class.sim-sync-ok]="simCombat.syncState() === 'ok'"
+      [class.sim-sync-pending]="simCombat.syncState() === 'pending'"
+      (click)="retrySync()"
+      title="Sube los resultados de las runs a la hoja compartida"
+    >
+      @switch (simCombat.syncState()) {
+        @case ('ok') { ⬆ Sincronizado }
+        @case ('syncing') { ⏳ Subiendo… }
+        @case ('off') { 📝 {{ simCombat.pendingCount() }} local }
+        @default { 📡 {{ simCombat.pendingCount() }} sin subir · Reintentar }
+      }
+    </button>
   </div>
 
   <div class="sim-warning">

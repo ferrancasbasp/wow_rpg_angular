@@ -1292,6 +1292,7 @@ export class CharacterService {
       if (isHot) {
         this.simCombat.pushLog(`${ability.name}: HoT +${appliedHotTick}/turno · ${hotDuration}t`);
       } else if (healAmount > 0) {
+        this.simCombat.recordHeal(healAmount);
         this.character.update(c => ({
           ...c,
           currentHP: Math.min(this.maxHP(), (c.currentHP || 0) + healAmount),

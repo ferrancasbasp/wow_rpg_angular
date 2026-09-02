@@ -28,7 +28,25 @@ export class SimComponent implements OnInit, OnDestroy {
   }
 
   reset() {
+    if (this.simCombat.isFightInProgress()) {
+      this.simCombat.recordRun('abandonado', this.runMeta());
+    }
     this.charSvc.resetSim();
+  }
+
+  runMeta() {
+    const c = this.charSvc.character();
+    return {
+      clase: c.classKey || '',
+      nivel: c.level || 0,
+      turnos: this.charSvc.turnNumber(),
+      hpFinal: Math.max(0, this.charSvc.hpActual()),
+      enemigo: this.simCombat.enemy()?.name || '',
+    };
+  }
+
+  retrySync() {
+    this.simCombat.syncPending();
   }
 
   enemy() {
