@@ -427,9 +427,9 @@ export class CharacterService {
       if (ability.id === 'arcane_missiles' || ability.id === 'arcane_explosion') {
         const at = this.talentRank('arcane_torrent');
         if (at > 0) {
-          value *= (1 + at * 0.10);
-          cost *= (1 + at * 0.10);
-          talentNotes.push(`+${at * 10}% Arcane Torrent`);
+          value *= (1 + at * 0.15);
+          cost *= (1 + at * 0.15);
+          talentNotes.push(`+${at * 15}% Arcane Torrent`);
         }
       }
 
@@ -1036,11 +1036,11 @@ export class CharacterService {
       improved_mana_gem: `Mana Gem: +${rank * 25}%`,
       improved_frostbolt: `Daño Frostbolt: +${rank * 10}%`,
       casting_master: `Daño casteos: +${rank * 5}% · coste −${rank * 5}%`,
-      magic_resistance: `Armadura mágica: +${rank * 5}, Crítico instant: +${rank}%`,
+      magic_resistance: `Armadura mágica: +${rank * 5}, Crítico instant: +${rank * 2}%`,
       improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''} · Crítico: +${rank * 10}%`,
       frost_power: `Escarcha crítico: +${rank * 2}% y +${rank * 10}% daño crítico`,
       improved_cone_of_cold: `Cone of Cold: CD −${rank} turno${rank > 1 ? 's' : ''} · daño +${rank * 15}%`,
-      arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 10}%`,
+      arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 15}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2.5}%`,
       improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
       improved_rend: `Rend: +${rank * 35}% daño`,

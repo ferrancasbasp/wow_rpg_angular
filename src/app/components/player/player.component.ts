@@ -1691,7 +1691,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let roll = min + Math.floor(Math.random() * (max - min + 1));
     let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
-      critChance += this.charSvc.talentRank('magic_resistance') * 1;
+      critChance += this.charSvc.talentRank('magic_resistance') * 2;
     }
     if (ability.id === 'fire_blast' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('improved_fire_blast') * 10;
