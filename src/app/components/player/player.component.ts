@@ -1145,6 +1145,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.firebase.pushData('damageEvents', payload);
   }
 
+  private capstoneName(): string {
+    const id = this.charSvc.selectedCapstone();
+    const cap = this.charSvc.capstones().find((c: any) => c.id === id);
+    return cap ? cap.name : '';
+  }
+
   private simDummyTurn() {
     const enemy = this.simCombat.enemy();
     if (!enemy) return;
@@ -1260,6 +1266,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           turnos: this.charSvc.turnNumber(),
           hpFinal: 0,
           enemigo: this.simCombat.enemy()?.name || '',
+          capstone: this.capstoneName(),
         });
       }
     }

@@ -15,6 +15,7 @@ export interface SimRun {
   hpFinal: number;
   topHabilidades: string;
   enemigo: string;
+  capstone: string;
 }
 
 export interface SimAttackDef {
@@ -105,7 +106,7 @@ export class SimCombatService {
     this.healTotal += amount;
   }
 
-  recordRun(result: 'victoria' | 'derrota' | 'abandonado', meta?: { clase?: string; nivel?: number; turnos?: number; hpFinal?: number; enemigo?: string }) {
+  recordRun(result: 'victoria' | 'derrota' | 'abandonado', meta?: { clase?: string; nivel?: number; turnos?: number; hpFinal?: number; enemigo?: string; capstone?: string }) {
     if (this.ended) return;
     this.ended = true;
     const enemy = this.enemy();
@@ -126,6 +127,7 @@ export class SimCombatService {
       hpFinal: meta?.hpFinal ?? 0,
       topHabilidades: top,
       enemigo: meta?.enemigo || enemy?.name || '',
+      capstone: meta?.capstone || '',
     };
     const pending = this.loadPending();
     pending.push(run);

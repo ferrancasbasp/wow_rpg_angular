@@ -38,12 +38,15 @@ export class SimComponent implements OnInit, OnDestroy {
 
   runMeta() {
     const c = this.charSvc.character();
+    const capstoneId = this.charSvc.selectedCapstone();
+    const cap = this.charSvc.capstones().find((x: any) => x.id === capstoneId);
     return {
       clase: c.classKey || '',
       nivel: c.level || 0,
       turnos: this.charSvc.turnNumber(),
       hpFinal: Math.max(0, this.charSvc.hpActual()),
       enemigo: this.simCombat.enemy()?.name || '',
+      capstone: cap ? cap.name : '',
     };
   }
 
