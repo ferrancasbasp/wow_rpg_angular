@@ -1274,7 +1274,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (resType === 'rage') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
     } else if (resType === 'energy') {
-      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * 0.10));
+      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 3)));
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
     } else if (resType === 'focus') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · Focus: sin regen');
@@ -1757,6 +1757,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult = critMult * 1.25;
       }
+      if (this.charSvc.character().classKey === 'rogue') {
+        critMult += this.charSvc.talentRank('lethality') * 0.03;
+      }
       roll = Math.round(roll * critMult);
     }
     let efCritText = '';
@@ -2173,7 +2176,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
         const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
         if (ebaRank > 0 && isEnergy) {
-          const energyGen = isCrit ? ebaRank * 2 : ebaRank;
+          const energyGen = isCrit ? ebaRank * 4 : ebaRank * 2;
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,
@@ -2691,7 +2694,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
       if (ability.id === 'slice_and_dice') {
-        sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice') * 3;
+        sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice') * 1;
       }
       const poisonBuffTargets = ['poisonDamage', 'leechPoison', 'woundPoison'];
       const poisonClearTargets = poisonBuffTargets.includes(ability.currentBuffStat)

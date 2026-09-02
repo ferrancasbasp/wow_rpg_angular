@@ -353,7 +353,6 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.08,
       castType: 'instant',
       cooldown: 0,
-      noGcd: true,
       description: 'Armadura demoniaca que aumenta tu poder de hechizo y armadura.',
       buff: { stat: 'spellPower', duration: 30, applySelf: true, isPercent: true },
       buffRanks: [{ rank: 1, level: 10, value: 10, costPct: 0.08 }, { rank: 2, level: 18, value: 15, costPct: 0.08 }, { rank: 3, level: 24, value: 20, costPct: 0.08 }],
