@@ -1115,6 +1115,58 @@ export class CharacterService {
 
   // ==================== LOCALSTORAGE ====================
 
+  upgradeStarterWeaponsToLevel25() {
+    const char = this.character();
+    const eq = char.equipment;
+    if (!eq) return;
+    const E = { fuerza: 0, agilidad: 0, intelecto: 0, aguante: 0, espiritu: 0 };
+    const table: { slot: string; from: string[]; item: any }[] = [];
+    switch (char.classKey) {
+      case 'warrior':
+        table.push({ slot: 'mainHand', from: ['Espada de Acero'], item: { name: 'Espada de Guerra', bonus: { ...E, fuerza: 5 }, weaponDamage: 26 } });
+        table.push({ slot: 'twoHand', from: ['Gran Hacha'], item: { name: 'Gran Hacha de Asalto', bonus: { ...E, fuerza: 6 }, weaponDamage: 40 } });
+        break;
+      case 'rogue':
+        table.push({ slot: 'mainHand', from: ['Daga Afilada'], item: { name: 'Daga Mortal', bonus: { ...E, agilidad: 5 }, weaponDamage: 28 } });
+        table.push({ slot: 'offHand', from: ['Daga de Novato'], item: { name: 'Daga de Guerra', bonus: { ...E, agilidad: 4 }, weaponDamage: 22 } });
+        break;
+      case 'mage':
+        table.push({ slot: 'mainHand', from: ['Bastón Arcano'], item: { name: 'Bastón Arcano Superior', bonus: { ...E, intelecto: 6 }, weaponDamage: 26 } });
+        break;
+      case 'shaman':
+        table.push({ slot: 'mainHand', from: ['Maza de Chamán'], item: { name: 'Maza de Guerra Chamánica', bonus: { ...E, fuerza: 3, espiritu: 3 }, weaponDamage: 32 } });
+        break;
+      case 'druid':
+        table.push({ slot: 'mainHand', from: ['Bastón Druida'], item: { name: 'Bastón del Guardabosques', bonus: { ...E, espiritu: 5, aguante: 2 }, weaponDamage: 32 } });
+        break;
+      case 'warlock':
+        table.push({ slot: 'mainHand', from: ['Bastón Oscuro'], item: { name: 'Bastón Umbrío Empoderado', bonus: { ...E, intelecto: 5, espiritu: 2 }, weaponDamage: 26 } });
+        break;
+      case 'hunter':
+        table.push({ slot: 'ranged', from: ['Arco de Cazador'], item: { name: 'Arco de Guerra', bonus: { ...E, agilidad: 6 }, weaponDamage: 35 } });
+        break;
+      case 'bard':
+        table.push({ slot: 'mainHand', from: ['Arma básica'], item: { name: 'Guantelete Melódico', bonus: { ...E, agilidad: 4, intelecto: 2 }, weaponDamage: 24 } });
+        break;
+      case 'priest':
+        table.push({ slot: 'mainHand', from: ['Arma básica'], item: { name: 'Bastón Sagrado', bonus: { ...E, espiritu: 5 }, weaponDamage: 24 } });
+        break;
+    }
+    if (table.length === 0) return;
+    const updates: any = {};
+    let matched = false;
+    for (const entry of table) {
+      const current = (eq as any)[entry.slot];
+      if (current && entry.from.includes(current.name || '')) {
+        (updates as any)[entry.slot] = { ...entry.item, bonus: { ...entry.item.bonus } };
+        matched = true;
+      }
+    }
+    if (matched) {
+      this.character.update(c => ({ ...c, equipment: { ...c.equipment, ...updates } }));
+    }
+  }
+
   saveToLocalStorage() {
     if (this.simMode()) return;
     try {

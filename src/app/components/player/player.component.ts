@@ -878,6 +878,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   instantLevel25() {
     this.charSvc.character.update(c => ({ ...c, level: 25, currentXP: 0 }));
+    this.charSvc.upgradeStarterWeaponsToLevel25();
   }
 
   changeStance(stance: string) {
