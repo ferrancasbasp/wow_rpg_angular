@@ -634,6 +634,7 @@ export class CharacterService {
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
 
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
+      if (a.id === 'arcan_intellect' || a.id === 'arcane_intellect') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_arcane_intellect') * 0.15));
       if (a.id === 'power_word_fortitude') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_fortitude') * 0.15));
       if (a.id === 'power_word_shield') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_shield') * 0.10));
       if (a.id === 'mark_of_the_wild') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_mark_of_the_wild') * 0.15));

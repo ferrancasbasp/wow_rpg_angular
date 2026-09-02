@@ -2739,10 +2739,29 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const buffText = '+' + buffValue + ' ' + ability.currentBuffStat +
         ' (' + ability.currentBuffDuration + ' turnos)';
-      this.charSvc.sendBuffEvent(ability, buffValue);
-      this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
-      );
+      if (this.charSvc.simMode()) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.name !== ability.name),
+            {
+              id: Date.now() + Math.random(),
+              type: 'buff' as const,
+              name: ability.name,
+              target: ability.currentBuffStat,
+              value: buffValue,
+              duration: ability.currentBuffDuration,
+              isPercent: ability.buff.isPercent || false,
+            },
+          ],
+        }));
+        this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ' + buffText + ' (self · SIM)');
+      } else {
+        this.charSvc.sendBuffEvent(ability, buffValue);
+        this.charSvc.showToast(
+          ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
+        );
+      }
       if (ability.id === 'crescendo') {
         const icRank = this.charSvc.talentRank('improved_crescendo');
         if (icRank > 0) {
