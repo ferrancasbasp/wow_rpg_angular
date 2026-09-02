@@ -1118,7 +1118,7 @@ export class CharacterService {
       improved_rejuvenation: `Rejuvenation: +${rank * 7}% curación`,
       natures_remains: `Coste Wrath/Starfire: −${rank * 5}%`,
       germination: `Rejuvenation: +50% potencia en 2º aliado`,
-      first_of_the_wild: `Basic Attack: +${rank}% maná total`,
+      first_of_the_wild: `Basic Attack: +${rank * 2}% vida máx · +${rank * 2}% maná máx`,
       balance_of_nature: `Poder de hechizo: +${rank * 6}% Espíritu`,
       equinox: `Starsurge/Sunfall: +${rank * 10}% efecto por shard`,
       improved_hurricane: `Hurricane: +${rank * 20}% daño`,

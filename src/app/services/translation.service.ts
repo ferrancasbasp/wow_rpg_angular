@@ -708,7 +708,7 @@ export class TranslationService {
     druid_improved_moonfire: { es: 'Aumenta el daño de Moonfire un 10% por punto y reduce su coste de maná un 5% por punto.', en: 'Increases Moonfire damage by 10% per point and reduces its mana cost by 5% per point.' },
     druid_improved_rejuvenation: { es: 'Aumenta la curación de Rejuvenation un 7% por punto. Al máximo desbloquea Germination.', en: 'Increases Rejuvenation healing by 7% per point. At max rank unlocks Germination.' },
     druid_germination: { es: 'Rejuvenation también florece en un segundo aliado: lanza un Germination con el 50% de potencia que puede stackearse con el Rejuvenation.', en: 'Rejuvenation also blooms on a second ally: casts a Germination at 50% power that can stack with Rejuvenation.' },
-    druid_first_of_the_wild: { es: 'Tus Basic Attacks restauran un 1% de tu maná total por punto.', en: 'Your Basic Attacks restore 1% of your total mana per point.' },
+    druid_first_of_the_wild: { es: 'Tus Basic Attacks te curan un 2% de tu vida máxima y te restauran un 2% de tu maná máximo por punto.', en: 'Your Basic Attacks heal you for 2% of your maximum health and restore 2% of your maximum mana per point.' },
     druid_natures_remains: { es: 'Reduce el coste de maná de Wrath y Starfire un 5% por punto.', en: 'Reduces the mana cost of Wrath and Starfire by 5% per point.' },
     druid_balance_of_nature: { es: 'Aumenta tu poder de hechizo en un 6% de tu Espíritu por punto.', en: 'Increases your spell power by 6% of your Spirit per point.' },
     druid_equinox: { es: 'Aumenta el efecto que aportan tus Moon y Sun Shards a Starsurge y Sunfall un 10% por punto.', en: 'Increases the effect your Moon and Sun Shards contribute to Starsurge and Sunfall by 10% per point.' },

@@ -2238,13 +2238,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         const fotwRank = this.charSvc.talentRank('first_of_the_wild');
         if (fotwRank > 0 && this.charSvc.character().classKey === 'druid') {
-          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.01);
+          const hpGain = Math.round(this.charSvc.maxHP() * fotwRank * 0.02);
+          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.02);
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + hpGain),
             currentMana: Math.min(resourceMax, (c.currentMana || 0) + manaGain),
           }));
-          fotwText = ' · +' + manaGain + ' maná (First of the Wild)';
+          fotwText = ' · +' + hpGain + ' vida · +' + manaGain + ' maná (First of the Wild)';
         }
       }
       this.charSvc.turnDamage.update(d => d + roll);
