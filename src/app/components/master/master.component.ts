@@ -90,6 +90,7 @@ export class MasterComponent implements OnInit {
   private firebase = inject(FirebaseService);
   trSvc = inject(TranslationService);
 
+  private lastLocalMonsterSync = 0;
   pendingEvents = signal<DamageEvent[]>([]);
   monsters = signal<Monster[]>([]);
   selectedEventId = signal<string | null>(null);
@@ -237,16 +238,29 @@ export class MasterComponent implements OnInit {
       }
     });
 
+    // Sincroniza monstruos desde Firebase (los añade el master de cualquier PC)
+    this.firebase.onValue('monsters', (data) => {
+      if (data && data.list) {
+        const remoteTs = data.timestamp || 0;
+        const localTs = this.lastLocalMonsterSync || 0;
+        if (remoteTs > 0 && remoteTs >= localTs) {
+          this.monsters.set(data.list);
+          this.monsterIdCounter.set(data.counter || this.monsterIdCounter());
+        }
+      }
+    });
+
     this.syncMonsters();
   }
 
   syncMonsters() {
+    this.lastLocalMonsterSync = Date.now();
     const db = this.firebase.getDb();
     const cleanMonsters = JSON.parse(JSON.stringify(this.monsters()));
     set(ref(db, 'monsters'), {
       list: cleanMonsters,
       counter: this.monsterIdCounter(),
-      timestamp: Date.now(),
+      timestamp: this.lastLocalMonsterSync,
     });
   }
 
