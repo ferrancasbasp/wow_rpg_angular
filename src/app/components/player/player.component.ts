@@ -2701,8 +2701,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const healthLost = manaGained;
       this.charSvc.character.update(c => ({
         ...c,
-        currentHP: Math.max(1, (c.currentHP || 0) - healthLost),
-        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGained),
+        currentHP: Math.max(1, hpActual - healthLost),
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGained),
       }));
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
