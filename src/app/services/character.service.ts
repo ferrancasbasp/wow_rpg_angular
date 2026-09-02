@@ -1460,7 +1460,7 @@ export class CharacterService {
 
   noteContribution(): number {
     const notes = this.getNotes();
-    return notes.reduce((sum, n) => sum + Math.pow(1.25, n - 1), 0);
+    return notes.reduce((sum, n) => sum + 0.7 * Math.pow(1.25, n - 1), 0);
   }
 
   restoreManaPct(pct: number) {
