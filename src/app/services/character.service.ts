@@ -422,7 +422,7 @@ export class CharacterService {
         if (ifb > 0 && ability.id === 'frostbolt') { value *= (1 + ifb * 0.10); talentNotes.push(`+${ifb * 10}% Imp Frostbolt`); }
       }
 
-      let cost = (ability.costPct || 0) * this.baseMana();
+      let cost = (ability.costPct || 0) * this.baseMana() * (this.character().classKey === 'mage' ? 1.01 : 1);
 
       if (ability.id === 'arcane_missiles' || ability.id === 'arcane_explosion') {
         const at = this.talentRank('arcane_torrent');
@@ -631,7 +631,7 @@ export class CharacterService {
         if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 2);
       }
       else if (isFocus) cost = buffRank ? (buffRank.costFocus ?? a.costFocus ?? 0) : (a.costFocus || 0);
-      else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
+      else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana() * (this.character().classKey === 'mage' ? 1.01 : 1));
 
       let buffValue = buffRank ? buffRank.value : (a.buff ? (a.buff as any).value : 0);
       if (a.id === 'arcan_intellect' || a.id === 'arcane_intellect') buffValue = Math.round(buffValue * (1 + this.talentRank('improved_arcane_intellect') * 0.15));
