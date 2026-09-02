@@ -141,10 +141,13 @@ export class SimCombatService {
       const txt = await res.text();
       if (txt.startsWith('OK')) return true;
       this.lastSyncError.set(txt.slice(0, 300));
-      return false;
+      return txt.startsWith('ERROR') ? false : true;
     } catch {
-      const img = new Image();
-      img.src = url;
+      const frame = document.createElement('iframe');
+      frame.style.display = 'none';
+      frame.src = url;
+      document.body.appendChild(frame);
+      setTimeout(() => frame.remove(), 10000);
       return true;
     }
   }
