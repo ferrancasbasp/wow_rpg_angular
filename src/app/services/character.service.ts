@@ -493,6 +493,10 @@ export class CharacterService {
         const nr = this.talentRank('natures_remains');
         if (nr > 0) cost *= (1 - nr * 0.05);
       }
+      if (ability.type === 'heal' && this.character().classKey === 'druid') {
+        const lh = this.talentRank('lunar_healing');
+        if (lh > 0) cost *= (1 - lh * 0.05);
+      }
 
       return {
         ...ability,
@@ -1113,7 +1117,7 @@ export class CharacterService {
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
-      lunar_healing: `Curación: ${rank * 10}% prob. Moon Shard`,
+      lunar_healing: `Curación: ${rank * 10}% prob. Moon Shard · −${rank * 5}% coste`,
       improved_moonfire: `Moonfire: +${rank * 10}% daño, −${rank * 5}% coste`,
       improved_rejuvenation: `Rejuvenation: +${rank * 7}% curación`,
       natures_remains: `Coste Wrath/Starfire: −${rank * 5}%`,

@@ -704,7 +704,7 @@ export class TranslationService {
     priest_improved_renew: { es: 'Aumenta la duración de Renew 1 turno por punto.', en: 'Increases the duration of Renew by 1 turn per point.' },
     druid_improved_mark_of_the_wild: { es: 'Aumenta el efecto de Mark of the Wild un 15% por punto.', en: 'Increases the effect of Mark of the Wild by 15% per point.' },
     druid_improved_wrath: { es: 'Aumenta el daño de Wrath un 3% por punto.', en: 'Increases Wrath damage by 3% per point.' },
-    druid_lunar_healing: { es: 'Tus hechizos de curación tienen un 10% de probabilidad por punto de otorgarte una Moon Shard.', en: 'Your healing spells have a 10% chance per point to grant you a Moon Shard.' },
+    druid_lunar_healing: { es: 'Tus hechizos de curación tienen un 10% de probabilidad por punto de otorgarte una Moon Shard y reducen su coste de maná un 5% por punto.', en: 'Your healing spells have a 10% chance per point to grant you a Moon Shard and reduce their mana cost by 5% per point.' },
     druid_improved_moonfire: { es: 'Aumenta el daño de Moonfire un 10% por punto y reduce su coste de maná un 5% por punto.', en: 'Increases Moonfire damage by 10% per point and reduces its mana cost by 5% per point.' },
     druid_improved_rejuvenation: { es: 'Aumenta la curación de Rejuvenation un 7% por punto. Al máximo desbloquea Germination.', en: 'Increases Rejuvenation healing by 7% per point. At max rank unlocks Germination.' },
     druid_germination: { es: 'Rejuvenation también florece en un segundo aliado: lanza un Germination con el 50% de potencia que puede stackearse con el Rejuvenation.', en: 'Rejuvenation also blooms on a second ally: casts a Germination at 50% power that can stack with Rejuvenation.' },
