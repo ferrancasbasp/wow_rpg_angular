@@ -229,7 +229,15 @@ export class CharacterService {
 
   readonly attackPower = computed<number>(() => {
     let total = this.classConfig().formulas.attackPower(this.finalStats());
-    total += this.effectStatBonus('attackPower');
+    total += this.effectStatBonus('attackPower', true);
+    const effects = this.character().activeEffects;
+    if (effects) {
+      for (const eff of effects) {
+        if (eff.type === 'buff' && eff.target === 'attackPower' && eff.isPercent) {
+          total = Math.round(total * (1 + eff.value / 100));
+        }
+      }
+    }
     if (this.hasEffect('bloodlust')) total = Math.round(total * 1.20);
     return total;
   });
@@ -534,8 +542,8 @@ export class CharacterService {
         maxVal = Math.round(maxVal * shadowBonus);
       }
       if (this.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(a.id)) {
-        let hunterMult = 1 + this.talentRank('ranged_weapon_spec') * 0.05;
-        if (this.selectedCapstone() === 'lone_wolf') hunterMult *= 1.20;
+        let hunterMult = 1 + this.talentRank('ranged_weapon_spec') * 0.02;
+        if (this.selectedCapstone() === 'lone_wolf') hunterMult *= 1.10;
         minVal = Math.round(minVal * hunterMult);
         maxVal = Math.round(maxVal * hunterMult);
       }
@@ -792,11 +800,12 @@ export class CharacterService {
     return total;
   }
 
-  effectStatBonus(key: string): number {
+  effectStatBonus(key: string, excludePercent = false): number {
     const effects = this.character().activeEffects;
     if (!effects) return 0;
     let total = 0;
     for (const eff of effects) {
+      if (excludePercent && eff.isPercent) continue;
       if (eff.type === 'buff' && (eff.target === key || eff.target === 'all_stats')) total += eff.value;
       if (eff.type === 'debuff' && (eff.target === key || eff.target === 'all_stats')) total -= eff.value;
     }
@@ -1470,6 +1479,13 @@ export class CharacterService {
         }
         c.activeEffects = c.activeEffects.map(e => ({ ...e, duration: e.duration - 1 })).filter(e => e.duration > 0);
       }
+      if (c.activePet) {
+        const petMaxMana = this.petMaxMana();
+        if (petMaxMana > 0) {
+          const petRegen = Math.round(petMaxMana * 0.05);
+          c.activePet = { ...c.activePet, currentMana: Math.min(petMaxMana, c.activePet.currentMana + petRegen) };
+        }
+      }
       return { ...c };
     });
     this.turnNumber.update(n => n + 1);
@@ -1933,7 +1949,7 @@ export class CharacterService {
     if (this.character().classKey !== 'warlock') return 0;
     const sc = this.talentRank('soul_conduit');
     if (sc <= 0) return 0;
-    const chance = sc * 0.20;
+    const chance = sc * 20;
     let recovered = 0;
     for (let i = 0; i < shardCount; i++) {
       if (Math.random() * 100 < chance) {
