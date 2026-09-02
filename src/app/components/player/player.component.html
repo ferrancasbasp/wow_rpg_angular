@@ -145,6 +145,9 @@
               }
             </div>
             <span class="note-contribution">×{{ charSvc.noteContribution().toFixed(1) }}</span>
+            @if (charSvc.selectedCapstone() === 'perfect_symphony' && charSvc.getNotes().length >= (charSvc.classConfig().comboConfig?.max || 7)) {
+              <span class="perfect-symphony-badge">¡Perfect Symphony!</span>
+            }
           </div>
         } @else if (charSvc.resourceConfig().type === 'energy' || charSvc.classConfig().comboConfig) {
           <div class="combo-inline" [class.combo-rogue]="charSvc.character().classKey === 'rogue'" [class.combo-druid]="charSvc.character().classKey === 'druid'" [class.combo-shaman]="charSvc.character().classKey === 'shaman'" [class.combo-full]="charSvc.isMaelstormReady()">

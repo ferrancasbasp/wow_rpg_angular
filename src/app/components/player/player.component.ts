@@ -399,6 +399,52 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + appliedHeal + healReduced + (lowHp ? ' (x2 low HP)' : ''));
   }
 
+  castFinale(ability: any) {
+    const notes = this.charSvc.getNotes();
+    const level = this.charSvc.character().level;
+    const ranks = ability.damageRanges || [];
+    const rnk = [...ranks].reverse().find((d: any) => d.level <= level) || ranks[0];
+    const minD = rnk ? rnk.min : 18;
+    const maxD = rnk ? rnk.max : 26;
+    let roll = minD + Math.floor(Math.random() * (maxD - minD + 1));
+    roll += Math.round(this.charSvc.spellPower() * (ability.spellPowerRatio || 0.8));
+    const contribution = this.charSvc.noteContribution();
+    roll = Math.round(roll * contribution);
+    let isCrit = false;
+    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
+      isCrit = true;
+      roll = Math.round(roll * 1.5);
+    }
+    this.charSvc.clearNotes();
+    let noteText = ' · ' + notes.length + ' notas consumidas (×' + contribution.toFixed(1) + ')';
+    const maestroRank = this.charSvc.talentRank('maestro');
+    if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+      this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
+      noteText += ' · ¡Maestro! +1 accion';
+    }
+    const improRank = this.charSvc.talentRank('impro');
+    if (improRank > 0 && Math.random() * 100 < improRank * 20) {
+      const maxNote = this.charSvc.classConfig().comboConfig?.max || 7;
+      const newNote = 1 + Math.floor(Math.random() * maxNote);
+      this.charSvc.addNote(newNote);
+      noteText += ' · ¡Impro! Nueva nota: ' + NOTE_NAMES[newNote - 1];
+    }
+    this.charSvc.addTurnDamage(roll);
+    this.sendDamagePayload({
+      player: this.charSvc.character().name || 'Jugador',
+      ability: ability.name,
+      rank: rnk ? rnk.rank : 1,
+      damage: roll,
+      damageType: 'magical',
+      aoe: false,
+      effects: null,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast(ability.name + ': ' + roll + ' danyo de magia' + (isCrit ? ' ¡CRITICO!' : '') + noteText + ' — ' + this.trSvc.t('sent_to_master'));
+  }
+
   castKillCommand(ability: any) {
     const pet = this.charSvc.activePetData();
     if (!pet) {
@@ -1855,7 +1901,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
       const contribution = this.charSvc.noteContribution();
-      roll = Math.round(roll * contribution);
+      const noteAoeMult = (ability.aoe && ability.type === 'damage') ? 0.5 : 1.0;
+      roll = Math.round(roll * contribution * noteAoeMult);
     }
 
     const dmgBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'damage_boost');
@@ -1867,6 +1914,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ...c,
         activeEffects: (c.activeEffects || []).filter(e => e !== dmgBoost),
       }));
+    }
+
+    const inspiration = this.charSvc.character().activeEffects?.find(e => e.target === 'inspiration');
+    if (inspiration && ability.type === 'damage') {
+      roll += inspiration.value;
+      boostText += ' · +' + inspiration.value + ' daño (Da Capo)';
     }
 
     if (isRage && ability.generatesRage) {
@@ -2008,7 +2061,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     let noteContributionValue = 0;
     if (ability.spendsNotes) {
-      noteContributionValue = this.charSvc.noteContribution();
+      const noteAoeMult = (ability.aoe && ability.type === 'damage') ? 0.5 : 1.0;
+      noteContributionValue = this.charSvc.noteContribution() * noteAoeMult;
       const notes = this.charSvc.getNotes();
       this.charSvc.clearNotes();
       noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
@@ -2016,6 +2070,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
         this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
         noteText += ' · ¡Maestro! +1 accion';
+      }
+      const improRank = this.charSvc.talentRank('impro');
+      if (improRank > 0 && Math.random() * 100 < improRank * 20) {
+        const maxNote = this.charSvc.classConfig().comboConfig?.max || 7;
+        const newNote = 1 + Math.floor(Math.random() * maxNote);
+        this.charSvc.addNote(newNote);
+        noteText += ' · ¡Impro! Nueva nota: ' + NOTE_NAMES[newNote - 1];
       }
     }
 
@@ -2670,6 +2731,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castHolyNova(ability);
     } else if (ability.id === 'dark_star') {
       this.castDarkStar(ability);
+    } else if (ability.id === 'finale') {
+      this.castFinale(ability);
     } else if (ability.id === 'kill_command') {
       this.castKillCommand(ability);
     } else if (ability.id === 'disengage') {
@@ -2836,6 +2899,39 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
         );
       }
+      if (ability.id === 'da_capo' && this.charSvc.selectedCapstone() === 'improved_da_capo') {
+        const spiritByRank = [0, 5, 8, 12];
+        const spiritValue = spiritByRank[ability.currentRank] || spiritByRank[spiritByRank.length - 1];
+        const spiritDuration = ability.currentBuffDuration;
+        if (this.charSvc.simMode()) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== 'Improved Da Capo'),
+              {
+                id: Date.now() + Math.random(),
+                type: 'buff' as const,
+                name: 'Improved Da Capo',
+                target: 'espiritu',
+                value: spiritValue,
+                duration: spiritDuration,
+                isPercent: false,
+              },
+            ],
+          }));
+        } else {
+          this.charSvc.sendBuffEvent({
+            name: 'Improved Da Capo',
+            currentRank: ability.currentRank,
+            currentBuffStat: 'espiritu',
+            currentBuffValue: spiritValue,
+            currentBuffDuration: spiritDuration,
+            buff: { isPercent: false },
+            aoe: true,
+          });
+        }
+        this.charSvc.showToast('🎺 Improved Da Capo: +' + spiritValue + ' Espíritu a todo el grupo (' + spiritDuration + ' turnos)');
+      }
       if (ability.id === 'crescendo') {
         const icRank = this.charSvc.talentRank('improved_crescendo');
         if (icRank > 0) {
@@ -2902,6 +2998,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
           this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
           this.charSvc.showToast('¡Maestro! +1 accion devuelta');
+        }
+        const improRank = this.charSvc.talentRank('impro');
+        if (improRank > 0 && Math.random() * 100 < improRank * 20) {
+          const maxNote = this.charSvc.classConfig().comboConfig?.max || 7;
+          const newNote = 1 + Math.floor(Math.random() * maxNote);
+          this.charSvc.addNote(newNote);
+          this.charSvc.showToast('¡Impro! Nueva nota: ' + NOTE_NAMES[newNote - 1]);
         }
       }
     }

@@ -140,6 +140,9 @@ export class CharacterService {
     if (this.character().classKey === 'hunter') {
       hp = Math.round(hp * (1 + this.talentRank('survivalist') * 0.03));
     }
+    if (this.character().classKey === 'bard') {
+      hp = Math.round(hp * (1 + this.talentRank('musical_knowledge') * 0.02));
+    }
     if (this.selectedCapstone() === 'hope_and_grace') {
       hp += 10 * this.character().level;
     }
@@ -160,7 +163,11 @@ export class CharacterService {
   });
 
   readonly maxMana = computed<number>(() => {
-    return Math.round(this.classConfig().formulas.mana(this.finalStats(), this.character().level));
+    let mana = Math.round(this.classConfig().formulas.mana(this.finalStats(), this.character().level));
+    if (this.character().classKey === 'bard') {
+      mana = Math.round(mana * (1 + this.talentRank('musical_knowledge') * 0.02));
+    }
+    return mana;
   });
 
   readonly baseMana = computed<number>(() => {
@@ -686,7 +693,7 @@ export class CharacterService {
         noGcd: a.noGcd || (a.id === 'taunt' && this.talentRank('improved_taunt') > 0),
         healthCostPct: a.id === 'bloodrage' ? Math.max(0.05, (a.healthCostPct || 0.15) - this.talentRank('improved_bloodrage') * 0.025) : a.healthCostPct,
         currentBuffValue: buffValue,
-        currentBuffDuration: a.buff ? a.buff.duration : 1,
+        currentBuffDuration: a.buff ? (a.id === 'da_capo' && this.selectedCapstone() === 'improved_da_capo' ? a.buff.duration + 1 : a.buff.duration) : 1,
         currentBuffStat: a.buff ? a.buff.stat : '',
         currentMin: Math.round((a.damageRanges?.find(dr => dr.rank === rank)?.min || 0) + (a.spellPowerRatio ? this.spellPower() * a.spellPowerRatio : 0)),
         currentMax: Math.round((a.damageRanges?.find(dr => dr.rank === rank)?.max || 0) + (a.spellPowerRatio ? this.spellPower() * a.spellPowerRatio : 0)),
@@ -1529,7 +1536,12 @@ export class CharacterService {
 
   noteContribution(): number {
     const notes = this.getNotes();
-    return notes.reduce((sum, n) => sum + 0.7 * Math.pow(1.25, n - 1), 0);
+    let total = notes.reduce((sum, n) => sum + 0.7 * Math.pow(1.25, n - 1), 0);
+    const maxNotes = this.classConfig().comboConfig?.max || 7;
+    if (this.selectedCapstone() === 'perfect_symphony' && notes.length >= maxNotes) {
+      total *= 1.15;
+    }
+    return total;
   }
 
   restoreManaPct(pct: number) {
