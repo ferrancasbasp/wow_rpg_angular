@@ -22,7 +22,7 @@ export const SHAMAN: CharacterClass = {
 
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },
 
-  comboConfig: { label: 'Maelstorm Charges', icon: '⚡', max: 4 },
+  comboConfig: { label: 'Maelstorm Charges', icon: '⚡', max: 3 },
 
   talents: [
     { id: 'thundering_strikes', name: 'Trueno Atronador', icon: '⚡', iconImg: 'img/talents/shaman/thundering_strikes.jpg', description: 'Aumenta la probabilidad de golpe crítico de tus Descarga de Rayo y Cadena de Rayos en 5% por punto.', maxRank: 2, tier: 1, requires: null },
@@ -36,7 +36,7 @@ export const SHAMAN: CharacterClass = {
     { id: 'tidal_focus', name: 'Enfoque de Marea', icon: '🌊', iconImg: 'img/talents/shaman/tidal_focus.jpg', description: 'Reduce el coste de Maná de Ola de Sanación y Cadena de Sanación en 15% por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'erupting_lava', name: 'Lava Eruptiva', icon: '🌋', iconImg: 'img/talents/shaman/erupting_lava.jpg', description: 'Aumenta el daño inicial y periódico de Choque de Llamas en 15% por punto y aumenta su duración en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
     { id: 'maelstrom_efficiency', name: 'Eficiencia de Maelstorm', icon: '✨', iconImg: 'img/talents/shaman/maelstorm_efficiency.jpg', description: 'Los hechizos convertidos en Instantáneos mediante Maelstorm reducen su coste de Maná en 15% por punto.', maxRank: 2, tier: 3, requires: null },
-    { id: 'maelstrom_mastery', name: 'Maestría de Maelstorm', icon: '⚡', iconImg: 'img/talents/shaman/maelstorm_mastery.jpg', description: 'Requiere Eficiencia de Maelstorm 2/2. Aumenta el máximo de Cargas de Maelstorm de 4 a 5. Los hechizos requieren 5 cargas para gastarse, pero ahora pasan a ser sin GCD.', maxRank: 1, tier: 3, requires: { id: 'maelstrom_efficiency', points: 2 } },
+    { id: 'maelstrom_mastery', name: 'Maestría de Maelstorm', icon: '⚡', iconImg: 'img/talents/shaman/maelstorm_mastery.jpg', description: 'Requiere Eficiencia de Maelstorm 2/2. Aumenta el máximo de Cargas de Maelstorm de 3 a 4. Los hechizos requieren 4 cargas para gastarse, pero ahora pasan a ser sin GCD.', maxRank: 1, tier: 3, requires: { id: 'maelstrom_efficiency', points: 2 } },
     { id: 'elemental_fury', name: 'Furia Elemental', icon: '💥', iconImg: 'img/talents/shaman/elemental_fury.jpg', description: 'Aumenta el daño de los golpes críticos de Descarga de Rayo, Cadena de Rayos, Choque de Llamas y Choque de Tierra en 5% por punto.', maxRank: 4, tier: 3, requires: null },
     { id: 'totemic_mastery', name: 'Maestría de Tótems', icon: '🪵', iconImg: 'img/talents/shaman/totemic_mastery.jpg', description: 'Mientras tengas un Tótem de Fuego activo, aumenta el Poder de Hechizo de Descarga de Rayo, Cadena de Rayos, Choque de Llamas y Choque de Tierra en 5% por punto. Mientras tengas un Tótem de Agua activo, aumenta el Poder de Hechizo de Ola de Sanación y Cadena de Sanación en 5% por punto. Ambos efectos pueden estar activos simultáneamente.', maxRank: 3, tier: 3, requires: null },
     { id: 'tidal_waves', name: 'Olas de Marea', icon: '🌊', iconImg: 'img/talents/shaman/tidal_waves.jpg', description: 'Después de lanzar Cadena de Sanación obtienes un buff que hace que tu siguiente Ola de Sanación cure un 10% más por punto. El buff se consume al lanzar Ola de Sanación.', maxRank: 2, tier: 3, requires: null },
