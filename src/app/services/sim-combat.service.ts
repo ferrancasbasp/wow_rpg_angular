@@ -59,6 +59,7 @@ export class SimCombatService {
   readonly log = signal<string[]>([]);
   readonly pendingCount = signal(0);
   readonly syncState = signal<'ok' | 'syncing' | 'off' | 'pending'>('off');
+  readonly lastSyncError = signal('');
 
   private damageByAbility = new Map<string, number>();
   private healTotal = 0;
@@ -133,6 +134,33 @@ export class SimCombatService {
     this.syncPending();
   }
 
+  private async postRun(run: SimRun): Promise<boolean> {
+    try {
+      const res = await fetch(SIM_SHEET_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(run),
+      });
+      const txt = await res.text();
+      if (txt === 'OK') return true;
+      this.lastSyncError.set(txt.slice(0, 300));
+      return false;
+    } catch {
+      try {
+        await fetch(SIM_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(run),
+        });
+        return true;
+      } catch (err) {
+        this.lastSyncError.set(String(err).slice(0, 300));
+        return false;
+      }
+    }
+  }
+
   async syncPending() {
     if (!SIM_SHEET_URL) {
       this.syncState.set('off');
@@ -144,23 +172,19 @@ export class SimCombatService {
       return;
     }
     this.syncState.set('syncing');
+    this.lastSyncError.set('');
     let sent = 0;
     const remaining: SimRun[] = [];
     for (const run of pending) {
-      try {
-        await fetch(SIM_SHEET_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(run),
-        });
+      if (await this.postRun(run)) {
         sent++;
-      } catch {
+      } else {
         remaining.push(run);
       }
     }
     this.storePending(remaining);
     this.syncState.set(remaining.length > 0 ? 'pending' : 'ok');
+    if (this.lastSyncError()) this.pushLog(`⚠ Hoja: ${this.lastSyncError()}`);
     if (sent > 0) this.pushLog(`⬆ ${sent} run(s) subidos a la hoja`);
   }
 

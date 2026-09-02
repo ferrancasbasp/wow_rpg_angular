@@ -12,7 +12,7 @@
       [class.sim-sync-ok]="simCombat.syncState() === 'ok'"
       [class.sim-sync-pending]="simCombat.syncState() === 'pending'"
       (click)="retrySync()"
-      title="Sube los resultados de las runs a la hoja compartida"
+      [title]="simCombat.lastSyncError() ? '⚠ ' + simCombat.lastSyncError() : 'Sube los resultados de las runs a la hoja compartida'"
     >
       @switch (simCombat.syncState()) {
         @case ('ok') { ⬆ Sincronizado }
