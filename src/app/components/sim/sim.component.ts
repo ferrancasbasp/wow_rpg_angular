@@ -3,6 +3,7 @@ import { CharacterService } from '../../services/character.service';
 import { SimCombatService } from '../../services/sim-combat.service';
 import { TranslationService } from '../../services/translation.service';
 import { PlayerComponent } from '../player/player.component';
+import { APP_VERSION } from '../../data/version';
 
 @Component({
   selector: 'app-sim',
@@ -15,6 +16,7 @@ export class SimComponent implements OnInit, OnDestroy {
   charSvc = inject(CharacterService);
   simCombat = inject(SimCombatService);
   trSvc = inject(TranslationService);
+  version = APP_VERSION;
 
   enemyReady = signal(false);
 
