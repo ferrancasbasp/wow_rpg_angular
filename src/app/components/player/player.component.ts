@@ -1797,7 +1797,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.id === 'charge' && this.charSvc.character().classKey === 'warrior') {
       const icRank = this.charSvc.talentRank('improved_charge');
       if (icRank > 0) {
-        const hs = this.charSvc.computedAbilities().find((a: any) => a.id === 'heroic_strike');
+        const hs = this.charSvc.unlockedAbilities().find((a: any) => a.id === 'heroic_strike');
         const hsAvg = hs ? Math.round((((hs as any).currentMin || 0) + ((hs as any).currentMax || 0)) / 2) : 20;
         roll += Math.round(hsAvg * 0.15 * icRank);
       }
