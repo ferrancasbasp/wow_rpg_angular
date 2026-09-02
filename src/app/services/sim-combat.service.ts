@@ -141,15 +141,11 @@ export class SimCombatService {
       const txt = await res.text();
       if (txt.startsWith('OK')) return true;
       this.lastSyncError.set(txt.slice(0, 300));
-      return txt.startsWith('ERROR') ? false : true;
+      return false;
     } catch {
-      try {
-        await fetch(url, { method: 'GET', mode: 'no-cors' });
-        return true;
-      } catch (err) {
-        this.lastSyncError.set(String(err).slice(0, 300));
-        return false;
-      }
+      const img = new Image();
+      img.src = url;
+      return true;
     }
   }
 
