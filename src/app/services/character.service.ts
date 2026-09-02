@@ -1040,7 +1040,7 @@ export class CharacterService {
       casting_master: `Daño casteos: +${rank * 5}% · coste −${rank * 5}%`,
       magic_resistance: `Armadura mágica: +${rank * 5}, Crítico instant: +${rank}%`,
       improved_fire_blast: `CD Fire Blast: −${rank} turno${rank > 1 ? 's' : ''} · Crítico: +${rank * 10}%`,
-      frost_power: `Daño Escarcha: +${rank * 10}%`,
+      frost_power: `Daño Escarcha: +${rank * 10}% · Crítico: +${rank * 2}% y +${rank * 10}% daño crítico`,
       improved_cone_of_cold: `Cone of Cold: CD −${rank} turno${rank > 1 ? 's' : ''} · daño +${rank * 15}%`,
       arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 10}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2.5}%`,

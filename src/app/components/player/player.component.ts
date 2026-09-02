@@ -1696,6 +1696,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.id === 'fire_blast' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('improved_fire_blast') * 10;
     }
+    if (ability.school === 'Escarcha' && this.charSvc.character().classKey === 'mage') {
+      critChance += this.charSvc.talentRank('frost_power') * 2;
+    }
     if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'warrior') {
       critChance += this.charSvc.talentRank('unyielding_strikes') * 1;
     }
@@ -1741,6 +1744,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (this.charSvc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult += this.charSvc.talentRank('elemental_fury') * 0.05;
+      }
+      if (ability.school === 'Escarcha' && this.charSvc.character().classKey === 'mage') {
+        critMult += this.charSvc.talentRank('frost_power') * 0.10;
       }
       if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult = critMult * 1.25;
