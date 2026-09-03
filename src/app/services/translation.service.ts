@@ -200,6 +200,7 @@ export class TranslationService {
     level: { es: 'Nivel', en: 'Level' },
     nv: { es: 'Nv', en: 'Lv' },
     hover_talent_info: { es: 'Pasa el raton sobre un talento para ver su informacion.', en: 'Hover over a talent to see its info.' },
+    tap_talent_info: { es: 'Pulsa el boton i de un talento para ver su informacion.', en: 'Tap the i button on a talent to see its info.' },
     reset_talents: { es: 'Resetear Talentos', en: 'Reset Talents' },
     click_add_right_remove: { es: 'Click: anadir · Click derecho: quitar', en: 'Click: add · Right-click: remove' },
     yes_btn: { es: 'Si', en: 'Yes' },
