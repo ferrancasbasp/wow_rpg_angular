@@ -1916,7 +1916,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     }
 
-    const inspiration = this.charSvc.character().activeEffects?.find(e => e.target === 'inspiration');
+    const inspiration = this.charSvc.character().activeEffects?.find(e => e.target === 'extra_damage');
     if (inspiration && ability.type === 'damage') {
       roll += inspiration.value;
       boostText += ' · +' + inspiration.value + ' daño (Da Capo)';
@@ -2900,8 +2900,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         );
       }
       if (ability.id === 'da_capo' && this.charSvc.selectedCapstone() === 'improved_da_capo') {
-        const spiritByRank = [0, 5, 8, 12];
-        const spiritValue = spiritByRank[ability.currentRank] || spiritByRank[spiritByRank.length - 1];
+        const spiritByRank = [0, 3, 6, 9];
+        const spiritBase = spiritByRank[ability.currentRank] || spiritByRank[spiritByRank.length - 1];
+        const spiritValue = Math.round(spiritBase * this.charSvc.noteContribution());
         const spiritDuration = ability.currentBuffDuration;
         if (this.charSvc.simMode()) {
           this.charSvc.character.update(c => ({
