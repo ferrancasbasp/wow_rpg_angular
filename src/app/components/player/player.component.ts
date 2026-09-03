@@ -12,6 +12,7 @@ import {
   STATUS_OPTIONS, HOT_DOT_TARGETS, EQUIPMENT_SLOTS, MAX_LEVEL,
   xpForLevel, createDefaultCharacter,
 } from '../../data/game-data';
+import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from '../../models/game.models';
 
 @Component({
@@ -42,6 +43,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
   STATUS_OPTIONS = STATUS_OPTIONS;
   BUFF_DEBUFF_STATS = BUFF_DEBUFF_STATS;
   HOT_DOT_TARGETS = HOT_DOT_TARGETS;
+
+  raidSymbols = () => MOB_SYMBOLS;
+
+  symIndex = (sym: { id: string; icon: string; img: string; label: string }) =>
+    MOB_SYMBOLS.findIndex(s => s.id === sym.id);
+
+  setRaidSymbol(index: number) {
+    this.charSvc.character.update(c => ({
+      ...c,
+      raidSymbol: this.charSvc.character().raidSymbol === index ? null : index,
+    }));
+    this.charSvc.saveToLocalStorage();
+  }
 
   showExportModal = signal(false);
   showTalentModal = signal(false);
@@ -174,6 +188,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ],
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
+        } else if (event.type === 'notice') {
+          this.incomingMasterMsg.set('⚠️ ' + (event.message || 'Aviso del master'));
         } else if (event.type === 'hot') {
           this.charSvc.character.update(c => ({
             ...c,
@@ -1194,7 +1210,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.simCombat.applyPlayerHit(payload, this.simMeta());
       return;
     }
-    this.firebase.pushData('damageEvents', payload);
+    const isHealOrBuff = (payload.damageType === 'heal' || payload.damageType === 'buff');
+    this.firebase.pushData('damageEvents', {
+      ...payload,
+      symbol: isHealOrBuff ? null : (this.charSvc.character().raidSymbol ?? null),
+    });
   }
 
   private capstoneName(): string {

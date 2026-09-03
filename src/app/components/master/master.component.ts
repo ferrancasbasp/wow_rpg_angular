@@ -5,6 +5,7 @@ import { TranslationService } from '../../services/translation.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
+import { MOB_SYMBOLS, assignedSymbolIndexes, nextFreeSymbol, symbolIcon as symbolIconOf, symbolImg as symbolImgOf } from '../../data/mob-symbols';
 
 interface MonsterAttack {
   name: string;
@@ -57,6 +58,7 @@ interface Monster {
   effects?: MonsterEffect[];
   lastAttackAt?: number;
   isElite?: boolean;
+  symbol?: number | null;
 }
 
 interface DamageEvent {
@@ -78,6 +80,7 @@ interface DamageEvent {
   buffValue?: number;
   buffDuration?: number;
   isPercent?: boolean;
+  symbol?: number | null;
 }
 
 @Component({
@@ -93,6 +96,8 @@ export class MasterComponent implements OnInit {
   private lastLocalMonsterSync = 0;
   pendingEvents = signal<DamageEvent[]>([]);
   monsters = signal<Monster[]>([]);
+  symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
+  symbolImg = (index: number | null | undefined) => symbolImgOf(index);
   selectedEventId = signal<string | null>(null);
   newMonsterName = signal('');
   newMonsterHP = signal<number | null>(null);
@@ -204,7 +209,25 @@ export class MasterComponent implements OnInit {
       const event = snapshot.val() as DamageEvent;
       event.id = snapshot.key as string;
       if (!event.assigned) {
-        this.pendingEvents.update((events) => [...events, event]);
+        const isHealOrBuff = event.damageType === 'heal' || event.damageType === 'buff';
+        const autoTarget = event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe
+          ? this.aliveMonsterBySymbol(event.symbol)
+          : null;
+        if (autoTarget) {
+          this.applySingleDamage(autoTarget, event);
+        } else {
+          this.pendingEvents.update((events) => [...events, event]);
+          if (event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe && !this.aliveMonsterBySymbol(event.symbol)) {
+            const symName = symbolIconOf(event.symbol) || 'marcador';
+            this.showToast(`🎯 ${event.player}: target ${symName} ya no existe — asignar manualmente`);
+            this.firebase.pushData('playerEvents', {
+              target: event.player,
+              type: 'notice',
+              message: `Tu marcador (${symName}) ya no esta en ningun enemigo vivo. Cambia tu target o pediras asignacion manual.`,
+              timestamp: Date.now(),
+            });
+          }
+        }
       }
     });
 
@@ -272,6 +295,10 @@ export class MasterComponent implements OnInit {
     this.selectedEventId.update((current) => (current === id ? null : id));
   }
 
+  aliveMonsterBySymbol(symbol: number): Monster | null {
+    return this.monsters().find((m) => m.currentHP > 0 && m.symbol === symbol) || null;
+  }
+
   getEvent(id: string): DamageEvent | undefined {
     return this.pendingEvents().find((e) => e.id === id);
   }
@@ -301,6 +328,7 @@ export class MasterComponent implements OnInit {
     if (event.effects) {
       this.applyEffectsToMonster(monster, event.effects, { player: event.player, ability: event.ability });
     }
+    this.sendLog.update(log => [`${event.player}: ${damage} a ${monster.name} (${event.ability})${event.symbol !== null && event.symbol !== undefined ? ' [' + symbolIconOf(event.symbol) + ' auto]' : ''}`, ...log].slice(0, 8));
     this.markEventAssigned(event);
     this.selectedEventId.set(null);
     this.saveMonsters();
@@ -730,6 +758,7 @@ export class MasterComponent implements OnInit {
       armor: null,
       magicResist: null,
       icon: null,
+      symbol: nextFreeSymbol(this.monsters()),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);
     this.newMonsterName.set('');
@@ -767,6 +796,7 @@ export class MasterComponent implements OnInit {
         inflictsEffects: a.inflictsEffects || undefined,
         isHeal: a.isHeal || undefined,
       })),
+      symbol: nextFreeSymbol(this.monsters()),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);
     this.selectedNpc.set('');
@@ -813,7 +843,15 @@ export class MasterComponent implements OnInit {
         const monsters: Monster[] = parsed.monsters || [];
         const counter = parsed.counter || monsters.length + 1;
         let enriched = 0;
+        const usedSymbols = assignedSymbolIndexes(monsters);
         for (const m of monsters) {
+          if (m.symbol === null || m.symbol === undefined) {
+            let free = 0;
+            while (usedSymbols.has(free) && free < MOB_SYMBOLS.length) free++;
+            m.symbol = free;
+            usedSymbols.add(free);
+            enriched++;
+          }
           if (!m.imageUrl) {
             for (const key of Object.keys(NPC_REGISTRY)) {
               const npc = NPC_REGISTRY[key];
