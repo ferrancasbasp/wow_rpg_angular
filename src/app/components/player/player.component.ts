@@ -1198,7 +1198,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if ((payload.damageType || '') === 'heal' && (payload.damage || 0) > 0) {
         this.charSvc.character.update(c => ({
           ...c,
-          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + payload.damage),
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + payload.damage),
         }));
         this.simCombat.pushLog(`+${payload.damage} ${payload.ability || 'Curación'}`);
         return;
@@ -1261,8 +1261,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const manaSnack = Math.round(this.charSvc.maxMana() * 0.015 * snacks);
         this.charSvc.character.update(c => ({
           ...c,
-          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + hpSnack),
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaSnack),
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + hpSnack),
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaSnack),
         }));
         this.charSvc.showToast('🍖 Combat Snacks: +' + hpSnack + ' vida · +' + manaSnack + ' mana');
       }
@@ -1272,7 +1272,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const restored = Math.round(this.charSvc.maxMana() * 0.20);
       this.charSvc.character.update(c => ({
         ...c,
-        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + restored),
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + restored),
       }));
       this.charSvc.showToast('⚡ Arcane Power: +' + restored + ' mana');
     }
@@ -1435,7 +1435,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const manaAmt = water.value ?? water.min ?? 0;
         this.charSvc.character.update(c => ({
           ...c,
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaAmt),
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaAmt),
         }));
         this.charSvc.showToast('💠 Tótem Manantial de Maná: +' + manaAmt + ' maná' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
       }
@@ -1823,7 +1823,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const manaGain = Math.round(this.charSvc.maxMana() * 0.05);
         this.charSvc.character.update(c => ({
           ...c,
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGain),
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGain),
           sunShards: (c.sunShards || 0) - 1,
         }));
         this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (5%)');
@@ -1916,7 +1916,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const resourceActual = this.charSvc.resourceActual();
         this.charSvc.character.update(c => ({
           ...c,
-          currentMana: Math.min(resourceMax, (c.currentMana || 0) + (ability.scaledCost || 0)),
+          currentMana: Math.min(resourceMax, (c.currentMana ?? resourceMax) + (ability.scaledCost || 0)),
         }));
         return;
       }
@@ -2335,8 +2335,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,
-            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + hpGain),
-            currentMana: Math.min(resourceMax, (c.currentMana || 0) + manaGain),
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + hpGain),
+            currentMana: Math.min(resourceMax, (c.currentMana ?? resourceMax) + manaGain),
           }));
           fotwText = ' · +' + hpGain + ' vida · +' + manaGain + ' maná (First of the Wild)';
         }
@@ -2348,7 +2348,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const heal = Math.round(roll * ability.lifestealPct * (1 + idlRank * 0.10));
         this.charSvc.character.update(c => ({
           ...c,
-          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + heal),
+          currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + heal),
         }));
         lifestealText = ' · +' + heal + ' vida';
       }
@@ -2365,7 +2365,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (leechHeal > 0) {
           this.charSvc.character.update(c => ({
             ...c,
-            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP || 0) + leechHeal),
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + leechHeal),
           }));
           lifestealText += ' · 🩸 Veneno Vampírico +' + leechHeal + ' vida';
         }
@@ -2546,7 +2546,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const gained = Math.round((entry.value || 0) * (1 + this.charSvc.talentRank('improved_mana_gem') * 0.25));
       this.charSvc.character.update(c => ({
         ...c,
-        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + gained),
+        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + gained),
       }));
       const effCd = this.charSvc.getEffectiveCooldown(ability);
       if (effCd > 0) {
@@ -2681,7 +2681,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const manaGained = Math.round(this.charSvc.maxMana() * ability.restoresManaPct);
         this.charSvc.character.update(c => ({
           ...c,
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana || 0) + manaGained),
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGained),
         }));
         this.charSvc.showToast(ability.name + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
       } else {

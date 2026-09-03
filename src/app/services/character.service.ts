@@ -1398,7 +1398,7 @@ export class CharacterService {
       this.simCombat.recordHeal(healAmount);
       this.character.update(c => ({
         ...c,
-        currentHP: Math.min(this.maxHP(), (c.currentHP || 0) + healAmount),
+        currentHP: Math.min(this.maxHP(), (c.currentHP ?? this.maxHP()) + healAmount),
       }));
       this.simCombat.pushLog(`+${healAmount} ${ability.name || 'Curación'}`);
       return;
@@ -1549,7 +1549,7 @@ export class CharacterService {
     this.character.update(c => {
       const maxMana = this.resourceMax();
       const restore = Math.round(maxMana * pct);
-      return { ...c, currentMana: Math.min(maxMana, (c.currentMana || 0) + restore) };
+      return { ...c, currentMana: Math.min(maxMana, (c.currentMana ?? maxMana) + restore) };
     });
   }
 
