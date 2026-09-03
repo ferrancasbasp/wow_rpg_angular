@@ -312,6 +312,32 @@
             <span>🥾</span>
           </button>
         </div>
+        <div class="raid-symbol-panel">
+          <div class="raid-symbol-row">
+            @for (sym of raidSymbols().slice(0, 4); track sym.id) {
+              <button
+                class="raid-symbol-btn"
+                [class.active]="charSvc.character().raidSymbol === symIndex(sym)"
+                (click)="setRaidSymbol(symIndex(sym))"
+                [title]="sym.label"
+              >
+                <img [src]="sym.img" alt="" />
+              </button>
+            }
+          </div>
+          <div class="raid-symbol-row">
+            @for (sym of raidSymbols().slice(4); track sym.id) {
+              <button
+                class="raid-symbol-btn"
+                [class.active]="charSvc.character().raidSymbol === symIndex(sym)"
+                (click)="setRaidSymbol(symIndex(sym))"
+                [title]="sym.label"
+              >
+                <img [src]="sym.img" alt="" />
+              </button>
+            }
+          </div>
+        </div>
       </div>
     </div>
 

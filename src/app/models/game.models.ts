@@ -311,6 +311,7 @@ export interface Character {
   musicalNotes?: number[];
   soulShards?: number;
   sunShards?: number;
+  raidSymbol?: number | null;
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;
   equipment: Equipment;

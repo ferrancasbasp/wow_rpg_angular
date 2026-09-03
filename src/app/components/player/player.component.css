@@ -1058,6 +1058,29 @@
     }
     .move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+    .raid-symbol-panel {
+      display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; margin-top: 8px;
+    }
+    .raid-symbol-row {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .raid-symbol-btn {
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      padding: 0; background: rgba(0,0,0,0.4); border: 1px solid var(--gold-dark);
+      border-radius: 5px; cursor: pointer; transition: var(--transition);
+    }
+    .raid-symbol-btn img {
+      width: 20px; height: 20px; object-fit: contain; border-radius: 2px;
+    }
+    .raid-symbol-btn:hover {
+      border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.08);
+    }
+    .raid-symbol-btn.active {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 10px var(--gold-glow), inset 0 0 6px rgba(255,215,120,0.25);
+      background: linear-gradient(180deg, rgba(255,215,120,0.2) 0%, rgba(0,0,0,0.5) 100%);
+    }
+
     .turn-damage-box {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
       background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
