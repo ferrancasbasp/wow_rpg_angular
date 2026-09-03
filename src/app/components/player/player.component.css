@@ -240,17 +240,6 @@
       overflow: hidden; position: relative; transition: all 0.2s;
       background: var(--bg-dark);
     }
-    .node-info-btn {
-      position: absolute; top: 3px; right: 3px; z-index: 3;
-      width: 16px; height: 16px; padding: 0; line-height: 1;
-      border-radius: 50%; border: 1px solid rgba(138,115,68,0.45);
-      background: rgba(10,12,16,0.82);
-      color: var(--gold-light);
-      font-family: 'Cinzel', serif; font-style: italic; font-weight: 700;
-      font-size: 12px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; opacity: 0.55; transition: opacity 0.2s;
-    }
-    .node-info-btn:hover, .node-info-btn:focus { opacity: 1; }
     .wow-node-icon img { width: 100%; height: 100%; object-fit: cover; }
     .wow-node-emoji {
       display: flex; align-items: center; justify-content: center;

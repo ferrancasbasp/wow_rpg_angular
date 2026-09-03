@@ -699,9 +699,6 @@
                              (contextmenu)="onTalentRightClick($event, talent.id)"
                              (mouseenter)="hoveredTalent.set(talent)"
                              (mouseleave)="hoveredTalent.set(null)">
-                          <button type="button" class="node-info-btn"
-                                  (click)="$event.stopPropagation(); hoveredTalent.set(talent)"
-                                  aria-label="{{ trSvc.t('info') }}">i</button>
                           <div class="wow-node-icon">
                             @if (talent.iconImg) {
                               <img [src]="talent.iconImg" (error)="onTalentImgError($event)">
@@ -731,9 +728,6 @@
                              (contextmenu)="onCapstoneRightClick($event, capstone)"
                              (mouseenter)="onCapstoneEnter(capstone)"
                              (mouseleave)="hoveredTalent.set(null)">
-                          <button type="button" class="node-info-btn"
-                                  (click)="$event.stopPropagation(); onCapstoneEnter(capstone)"
-                                  aria-label="{{ trSvc.t('info') }}">i</button>
                           <div class="wow-node-icon">
                             @if (capstone.iconImg) {
                               <img [src]="capstone.iconImg" (error)="onTalentImgError($event)">
@@ -777,7 +771,7 @@
                   <div class="talent-info-hint">{{ trSvc.t('capstone_hint') }}</div>
                 }
               } @else {
-                <div class="talent-info-empty">{{ trSvc.t('tap_talent_info') }}</div>
+                <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
               }
             </div>
           </div>
