@@ -1364,6 +1364,7 @@ export class CharacterService {
         damageType: this.hasPoison() && ability.damageType === 'physical' ? 'magical' : (ability.damageType || 'magical'),
         aoe: ability.aoe || false,
         effects,
+        symbol: (this.character().raidSymbol ?? null),
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
