@@ -702,6 +702,15 @@ export class MasterComponent implements OnInit {
     this.showToast(monster.name + ' ' + this.trSvc.t('healed_max'));
   }
 
+  waitMonster(monster: Monster) {
+    if (monster.currentHP <= 0) {
+      this.showToast(monster.name + ' ' + this.trSvc.t('defeated'));
+      return;
+    }
+    const dotText = this.processMonsterEffects(monster);
+    this.showToast('⏸ ' + monster.name + ' no ataca (wait).' + dotText);
+  }
+
   addMonster() {
     if (
       !this.newMonsterName().trim() ||

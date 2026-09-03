@@ -188,6 +188,11 @@
                         title="Curar"
                       >+</button>
                       <button
+                        class="monster-btn"
+                        (click)="$event.stopPropagation(); waitMonster(monster)"
+                        title="Wait: el enemigo no ataca este turno pero sus debuffs/dots siguen activos"
+                      >⏸</button>
+                      <button
                         class="monster-btn danger"
                         (click)="$event.stopPropagation(); removeMonster(monster.id)"
                         title="Eliminar"
