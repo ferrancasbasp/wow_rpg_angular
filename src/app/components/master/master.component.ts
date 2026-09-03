@@ -5,6 +5,7 @@ import { TranslationService } from '../../services/translation.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
+import { MOB_SYMBOLS, assignedSymbolIndexes, nextFreeSymbol, symbolIcon as symbolIconOf } from '../../data/mob-symbols';
 
 interface MonsterAttack {
   name: string;
@@ -57,6 +58,7 @@ interface Monster {
   effects?: MonsterEffect[];
   lastAttackAt?: number;
   isElite?: boolean;
+  symbol?: number | null;
 }
 
 interface DamageEvent {
@@ -93,6 +95,7 @@ export class MasterComponent implements OnInit {
   private lastLocalMonsterSync = 0;
   pendingEvents = signal<DamageEvent[]>([]);
   monsters = signal<Monster[]>([]);
+  symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
   selectedEventId = signal<string | null>(null);
   newMonsterName = signal('');
   newMonsterHP = signal<number | null>(null);
@@ -730,6 +733,7 @@ export class MasterComponent implements OnInit {
       armor: null,
       magicResist: null,
       icon: null,
+      symbol: nextFreeSymbol(this.monsters()),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);
     this.newMonsterName.set('');
@@ -767,6 +771,7 @@ export class MasterComponent implements OnInit {
         inflictsEffects: a.inflictsEffects || undefined,
         isHeal: a.isHeal || undefined,
       })),
+      symbol: nextFreeSymbol(this.monsters()),
     };
     this.monsters.update((monsters) => [...monsters, newMonster]);
     this.selectedNpc.set('');
@@ -813,7 +818,15 @@ export class MasterComponent implements OnInit {
         const monsters: Monster[] = parsed.monsters || [];
         const counter = parsed.counter || monsters.length + 1;
         let enriched = 0;
+        const usedSymbols = assignedSymbolIndexes(monsters);
         for (const m of monsters) {
+          if (m.symbol === null || m.symbol === undefined) {
+            let free = 0;
+            while (usedSymbols.has(free) && free < MOB_SYMBOLS.length) free++;
+            m.symbol = free;
+            usedSymbols.add(free);
+            enriched++;
+          }
           if (!m.imageUrl) {
             for (const key of Object.keys(NPC_REGISTRY)) {
               const npc = NPC_REGISTRY[key];

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FirebaseService } from '../../services/firebase.service';
+import { symbolIcon as symbolIconOf } from '../../data/mob-symbols';
 
 interface MonsterEffect {
   type: string;
@@ -18,6 +19,7 @@ interface Monster {
   maxHP: number;
   lastAttackAt: number;
   effects: MonsterEffect[];
+  symbol?: number | null;
 }
 
 interface FlashNumber {
@@ -72,7 +74,7 @@ interface FlashNumber {
 
             <div class="monster-info">
               <div class="monster-name" [class.dead-name]="monster.currentHP <= 0">
-                {{ monster.name }}
+                <span class="monster-symbol">{{ symbolIcon(monster.symbol) }}</span>{{ monster.name }}
               </div>
               <div class="hp-bar-wrapper">
                 <div class="hp-bar-track">
@@ -229,6 +231,7 @@ interface FlashNumber {
       text-align: center; margin-bottom: 12px; letter-spacing: 0.05em;
     }
     .monster-name.dead-name { color: var(--danger); text-decoration: line-through; }
+    .monster-symbol { margin-right: 6px; font-size: 18px; }
 
     .hp-bar-wrapper {
       position: relative; margin-bottom: 8px;
@@ -311,6 +314,7 @@ export class CombatComponent implements OnInit {
 
   monsters = signal<Monster[]>([]);
   connected = signal<boolean>(false);
+  symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
   prevHpMap = signal<Record<string, number>>({});
   prevAttackMap = signal<Record<string, number>>({});
   damagedIds = signal<Record<string, string | null>>({});

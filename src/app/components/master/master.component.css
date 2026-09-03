@@ -302,6 +302,11 @@
       color: var(--text);
     }
 
+    .monster-symbol {
+      margin-right: 6px;
+      font-size: 15px;
+    }
+
     .monster-name.dead-name {
       color: var(--danger);
       text-decoration: line-through;
