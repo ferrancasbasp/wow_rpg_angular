@@ -328,6 +328,7 @@ export class MasterComponent implements OnInit {
     if (event.effects) {
       this.applyEffectsToMonster(monster, event.effects, { player: event.player, ability: event.ability });
     }
+    this.sendLog.update(log => [`${event.player}: ${damage} a ${monster.name} (${event.ability})${event.symbol !== null && event.symbol !== undefined ? ' [' + symbolIconOf(event.symbol) + ' auto]' : ''}`, ...log].slice(0, 8));
     this.markEventAssigned(event);
     this.selectedEventId.set(null);
     this.saveMonsters();
