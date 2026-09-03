@@ -188,6 +188,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ],
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
+        } else if (event.type === 'notice') {
+          this.incomingMasterMsg.set('⚠️ ' + (event.message || 'Aviso del master'));
         } else if (event.type === 'hot') {
           this.charSvc.character.update(c => ({
             ...c,
@@ -1208,7 +1210,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.simCombat.applyPlayerHit(payload, this.simMeta());
       return;
     }
-    this.firebase.pushData('damageEvents', payload);
+    const isHealOrBuff = (payload.damageType === 'heal' || payload.damageType === 'buff');
+    this.firebase.pushData('damageEvents', {
+      ...payload,
+      symbol: isHealOrBuff ? null : (this.charSvc.character().raidSymbol ?? null),
+    });
   }
 
   private capstoneName(): string {

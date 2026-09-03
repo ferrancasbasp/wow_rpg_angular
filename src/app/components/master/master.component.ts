@@ -80,6 +80,7 @@ interface DamageEvent {
   buffValue?: number;
   buffDuration?: number;
   isPercent?: boolean;
+  symbol?: number | null;
 }
 
 @Component({
@@ -208,7 +209,25 @@ export class MasterComponent implements OnInit {
       const event = snapshot.val() as DamageEvent;
       event.id = snapshot.key as string;
       if (!event.assigned) {
-        this.pendingEvents.update((events) => [...events, event]);
+        const isHealOrBuff = event.damageType === 'heal' || event.damageType === 'buff';
+        const autoTarget = event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe
+          ? this.aliveMonsterBySymbol(event.symbol)
+          : null;
+        if (autoTarget) {
+          this.applySingleDamage(autoTarget, event);
+        } else {
+          this.pendingEvents.update((events) => [...events, event]);
+          if (event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe && !this.aliveMonsterBySymbol(event.symbol)) {
+            const symName = symbolIconOf(event.symbol) || 'marcador';
+            this.showToast(`🎯 ${event.player}: target ${symName} ya no existe — asignar manualmente`);
+            this.firebase.pushData('playerEvents', {
+              target: event.player,
+              type: 'notice',
+              message: `Tu marcador (${symName}) ya no esta en ningun enemigo vivo. Cambia tu target o pediras asignacion manual.`,
+              timestamp: Date.now(),
+            });
+          }
+        }
       }
     });
 
@@ -274,6 +293,10 @@ export class MasterComponent implements OnInit {
       return;
     }
     this.selectedEventId.update((current) => (current === id ? null : id));
+  }
+
+  aliveMonsterBySymbol(symbol: number): Monster | null {
+    return this.monsters().find((m) => m.currentHP > 0 && m.symbol === symbol) || null;
   }
 
   getEvent(id: string): DamageEvent | undefined {
