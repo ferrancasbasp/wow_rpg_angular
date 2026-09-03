@@ -589,14 +589,17 @@
     .ability-icon.castable:active:not(.disabled) { transform: scale(0.95); }
     .ability-icon.castable.disabled { cursor: not-allowed; opacity: 0.5; }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+    .ability-name-row {
+      display: flex; align-items: center; gap: 5px; min-width: 0;
+    }
     .ability-info-btn {
-      position: absolute; top: 1px; right: 1px; z-index: 3;
-      width: 14px; height: 14px; padding: 0; line-height: 1;
+      flex-shrink: 0;
+      width: 15px; height: 15px; padding: 0; line-height: 1;
       border-radius: 50%; border: 1px solid rgba(138,115,68,0.45);
       background: rgba(10,12,16,0.82);
       color: var(--gold-light);
       font-family: 'Cinzel', serif; font-style: italic; font-weight: 700;
-      font-size: 11px; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; opacity: 0.55; transition: opacity 0.2s;
     }
     .ability-info-btn:hover, .ability-info-btn:focus { opacity: 1; }
