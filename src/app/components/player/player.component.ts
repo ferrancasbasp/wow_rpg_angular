@@ -1922,8 +1922,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
       const contribution = this.charSvc.noteContribution();
-      const noteAoeMult = (ability.aoe && ability.type === 'damage') ? 0.5 : 1.0;
-      roll = Math.round(roll * contribution * noteAoeMult);
+      roll = Math.round(roll * contribution);
     }
 
     const dmgBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'damage_boost');
@@ -2076,14 +2075,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const notes = this.charSvc.getNotes();
       noteText += ' (' + notes.length + '/7)';
     }
-    if (ability.modulateNotes) {
-      this.charSvc.modulateNotes(ability.modulateNotes);
+    if (ability.modulateNotes || (ability.id === 'arpeggio' && this.charSvc.talentRank('agudo') > 0)) {
+      this.charSvc.modulateNotes(ability.modulateNotes || 1);
       noteText = ' · Notas +1 tono';
+    }
+    if (ability.id === 'sforzando') {
+      const removedNote = this.charSvc.removeHighestNote();
+      if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
     }
     let noteContributionValue = 0;
     if (ability.spendsNotes) {
-      const noteAoeMult = (ability.aoe && ability.type === 'damage') ? 0.5 : 1.0;
-      noteContributionValue = this.charSvc.noteContribution() * noteAoeMult;
+      noteContributionValue = this.charSvc.noteContribution();
       const notes = this.charSvc.getNotes();
       this.charSvc.clearNotes();
       noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
@@ -2920,40 +2922,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
         );
       }
-      if (ability.id === 'da_capo' && this.charSvc.selectedCapstone() === 'improved_da_capo') {
-        const spiritByRank = [0, 3, 6, 9];
-        const spiritBase = spiritByRank[ability.currentRank] || spiritByRank[spiritByRank.length - 1];
-        const spiritValue = Math.round(spiritBase * this.charSvc.noteContribution());
-        const spiritDuration = ability.currentBuffDuration;
-        if (this.charSvc.simMode()) {
-          this.charSvc.character.update(c => ({
-            ...c,
-            activeEffects: [
-              ...(c.activeEffects || []).filter(e => e.name !== 'Improved Da Capo'),
-              {
-                id: Date.now() + Math.random(),
-                type: 'buff' as const,
-                name: 'Improved Da Capo',
-                target: 'espiritu',
-                value: spiritValue,
-                duration: spiritDuration,
-                isPercent: false,
-              },
-            ],
-          }));
-        } else {
-          this.charSvc.sendBuffEvent({
-            name: 'Improved Da Capo',
-            currentRank: ability.currentRank,
-            currentBuffStat: 'espiritu',
-            currentBuffValue: spiritValue,
-            currentBuffDuration: spiritDuration,
-            buff: { isPercent: false },
-            aoe: true,
-          });
-        }
-        this.charSvc.showToast('🎺 Improved Da Capo: +' + spiritValue + ' Espíritu a todo el grupo (' + spiritDuration + ' turnos)');
-      }
       if (ability.id === 'crescendo') {
         const icRank = this.charSvc.talentRank('improved_crescendo');
         if (icRank > 0) {
@@ -3028,6 +2996,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.addNote(newNote);
           this.charSvc.showToast('¡Impro! Nueva nota: ' + NOTE_NAMES[newNote - 1]);
         }
+        if (ability.id === 'da_capo' && this.charSvc.selectedCapstone() === 'improved_da_capo') {
+          const maxNote = this.charSvc.classConfig().comboConfig?.max || 7;
+          const newNote = 1 + Math.floor(Math.random() * maxNote);
+          this.charSvc.addNote(newNote);
+          this.charSvc.showToast('🎺 Improved Da Capo: Nueva nota: ' + NOTE_NAMES[newNote - 1]);
+        }
       }
     }
     if (ability.inflictsEffects) {
@@ -3073,6 +3047,41 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.turnDamage.set(0);
     this.charSvc.actionsUsed.set(0);
     this.charSvc.petRest();
+    if (this.charSvc.character().classKey === 'bard') {
+      const ability = this.charSvc.classConfig().abilities.find(a => a.id === 'rested_inspiration');
+      const level = this.charSvc.character().level;
+      if (ability && ability.buffRanks && level >= ability.requiredLevel) {
+        const rank = [...ability.buffRanks].reverse().find(br => br.level <= level) || ability.buffRanks[0];
+        if (this.charSvc.simMode()) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: [
+              ...(c.activeEffects || []).filter(e => e.name !== 'Rested Inspiration'),
+              {
+                id: Date.now() + Math.random(),
+                type: 'buff' as const,
+                name: 'Rested Inspiration',
+                target: 'espiritu',
+                value: rank.value,
+                duration: 5,
+                isPercent: false,
+              },
+            ],
+          }));
+        } else {
+          this.charSvc.sendBuffEvent({
+            name: 'Rested Inspiration',
+            currentRank: rank.rank,
+            currentBuffStat: 'espiritu',
+            currentBuffValue: rank.value,
+            currentBuffDuration: 5,
+            buff: { isPercent: false },
+            aoe: true,
+          });
+        }
+        this.charSvc.showToast('🥐 Rested Inspiration: +' + rank.value + ' Espiritu a todo el grupo (5 turnos)');
+      }
+    }
   }
 
   resetCharacter() {

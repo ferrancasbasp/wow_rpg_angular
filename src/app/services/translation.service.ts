@@ -733,7 +733,7 @@ export class TranslationService {
     druid_insect_swarm: { es: 'Invoca un enjambre de insectos que reduce enormemente el ataque del enemigo un 50% durante 2 turnos. CD 2.', en: 'Summons a swarm of insects that greatly reduces the enemy\'s attack by 50% for 2 turns. CD 2.' },
     druid_nature_guardian: { es: 'El poder de la naturaleza te envuelve y te otorga 2 Moon Shards y 2 Sun Shards. CD 10.', en: 'Nature\'s power surrounds you, granting you 2 Moon Shards and 2 Sun Shards. CD 10.' },
     druid_nature_guardian_toast: { es: '🌳 Nature Guardian: +2 Moon Shards · +2 Sun Shards', en: '🌳 Nature Guardian: +2 Moon Shards · +2 Sun Shards' },
-    bard_ballerino: { es: 'Aumenta tu Agilidad un 2% por punto.', en: 'Increases your Agility by 2% per point.' },
+    bard_rinforzando: { es: 'Aumenta el daño de Scherzo y Sforzando un 4% por punto.', en: 'Increases the damage of Scherzo and Sforzando by 4% per point.' },
     bard_harmonioso: { es: 'Reduce el coste de mana de tus curas un 5% por punto.', en: 'Reduces the mana cost of your heals by 5% per point.' },
     warlock_pocket_shards: { es: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', en: 'After a rest, you keep 1 Soul Shard and increase your maximum Soul Shards by 1 per point.' },
     warlock_improved_drain_life: { es: 'Aumenta la vida que cura Drain Life un 10% por punto. Solo afecta a la curacion, no al dano.', en: 'Increases the health restored by Drain Life by 10% per point. Only affects the heal, not the damage.' },

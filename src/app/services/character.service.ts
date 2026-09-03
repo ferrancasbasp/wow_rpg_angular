@@ -124,8 +124,8 @@ export class CharacterService {
       result[key] += this.gearStatBonus(key);
       result[key] += this.effectStatBonus(key);
       if (key === 'agilidad' && this.character().classKey === 'bard') {
-        const ballerino = this.talentRank('ballerino');
-        if (ballerino > 0) result[key] = Math.round(result[key] * (1 + ballerino * 0.02));
+        const quickFingers = this.talentRank('quick_fingers');
+        if (quickFingers > 0) result[key] = Math.round(result[key] * (1 + quickFingers * 0.01));
       }
       if (this.selectedCapstone() === 'gift_of_the_wild') {
         result[key] += level;
@@ -588,6 +588,11 @@ export class CharacterService {
         minVal = Math.round(minVal * aggressionBonus);
         maxVal = Math.round(maxVal * aggressionBonus);
       }
+      if (['scherzo', 'sforzando'].includes(a.id)) {
+        const rinforzandoBonus = 1 + this.talentRank('rinforzando') * 0.04;
+        minVal = Math.round(minVal * rinforzandoBonus);
+        maxVal = Math.round(maxVal * rinforzandoBonus);
+      }
       if (a.category === 'shadow') {
         const shadowBonus = (1 + this.talentRank('shadow_ally') * 0.03) * (1 + this.talentRank('renegade_the_light') * 0.10);
         minVal = Math.round(minVal * shadowBonus);
@@ -669,7 +674,7 @@ export class CharacterService {
     const isEnergy = resType === 'energy';
     const isFocus = resType === 'focus';
     return this.classConfig().abilities.filter(a => a.type === 'utility' && !a.petAbility && (a.capstoneGate ? this.selectedCapstone() === a.capstoneGate : a.passive ? this.character().level >= a.requiredLevel : this.trainedRank(a.id) > 0)).map(a => {
-      const rank = this.trainedRank(a.id);
+      const rank = a.capstoneGate ? this.maxAvailableRank(a) : this.trainedRank(a.id);
       const buffRank = a.buffRanks?.find(br => br.rank === rank);
       let cost: number;
       if (isRage) cost = buffRank ? (buffRank.costRage ?? a.costRage ?? 0) : (a.costRage || 0);
@@ -1156,7 +1161,7 @@ export class CharacterService {
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
       improved_diminuendo: `Diminuendo: +${rank * 10}% efectividad`,
-      ballerino: `Agilidad: +${rank * 2}%`,
+      rinforzando: `Scherzo/Sforzando: +${rank * 4}% danyo`,
       harmonioso: `Curas: −${rank * 5}% mana`,
     };
     return texts[talentId] || '';
@@ -1529,6 +1534,14 @@ export class CharacterService {
 
   clearNotes() {
     this.character.update(c => ({ ...c, musicalNotes: [] }));
+  }
+
+  removeHighestNote(): number | null {
+    const notes = this.getNotes();
+    if (notes.length === 0) return null;
+    const highest = Math.max(...notes);
+    this.character.update(c => ({ ...c, musicalNotes: (c.musicalNotes || []).filter(n => n !== highest) }));
+    return highest;
   }
 
   getNotes(): number[] {

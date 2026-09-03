@@ -527,6 +527,9 @@
                       {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
                     </div>
                    <div class="ability-stats">
+                      @if (ability.damageRanges && ability.damageRanges.length > 0) {
+                        <span class="ability-stat dmg">{{ ability.currentMin }}-{{ ability.currentMax }}</span>
+                      }
                       @if (ability.currentBuffValue) {
                         <span class="ability-stat bonus">{{ ability.buff && !ability.buff.applySelf ? '−' : '+' }}{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
                       }
@@ -816,6 +819,9 @@
           }
           @if (hoveredAbility().isHot) {
             <div class="ability-popup-effect">💚 HoT: {{ hoveredAbility().hotTick }}/t · {{ hoveredAbility().hotDuration }}t</div>
+          }
+          @if (!hoveredAbility().isDot && !hoveredAbility().isHot && hoveredAbility().damageRanges?.length > 0) {
+            <div class="ability-popup-effect">💥 {{ hoveredAbility().currentMin }}-{{ hoveredAbility().currentMax }}</div>
           }
           @if (hoveredAbility().inflictsEffects && hoveredAbility().inflictsEffects.length) {
             <div class="ability-popup-effect">⛔ {{ hoveredAbility().inflictsEffects.length }} efecto(s)</div>
