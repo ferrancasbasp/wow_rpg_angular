@@ -589,6 +589,17 @@
     .ability-icon.castable:active:not(.disabled) { transform: scale(0.95); }
     .ability-icon.castable.disabled { cursor: not-allowed; opacity: 0.5; }
     .ability-icon-img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+    .ability-info-btn {
+      position: absolute; top: 1px; right: 1px; z-index: 3;
+      width: 14px; height: 14px; padding: 0; line-height: 1;
+      border-radius: 50%; border: 1px solid rgba(138,115,68,0.45);
+      background: rgba(10,12,16,0.82);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif; font-style: italic; font-weight: 700;
+      font-size: 11px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0.55; transition: opacity 0.2s;
+    }
+    .ability-info-btn:hover, .ability-info-btn:focus { opacity: 1; }
     .ability-info { flex: 1; min-width: 0; }
     .ability-name { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ability-school {
@@ -754,6 +765,22 @@
     .talent-modal {
       max-width: 900px; max-height: 90vh; display: flex; flex-direction: column;
     }
+    .ability-popup { position: relative; max-width: 420px; }
+    .ability-popup-close {
+      position: absolute; top: 8px; right: 8px; cursor: pointer;
+      width: 24px; height: 24px; padding: 0; line-height: 1;
+      border-radius: 50%; border: 1px solid rgba(138,115,68,0.4);
+      background: var(--bg-dark); color: var(--text-dim);
+      font-size: 13px; display: flex; align-items: center; justify-content: center;
+    }
+    .ability-popup-close:hover { color: var(--danger); border-color: var(--danger); }
+    .ability-popup-name {
+      font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: var(--gold-light);
+      padding-right: 24px; margin-bottom: 6px;
+    }
+    .ability-popup-meta { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; }
+    .ability-popup-desc { font-size: 15px; color: var(--text); line-height: 1.6; }
+    .ability-popup-effect { margin-top: 8px; font-size: 13px; color: var(--gold); font-weight: 600; }
     .talent-modal-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 12px;

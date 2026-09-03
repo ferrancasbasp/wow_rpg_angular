@@ -402,6 +402,9 @@
                  @if (charSvc.getCooldown(ability.id) > 0) {
                    <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
                  }
+                 <button type="button" class="ability-info-btn"
+                         (click)="$event.stopPropagation(); hoveredAbility.set(ability)"
+                         aria-label="{{ trSvc.t('info') }}">i</button>
                </div>
                <div class="ability-info">
                  <div class="ability-name">{{ ability.name }}</div>
@@ -507,15 +510,18 @@
                    @if (ability.currentRank > 1) {
                      <span class="ability-rank-badge">R{{ ability.currentRank }}</span>
                    }
-                   @if (charSvc.getCooldown(ability.id) > 0) {
-                     <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
-                   }
-                 </div>
-                 <div class="ability-info">
-                   <div class="ability-name">{{ ability.name }}</div>
-                   <div class="ability-school">
-                     {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
-                   </div>
+                    @if (charSvc.getCooldown(ability.id) > 0) {
+                      <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
+                    }
+                    <button type="button" class="ability-info-btn"
+                            (click)="$event.stopPropagation(); hoveredAbility.set(ability)"
+                            aria-label="{{ trSvc.t('info') }}">i</button>
+                  </div>
+                  <div class="ability-info">
+                    <div class="ability-name">{{ ability.name }}</div>
+                    <div class="ability-school">
+                      {{ ability.school }} · {{ ability.noGcd ? 'NoGCD' : (ability.castType === 'instant' ? 'Inst.' : 'Cast.') }}
+                    </div>
                    <div class="ability-stats">
                       @if (ability.currentBuffValue) {
                         <span class="ability-stat bonus">{{ ability.buff && !ability.buff.applySelf ? '−' : '+' }}{{ ability.currentBuffValue }} {{ ability.currentBuffStat }} · {{ ability.currentBuffDuration }}t</span>
@@ -790,5 +796,35 @@
         <span>⚠️ Cambiar de pet? {{ charSvc.petSwapWarning() }}</span>
         <button class="pet-swap-confirm" (click)="charSvc.confirmPetSwap()">{{ trSvc.t('yes_btn') }}</button>
         <button class="pet-swap-cancel" (click)="charSvc.cancelPetSwap()">{{ trSvc.t('no_btn') }}</button>
+      </div>
+    }
+
+    @if (hoveredAbility()) {
+      <div class="modal-overlay" (click)="hoveredAbility.set(null)">
+        <div class="modal-content ability-popup" (click)="$event.stopPropagation()">
+          <button type="button" class="ability-popup-close" (click)="hoveredAbility.set(null)">✕</button>
+          <div class="ability-popup-name">{{ hoveredAbility().name }}</div>
+          <div class="ability-popup-meta">
+            {{ hoveredAbility().school }}
+            @if (hoveredAbility().currentRank > 1) { · R{{ hoveredAbility().currentRank }} }
+            · {{ hoveredAbility().noGcd ? 'NoGCD' : (hoveredAbility().castType === 'instant' ? 'Inst.' : 'Cast.') }}
+            @if (charSvc.getCooldown(hoveredAbility().id) > 0) { · CD {{ charSvc.getCooldown(hoveredAbility().id) }} }
+          </div>
+          <div class="ability-popup-desc">
+            {{ trSvc.tDesc(hoveredAbility().id, hoveredAbility().description, charSvc.character().classKey) }}
+          </div>
+          @if (hoveredAbility().isDot) {
+            <div class="ability-popup-effect">🩸 DoT: {{ hoveredAbility().dotTick }}/t · {{ hoveredAbility().dotDuration }}t</div>
+          }
+          @if (hoveredAbility().isHot) {
+            <div class="ability-popup-effect">💚 HoT: {{ hoveredAbility().hotTick }}/t · {{ hoveredAbility().hotDuration }}t</div>
+          }
+          @if (hoveredAbility().inflictsEffects && hoveredAbility().inflictsEffects.length) {
+            <div class="ability-popup-effect">⛔ {{ hoveredAbility().inflictsEffects.length }} efecto(s)</div>
+          }
+          @if (hoveredAbility().currentBuffValue) {
+            <div class="ability-popup-effect">✨ +{{ hoveredAbility().currentBuffValue }} {{ hoveredAbility().currentBuffStat }} · {{ hoveredAbility().currentBuffDuration }}t</div>
+          }
+        </div>
       </div>
     }

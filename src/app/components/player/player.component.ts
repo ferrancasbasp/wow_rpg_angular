@@ -63,6 +63,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showEquipment = signal(false);
   showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
+  hoveredAbility = signal<any>(null);
   xpInputAmount = signal(0);
   hpLossAmount = signal(0);
   hpActionType = signal('magical');
