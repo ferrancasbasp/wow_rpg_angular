@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FirebaseService } from '../../services/firebase.service';
-import { symbolIcon as symbolIconOf } from '../../data/mob-symbols';
+import { symbolIcon as symbolIconOf, symbolImg as symbolImgOf } from '../../data/mob-symbols';
 
 interface MonsterEffect {
   type: string;
@@ -74,7 +74,11 @@ interface FlashNumber {
 
             <div class="monster-info">
               <div class="monster-name" [class.dead-name]="monster.currentHP <= 0">
-                <span class="monster-symbol">{{ symbolIcon(monster.symbol) }}</span>{{ monster.name }}
+                @if (symbolImg(monster.symbol)) {
+                  <img class="monster-symbol" [class.dead-symbol]="monster.currentHP <= 0" [src]="symbolImg(monster.symbol)" alt="" />
+                } @else {
+                  <span class="monster-symbol">{{ symbolIcon(monster.symbol) }}</span>
+                }{{ monster.name }}
               </div>
               <div class="hp-bar-wrapper">
                 <div class="hp-bar-track">
@@ -231,7 +235,11 @@ interface FlashNumber {
       text-align: center; margin-bottom: 12px; letter-spacing: 0.05em;
     }
     .monster-name.dead-name { color: var(--danger); text-decoration: line-through; }
-    .monster-symbol { margin-right: 6px; font-size: 18px; }
+    .monster-symbol {
+      width: 20px; height: 20px; margin-right: 6px; font-size: 18px;
+      vertical-align: middle; border-radius: 3px; object-fit: contain;
+    }
+    .monster-symbol.dead-symbol { filter: grayscale(1) opacity(0.5); }
 
     .hp-bar-wrapper {
       position: relative; margin-bottom: 8px;
@@ -315,6 +323,7 @@ export class CombatComponent implements OnInit {
   monsters = signal<Monster[]>([]);
   connected = signal<boolean>(false);
   symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
+  symbolImg = (index: number | null | undefined) => symbolImgOf(index);
   prevHpMap = signal<Record<string, number>>({});
   prevAttackMap = signal<Record<string, number>>({});
   damagedIds = signal<Record<string, string | null>>({});

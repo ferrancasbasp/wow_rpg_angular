@@ -169,9 +169,18 @@
                   (click)="onMonsterCardClick(monster)"
                 >
                   <div class="monster-header">
-                    <span class="monster-symbol" [class.dead-name]="monster.currentHP <= 0">
-                      {{ symbolIcon(monster.symbol) }}
-                    </span>
+                    @if (symbolImg(monster.symbol)) {
+                      <img
+                        class="monster-symbol"
+                        [class.dead-symbol]="monster.currentHP <= 0"
+                        [src]="symbolImg(monster.symbol)"
+                        alt=""
+                      />
+                    } @else {
+                      <span class="monster-symbol" [class.dead-name]="monster.currentHP <= 0">
+                        {{ symbolIcon(monster.symbol) }}
+                      </span>
+                    }
                     <span
                       class="monster-name"
                       [class.dead-name]="monster.currentHP <= 0"

@@ -5,7 +5,7 @@ import { TranslationService } from '../../services/translation.service';
 import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
-import { MOB_SYMBOLS, assignedSymbolIndexes, nextFreeSymbol, symbolIcon as symbolIconOf } from '../../data/mob-symbols';
+import { MOB_SYMBOLS, assignedSymbolIndexes, nextFreeSymbol, symbolIcon as symbolIconOf, symbolImg as symbolImgOf } from '../../data/mob-symbols';
 
 interface MonsterAttack {
   name: string;
@@ -96,6 +96,7 @@ export class MasterComponent implements OnInit {
   pendingEvents = signal<DamageEvent[]>([]);
   monsters = signal<Monster[]>([]);
   symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
+  symbolImg = (index: number | null | undefined) => symbolImgOf(index);
   selectedEventId = signal<string | null>(null);
   newMonsterName = signal('');
   newMonsterHP = signal<number | null>(null);
