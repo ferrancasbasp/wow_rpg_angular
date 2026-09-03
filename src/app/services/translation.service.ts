@@ -674,7 +674,7 @@ export class TranslationService {
     rogue_precision: { es: 'Aumenta tu probabilidad de crítico físico un 1% por punto.', en: 'Increases your physical crit chance by 1% per point.' },
     rogue_endurance: { es: 'Reduce el cooldown de Evasión y Sprint en 1 turno por punto.', en: 'Reduces the cooldown of Evasion and Sprint by 1 turn per point.' },
     rogue_improved_garrote: { es: 'Requiere Opportunity al máximo. Aumenta el daño del bleed de Garrote un 20% y añade efecto de silencio al enemigo.', en: 'Requires Opportunity at max rank. Increases Garrote bleed damage by 20% and adds a silence effect to the enemy.' },
-    rogue_initiative: { es: 'Sinister Strike tiene un 15% de probabilidad por punto de generar un punto de combo extra.', en: 'Sinister Strike has a 15% chance per point to generate an extra combo point.' },
+    rogue_initiative: { es: 'Sinister Strike tiene un 10% de probabilidad por punto de generar un punto de combo extra.', en: 'Sinister Strike has a 10% chance per point to generate an extra combo point.' },
     rogue_aggression: { es: 'Aumenta el daño de Sinister Strike y Eviscerate un 2% por punto.', en: 'Increases Sinister Strike and Eviscerate damage by 2% per point.' },
     mage_elemental_mastery: { es: 'Aumenta el daño de todos tus hechizos un 2% por punto.', en: 'Increases the damage of all your spells by 2% per point.' },
     mage_combat_snacks: { es: 'Al final de tu turno regeneras un 1,5% de tu maná y vida máximos por punto.', en: 'At the end of your turn you regenerate 1.5% of your maximum mana and health per point.' },

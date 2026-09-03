@@ -40,7 +40,7 @@ export const ROGUE: CharacterClass = {
     { id: 'precision', name: 'Precision', icon: '🎯', iconImg: 'img/talents/rogue/precision.jpg', description: 'Aumenta tu probabilidad de crítico físico un 1% por punto.', maxRank: 5, tier: 2, requires: null },
     { id: 'improved_garrote', name: 'Improved Garrote', icon: '🩹', iconImg: 'img/abilities/rogue/garrote.jpg', description: 'Requiere Opportunity al máximo. Aumenta el daño del bleed de Garrote un 20% y añade efecto de silencio al enemigo.', maxRank: 1, tier: 3, requires: { id: 'opportunity', points: 2 } },
     { id: 'endurance', name: 'Endurance', icon: '💨', iconImg: 'img/talents/rogue/endurance.jpg', description: 'Reduce el cooldown de Evasión y Sprint en 1 turno por punto.', maxRank: 2, tier: 2, requires: null },
-    { id: 'initiative', name: 'Initiative', icon: '⚡', iconImg: 'img/talents/rogue/initiative.jpg', description: 'Sinister Strike tiene un 15% de probabilidad por punto de generar un punto de combo extra.', maxRank: 3, tier: 3, requires: null },
+    { id: 'initiative', name: 'Initiative', icon: '⚡', iconImg: 'img/talents/rogue/initiative.jpg', description: 'Sinister Strike tiene un 10% de probabilidad por punto de generar un punto de combo extra.', maxRank: 5, tier: 3, requires: null },
     { id: 'aggression', name: 'Aggression', icon: '🔥', iconImg: 'img/talents/rogue/aggression.jpg', description: 'Aumenta el daño de Sinister Strike y Eviscerate un 2% por punto.', maxRank: 5, tier: 2, requires: null },
   ],
 

@@ -1119,7 +1119,7 @@ export class CharacterService {
       opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 5}%`,
       precision: `Crítico físico: +${rank}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
-      initiative: `Combo extra: ${rank * 15}% prob`,
+      initiative: `Combo extra: ${rank * 10}% prob`,
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 2}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 3}%`,

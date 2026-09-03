@@ -2012,7 +2012,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (Math.random() * 100 < comboChance) {
         let comboGen = ability.generatesCombo;
         if (ability.id === 'sinister_strike') {
-          const initChance = this.charSvc.talentRank('initiative') * 15;
+          const initChance = this.charSvc.talentRank('initiative') * 10;
           if (Math.random() * 100 < initChance) comboGen += 1;
         }
         const comboMax = this.charSvc.getMaelstromMax();
