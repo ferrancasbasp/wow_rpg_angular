@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, off, remove, update } from 'firebase/database';
+import { getDatabase, ref, push, onValue, off, remove, update, get } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCxsMUUHvw_LQrl24VgDtJiperHF2rRL_Y',
@@ -36,6 +36,11 @@ export class FirebaseService {
       callback(snapshot.val());
     });
     return () => off(r, 'value', unsubscribe);
+  }
+
+  async onceValue(path: string): Promise<any> {
+    const snapshot = await get(ref(this.db, path));
+    return snapshot.val();
   }
 
   getDb() {

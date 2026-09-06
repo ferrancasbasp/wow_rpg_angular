@@ -13,7 +13,13 @@ import {
   xpForLevel, createDefaultCharacter,
 } from '../../data/game-data';
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
-import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass } from '../../models/game.models';
+import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
+
+const ORB_SYMBOLS: Record<ElementalOrb, string> = {
+  fire: '🔥',
+  frost: '❄️',
+  arcane: '✨',
+};
 
 @Component({
   selector: 'app-player',
@@ -61,6 +67,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showTalentModal = signal(false);
   showStatsModal = signal(false);
   showEquipment = signal(false);
+  showLoadModal = signal(false);
+  savedCharacters = signal<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]>([]);
   showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
   hoveredAbility = signal<any>(null);
@@ -246,6 +254,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   sunShardPointArray(): number[] {
     return Array.from({ length: this.charSvc.sunShardsMax() }, (_, i) => i + 1);
+  }
+
+  mageOrbSlot(index: number): string {
+    const orb = this.charSvc.mageOrbAt(index);
+    return orb ? ORB_SYMBOLS[orb] : '';
+  }
+
+  mageOrbClass(index: number): string {
+    return this.charSvc.mageOrbAt(index) || 'empty';
+  }
+
+  elementalOrbsTitle(): string {
+    const passive = this.charSvc.classConfig().abilities.find((a: any) => a.id === 'elemental_orbs');
+    return passive?.description || 'Orbes Elementales';
   }
 
   actionSlotArray(): number[] {
@@ -776,10 +798,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       ...c,
       activeEffects: [
         ...(c.activeEffects || []).filter(e => e.target !== 'combustion'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Combustion', target: 'combustion', value: 25, duration },
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Combustion', target: 'combustion', value: 50, duration },
       ],
     }));
-    this.charSvc.showToast('🔥 Combustion activa · +25% critico y danyo critico de Fuego (' + duration + ' turnos)');
+    this.charSvc.showToast('🔥 Combustion activa · +50% critico de Fuego (sin bono de daño critico) · ' + duration + ' turnos');
   }
 
   castIcyVeins(ability: any) {
@@ -803,7 +825,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Arcane Power', target: 'arcane_power', value: 20, duration },
       ],
     }));
-    this.charSvc.showToast('⚡ Arcane Power activa · 2 turnos sin coste de mana · +20% Spell Power · +25% danyo critico');
+    this.charSvc.showToast('⚡ Arcane Power activa · 2 turnos: coste de mana -50% · +20% Spell Power · +25% danyo critico');
   }
 
   castAscendance(ability: any) {
@@ -1258,7 +1280,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.character().classKey === 'mage') {
       const snacks = this.charSvc.talentRank('combat_snacks');
       if (snacks > 0) {
-        const hpSnack = Math.round(this.charSvc.maxHP() * 0.015 * snacks);
+        const hpSnack = Math.round(this.charSvc.maxHP() * 0.005 * snacks);
         const manaSnack = Math.round(this.charSvc.maxMana() * 0.015 * snacks);
         this.charSvc.character.update(c => ({
           ...c,
@@ -1558,35 +1580,45 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     let remaining = amount;
-    const effects = this.charSvc.character().activeEffects;
-    if (effects) {
+    let absorbedTotal = 0;
+    let brokenPieces = 0;
+    while (remaining > 0) {
+      const effects = this.charSvc.character().activeEffects || [];
       const shield = effects.find(e => e.target === 'shield');
-      if (shield) {
-        if (shield.value >= remaining) {
-          const newShieldValue = shield.value - remaining;
-          remaining = 0;
-          if (newShieldValue <= 0) {
-            this.charSvc.character.update(c => ({
-              ...c,
-              activeEffects: (c.activeEffects || []).filter(e => e.target !== 'shield'),
-            }));
-            this.charSvc.showToast(this.trSvc.t('shield_fully_absorbed'));
-          } else {
-            this.charSvc.character.update(c => ({
-              ...c,
-              activeEffects: (c.activeEffects || []).map(e =>
-                e.target === 'shield' ? { ...e, value: newShieldValue } : e
-              ),
-            }));
-            this.charSvc.showToast(this.trSvc.t('shield_absorbs') + ' ' + amount + ' (' + this.trSvc.t('remaining') + ' ' + newShieldValue + ')');
-          }
-        } else {
-          remaining -= shield.value;
+      if (!shield) break;
+      if (shield.value >= remaining) {
+        const newShieldValue = shield.value - remaining;
+        absorbedTotal += remaining;
+        remaining = 0;
+        if (newShieldValue <= 0) {
           this.charSvc.character.update(c => ({
             ...c,
-            activeEffects: (c.activeEffects || []).filter(e => e.target !== 'shield'),
+            activeEffects: (c.activeEffects || []).filter(e => e.id !== shield.id),
+          }));
+          brokenPieces++;
+        } else {
+          this.charSvc.character.update(c => ({
+            ...c,
+            activeEffects: (c.activeEffects || []).map(e =>
+              e.id === shield.id ? { ...e, value: newShieldValue } : e
+            ),
           }));
         }
+      } else {
+        remaining -= shield.value;
+        absorbedTotal += shield.value;
+        brokenPieces++;
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: (c.activeEffects || []).filter(e => e.id !== shield.id),
+        }));
+      }
+    }
+    if (absorbedTotal > 0) {
+      if (remaining === 0 && absorbedTotal === amount) {
+        this.charSvc.showToast(this.trSvc.t('shield_fully_absorbed'));
+      } else {
+        this.charSvc.showToast(this.trSvc.t('shield_absorbs') + ' ' + absorbedTotal + (brokenPieces > 1 ? ' · ' + brokenPieces + ' escudos rotos' : (brokenPieces === 1 ? ' · 1 escudo roto' : '')));
       }
     }
 
@@ -1649,7 +1681,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       cost = ability.scaledCost || ability.computedCost;
     }
     if (this.charSvc.hasEffect('arcane_power')) {
-      cost = 0;
+      cost = Math.round((cost || 0) * 0.5);
     }
     if (this.charSvc.hasEffect('inner_focus')) {
       cost = 0;
@@ -1785,7 +1817,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       critChance += this.charSvc.talentRank('unyielding_strikes') * 1;
     }
     if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
-      critChance += 25;
+      critChance += 50;
     }
     if (this.charSvc.hasEffect('inner_focus')) {
       critChance += 25;
@@ -1815,9 +1847,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.hasEffect('recklessness')) {
         critMult = critMult * 1.20;
       }
-      if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
-        critMult = critMult * 1.25;
-      }
     if (this.charSvc.character().classKey === 'druid') {
       const sorRank = this.charSvc.talentRank('stone_of_rhythms');
       if (sorRank > 0 && (this.charSvc.getSunShards() || 0) > 0 && Math.random() * 100 < sorRank * 15) {
@@ -1842,6 +1871,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (ability.school === 'Escarcha' && this.charSvc.character().classKey === 'mage') {
         critMult += this.charSvc.talentRank('frost_power') * 0.10;
+      }
+      if (this.charSvc.character().classKey === 'mage') {
+        critMult += this.charSvc.countElementalOrbs('fire') * 0.05;
       }
       if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult = critMult * 1.25;
@@ -2442,8 +2474,28 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
+
+      let arcaneOrbText = '';
+      let orbText = '';
+      if (this.charSvc.hasElementalOrbs() && ability.type === 'damage') {
+        const orbEl: ElementalOrb | null = ability.school === 'Fuego' ? 'fire'
+          : ability.school === 'Escarcha' ? 'frost'
+          : ability.school === 'Arcano' ? 'arcane' : null;
+        if (orbEl) {
+          const arcaneOrbsBefore = this.charSvc.countElementalOrbs('arcane');
+          if (arcaneOrbsBefore > 0 && Math.random() * 100 < arcaneOrbsBefore * 10) {
+            this.charSvc.useAction(-1);
+            arcaneOrbText = ' · ⚡ Orbes Arcanos: +1 acción';
+          }
+          this.charSvc.addElementalOrb(orbEl);
+          const orbCount = this.charSvc.elementalOrbs().length;
+          const orbName = orbEl === 'fire' ? 'Fuego' : orbEl === 'frost' ? 'Escarcha' : 'Arcano';
+          orbText = ' · ' + ORB_SYMBOLS[orbEl] + ' ' + orbName + ' (' + orbCount + '/3)';
+        }
+      }
+
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2517,7 +2569,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else if (isFocus) {
       cost = ability.costFocus || 0;
     } else {
-      cost = ability.scaledCost || 0;
+      cost = this.charSvc.getEffectiveManaCost(ability);
     }
 
     const cd = this.charSvc.getCooldown(ability.id);
@@ -3123,12 +3175,35 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   saveChar() {
     this.charSvc.saveToLocalStorage();
-    this.charSvc.showToast('Ficha guardada');
+    this.charSvc.saveToFirebase().then((ok) => {
+      this.charSvc.showToast(ok ? 'Ficha guardada en la nube' : 'No se pudo guardar');
+    });
   }
 
-  loadChar() {
-    this.charSvc.loadFromLocalStorage();
-    this.charSvc.showToast('Ficha cargada');
+  async openLoadModal() {
+    const chars = await this.charSvc.listSavedCharacters();
+    this.savedCharacters.set(chars);
+    this.showLoadModal.set(true);
+  }
+
+  async loadFromFirebase(name: string) {
+    const ok = await this.charSvc.loadFromFirebase(name);
+    if (ok) {
+      this.charSvc.showToast('Ficha cargada: ' + name);
+      this.showLoadModal.set(false);
+    } else {
+      this.charSvc.showToast('No se encontró el personaje en la nube');
+    }
+  }
+
+  formatSavedDate(ts: number): string {
+    if (!ts) return '';
+    return new Date(ts).toLocaleString();
+  }
+
+  savedClassLabel(key: string): string {
+    if (!key) return '';
+    return this.classRegistry.get(key)?.name || key;
   }
 
   addEffect() {
@@ -3248,8 +3323,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
   shieldValue(): number {
     const effects = this.charSvc.character().activeEffects;
     if (!effects) return 0;
-    const shield = effects.find(e => e.target === 'shield');
-    return shield ? shield.value : 0;
+    return effects
+      .filter(e => e.target === 'shield')
+      .reduce((sum, e) => sum + (e.value || 0), 0);
   }
 
   shieldPercent(): number {

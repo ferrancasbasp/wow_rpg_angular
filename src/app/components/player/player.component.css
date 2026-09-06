@@ -419,6 +419,44 @@
       50% { box-shadow: 0 0 18px 4px rgba(58,107,176,0.9); }
     }
 
+    .combo-mage-orb { gap: 10px; margin-top: 6px; }
+    .orb-slots { display: flex; gap: 5px; }
+    .orb-slot {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15);
+      transition: all 0.3s; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; line-height: 1;
+    }
+    .orb-slot.fire {
+      border-color: #ff7a3d;
+      box-shadow: 0 0 10px rgba(255,122,61,0.55);
+    }
+    .orb-slot.fire::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffd27f 0%, #ff6b35 60%, #b3301f 100%);
+    }
+    .orb-slot.frost {
+      border-color: #4a9eff;
+      box-shadow: 0 0 10px rgba(74,158,255,0.55);
+    }
+    .orb-slot.frost::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #cce9ff 0%, #4a9eff 60%, #1458a0 100%);
+    }
+    .orb-slot.arcane {
+      border-color: #a975ff;
+      box-shadow: 0 0 10px rgba(169,117,255,0.55);
+    }
+    .orb-slot.arcane::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #e2c8ff 0%, #9b59ff 60%, #5520b0 100%);
+    }
+    .orb-slot.empty {
+      border-color: rgba(255,255,255,0.15);
+    }
+    .orb-slot > * { position: relative; z-index: 1; }
+
     .combo-bard { gap: 6px; }
     .note-slots { display: flex; gap: 3px; }
     .note-slot {
@@ -1022,8 +1060,56 @@
     }
     .stats-modal { max-width: 500px; }
     .stats-modal-body { max-height: 60vh; overflow-y: auto; }
-    .equip-modal { max-width: 600px; }
-    .equip-modal-body { max-height: 60vh; overflow-y: auto; }
+
+    .load-modal { max-width: 520px; }
+    .load-list { max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .load-empty { color: var(--text-dim); font-size: 13px; padding: 8px; text-align: center; }
+    .load-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      width: 100%; padding: 10px 12px; cursor: pointer; text-align: left;
+      background: var(--bg-input); border: 1px solid rgba(138,115,68,0.25);
+      border-radius: var(--radius); transition: var(--transition);
+      color: var(--text); font-family: inherit;
+    }
+    .load-item:hover { border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); }
+    .load-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .load-name { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--gold-light); }
+    .load-meta { font-size: 12px; color: var(--text-dim); }
+    .load-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+    .equip-screen-overlay {
+      position: fixed; inset: 0; z-index: 150;
+      background: rgba(0,0,0,0.92);
+      display: flex;
+    }
+    .equip-screen {
+      flex: 1; width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      padding: 20px 24px; box-sizing: border-box;
+    }
+    .equip-screen-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 12px; border-bottom: 1px solid var(--gold-dark);
+    }
+    .equip-screen-header .modal-title { margin-bottom: 0; font-size: 22px; }
+    .equip-close-btn {
+      background: var(--bg-dark); color: var(--text-dim); cursor: pointer;
+      border: 1px solid var(--gold-dark); border-radius: 50%;
+      width: 34px; height: 34px; font-size: 15px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .equip-close-btn:hover { color: var(--danger); border-color: var(--danger); }
+    .equip-screen-body { flex: 1; overflow-y: auto; padding: 16px 4px; }
+    .equip-slots-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+    }
+    .equip-slots-grid .equip-slot { margin-bottom: 0; }
+    .equip-screen-footer {
+      display: flex; justify-content: flex-end; gap: 12px;
+      padding-top: 12px; border-top: 1px solid var(--gold-dark);
+    }
 
     .xp-section { margin-bottom: 0; flex: 1; min-width: 0; }
 

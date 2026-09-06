@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet, Capstone } from '../models/game.models';
+import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet, Capstone, ElementalOrb } from '../models/game.models';
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { SimCombatService } from './sim-combat.service';
@@ -834,6 +834,14 @@ export class CharacterService {
     return Math.max(0, cost);
   }
 
+  getEffectiveManaCost(ability: any): number {
+    const base = ability.scaledCost || ability.computedCost || 0;
+    if (this.character().classKey === 'mage' && this.hasEffect('arcane_power')) {
+      return Math.round(base * 0.5);
+    }
+    return base;
+  }
+
   getEffectiveRageGen(ability: any): number {
     let gen = ability.generatesRage || 0;
     if (ability.id === 'charge') gen += this.talentRank('improved_charge') * 3;
@@ -1090,7 +1098,7 @@ export class CharacterService {
       totemic_mastery: `Con Tótem Fuego: +${rank * 5}% SP Rayo/Cadena/Choques · Con Tótem Agua: +${rank * 5}% SP curas`,
       tidal_waves: `Tras Chain Heal: siguiente Healing Wave +${rank * 10}%`,
       elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
-      combat_snacks: `Final de turno: +${rank * 1.5}% vida y maná`,
+      combat_snacks: `Final de turno: +${rank * 0.5}% vida · +${rank * 1.5}% maná`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
       improved_frost_armor: `Frost Armor: +${rank * 15}%`,
       improved_mana_gem: `Mana Gem: +${rank * 25}%`,
@@ -1285,20 +1293,86 @@ export class CharacterService {
   loadFromLocalStorage() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        const cls = this.classRegistry.get(parsed.classKey);
-        if (cls) {
-          parsed.baseStats = { ...cls.baseStats };
-          if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
-          if (parsed.soulShards === undefined) parsed.soulShards = 0;
-          if (parsed.sunShards === undefined) parsed.sunShards = 0;
-          if (!parsed.musicalNotes) parsed.musicalNotes = [];
-          this.character.set(parsed);
-        }
-      }
+      if (raw) this.applyParsedCharacter(JSON.parse(raw));
     } catch (e) {
       console.error('Load error:', e);
+    }
+  }
+
+  // ==================== FIREBASE SAVE / LOAD ====================
+
+  private firebaseKey(name: string): string {
+    return (name || '').trim().replace(/[.$#\[\]\/]/g, '_');
+  }
+
+  private applyParsedCharacter(parsed: any) {
+    const cls = parsed?.classKey ? this.classRegistry.get(parsed.classKey) : undefined;
+    if (!cls) return false;
+    parsed.baseStats = { ...cls.baseStats };
+    if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
+    if (parsed.soulShards === undefined) parsed.soulShards = 0;
+    if (parsed.sunShards === undefined) parsed.sunShards = 0;
+    if (!parsed.musicalNotes) parsed.musicalNotes = [];
+    this.character.set(parsed);
+    return true;
+  }
+
+  async saveToFirebase(): Promise<boolean> {
+    if (this.simMode()) {
+      this.showToast('No puedes guardar en la simulación.');
+      return false;
+    }
+    const name = (this.character().name || '').trim();
+    if (!name) {
+      this.showToast('Ponle nombre a tu personaje para guardarlo en la nube.');
+      return false;
+    }
+    try {
+      const key = this.firebaseKey(name);
+      const data = {
+        ...this.deepClone(this.character()),
+        name,
+        classKey: this.character().classKey,
+        savedAt: Date.now(),
+      };
+      await this.firebase.setData('characters/' + key, data);
+      return true;
+    } catch (e) {
+      console.error('Firebase save error:', e);
+      this.showToast('Error al guardar en Firebase.');
+      return false;
+    }
+  }
+
+  async listSavedCharacters(): Promise<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]> {
+    try {
+      const data = await this.firebase.onceValue('characters');
+      if (!data) return [];
+      return Object.entries(data).map(([key, val]: [string, any]) => ({
+        key,
+        name: val?.name || key,
+        classKey: val?.classKey || '',
+        level: val?.level || 1,
+        savedAt: val?.savedAt || 0,
+      })).sort((a, b) => b.savedAt - a.savedAt);
+    } catch (e) {
+      console.error('Firebase list error:', e);
+      return [];
+    }
+  }
+
+  async loadFromFirebase(characterName: string): Promise<boolean> {
+    try {
+      const key = this.firebaseKey(characterName);
+      const data = await this.firebase.onceValue('characters/' + key);
+      if (!data) return false;
+      const ok = this.applyParsedCharacter(data);
+      if (!ok) return false;
+      this.saveToLocalStorage();
+      return true;
+    } catch (e) {
+      console.error('Firebase load error:', e);
+      return false;
     }
   }
 
@@ -1636,6 +1710,27 @@ export class CharacterService {
         c.currentMana = Math.min(this.maxMana(), c.currentMana + regen);
         return { ...c };
       });
+    }
+    if (this.hasElementalOrbs()) {
+      const frostOrbs = this.countElementalOrbs('frost');
+      if (frostOrbs > 0) {
+        const pieceValue = Math.max(1, Math.round(this.maxHP() * 0.01));
+        this.character.update(c => {
+          const effects = c.activeEffects || [];
+          const currentPieces = effects.filter(e => e.target === 'shield' && e.name === 'Orbes de Escarcha').length;
+          const room = Math.max(0, 3 - currentPieces);
+          if (room === 0) return { ...c };
+          const newPieces = Array.from({ length: Math.min(frostOrbs, room) }, () => ({
+            id: Date.now() + Math.random(),
+            type: 'buff' as const,
+            name: 'Orbes de Escarcha',
+            target: 'shield' as const,
+            value: pieceValue,
+            duration: 2,
+          }));
+          return { ...c, activeEffects: [...effects, ...newPieces] };
+        });
+      }
     }
   }
 
@@ -2001,6 +2096,29 @@ export class CharacterService {
     const base = this.classConfig().comboConfig?.max || 3;
     if (this.character().classKey !== 'shaman') return base;
     return base + this.talentRank('maelstrom_mastery');
+  }
+
+  hasElementalOrbs(): boolean {
+    return this.character().classKey === 'mage' && this.character().level >= 10;
+  }
+
+  elementalOrbs(): ElementalOrb[] {
+    return this.character().elementalOrbs || [];
+  }
+
+  countElementalOrbs(element: ElementalOrb): number {
+    return this.elementalOrbs().filter(o => o === element).length;
+  }
+
+  mageOrbAt(index: number): ElementalOrb | null {
+    return this.elementalOrbs()[index] || null;
+  }
+
+  addElementalOrb(element: ElementalOrb) {
+    this.character.update(c => ({
+      ...c,
+      elementalOrbs: [element, ...(c.elementalOrbs || [])].slice(0, 3),
+    }));
   }
 
   isMaelstormReady(): boolean {

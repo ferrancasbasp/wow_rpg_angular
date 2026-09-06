@@ -294,6 +294,8 @@ export interface ActivePet {
   currentMana: number;
 }
 
+export type ElementalOrb = 'fire' | 'frost' | 'arcane';
+
 export interface Character {
   name: string;
   classKey: string;
@@ -311,6 +313,7 @@ export interface Character {
   musicalNotes?: number[];
   soulShards?: number;
   sunShards?: number;
+  elementalOrbs?: ElementalOrb[];
   raidSymbol?: number | null;
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;

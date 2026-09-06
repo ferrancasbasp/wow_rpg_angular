@@ -168,6 +168,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     comboPoints: 0,
     soulShards: 0,
     sunShards: 0,
+    elementalOrbs: [],
     trainedRanks: {},
     currentCooldowns: {},
     equipment,

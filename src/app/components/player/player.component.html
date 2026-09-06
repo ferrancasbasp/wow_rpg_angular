@@ -130,6 +130,18 @@
               </div>
             }
           </div>
+        } @else if (charSvc.character().classKey === 'mage' && charSvc.hasElementalOrbs()) {
+          <div class="combo-inline combo-mage-orb"
+               [title]="elementalOrbsTitle()">
+            <span class="combo-label">🔮 Orbes Elementales</span>
+            <div class="orb-slots">
+              @for (i of [0, 1, 2]; track i) {
+                <div class="orb-slot {{ mageOrbClass(i) }}">
+                  <span>{{ mageOrbSlot(i) }}</span>
+                </div>
+              }
+            </div>
+          </div>
         } @else if (charSvc.character().classKey === 'bard') {
           <div class="combo-inline combo-bard">
             <span class="combo-label">🎶 Partitura</span>
@@ -383,11 +395,11 @@
           <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
-                 [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
+                     [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
               <div class="ability-icon castable"
                    [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : ability.scaledCost || 0)) || charSvc.getCooldown(ability.id) > 0 || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || charSvc.getCooldown(ability.id) > 0 || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                    [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                    (click)="castSpell(ability)">
                  @if (ability.iconImg) {
@@ -439,10 +451,10 @@
                        @if (ability.focusGain) {
                          <span class="ability-stat cost">+{{ ability.focusGain }} fc</span>
                        }
-                     } @else {
-                       <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
-                     }
-                     @if (ability.generatesShard) {
+                      } @else {
+                        <span class="ability-stat cost">{{ charSvc.getEffectiveManaCost(ability) }} mp</span>
+                      }
+                      @if (ability.generatesShard) {
                       <span class="ability-stat shard-gen">+{{ ability.generatesShard }}<span class="shard-mini"></span></span>
                     }
                     @if (ability.spendsShards) {
@@ -496,11 +508,11 @@
             <div class="ability-grid">
             @for (ability of charSvc.unlockedUtility(); track ability.id) {
               <div class="ability-card"
-                   [class.ability-locked]="charSvc.resourceActual() < (ability.scaledCost || 0) || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
+                   [class.ability-locked]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                    [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
                 <div class="ability-icon castable"
                      [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                     [class.disabled]="charSvc.resourceActual() < (ability.scaledCost || 0) || charSvc.getCooldown(ability.id) > 0 || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
+                     [class.disabled]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || charSvc.getCooldown(ability.id) > 0 || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0)"
                      [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                      (click)="castUtility(ability)">
                    @if (ability.iconImg) {
@@ -545,7 +557,7 @@
                           <span class="ability-stat cost">+{{ ability.focusGain }} fc</span>
                         }
                       } @else {
-                        <span class="ability-stat cost">{{ ability.scaledCost }} mp</span>
+                        <span class="ability-stat cost">{{ charSvc.getEffectiveManaCost(ability) }} mp</span>
                       }
                    </div>
                  </div>
@@ -562,7 +574,7 @@
 
     <div class="action-bar">
       <button class="action-btn" (click)="saveChar()">{{ trSvc.t('save') }}</button>
-      <button class="action-btn" (click)="loadChar()">{{ trSvc.t('load') }}</button>
+      <button class="action-btn" (click)="openLoadModal()">{{ trSvc.t('load') }}</button>
       <button class="action-btn" (click)="openExport()">{{ trSvc.t('export_json') }}</button>
       <button class="action-btn danger" (click)="resetCharacter()">{{ trSvc.t('reset') }}</button>
     </div>
@@ -611,45 +623,50 @@
     }
 
     @if (showEquipment()) {
-      <div class="modal-overlay" (click)="showEquipment.set(false)">
-        <div class="modal-content equip-modal" (click)="$event.stopPropagation()">
-          <div class="modal-title">{{ trSvc.t('equipment') }}</div>
-          <div class="equip-modal-body">
-            @for (slot of visibleEquipmentSlots(); track slot.key) {
-              <div class="equip-slot">
-                <div class="equip-slot-header">
-                  <span class="equip-slot-icon">{{ slot.icon }}</span>
-                  <span class="equip-slot-label">{{ slot.label }}</span>
-                </div>
-                <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
-                       class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
-                <div class="equip-bonus-grid">
-                  @for (entry of statEntries; track entry[1]) {
-                    <div class="equip-bonus-cell">
-                      <span class="equip-bonus-label">{{ STAT_ICONS[entry[1]] }}</span>
-                      <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
-                             (input)="onEquipBonusInput($event, slot.key, entry[1])"
-                             class="equip-bonus-input" min="0" placeholder="0">
-                    </div>
-                  }
-                </div>
-                @if (slot.extraFields) {
-                  <div class="equip-extra-fields">
-                    @for (field of slot.extraFields; track field.key) {
+      <div class="equip-screen-overlay">
+        <div class="equip-screen">
+          <div class="equip-screen-header">
+            <div class="modal-title">{{ trSvc.t('equipment') }}</div>
+            <button type="button" class="equip-close-btn" (click)="showEquipment.set(false)">✕</button>
+          </div>
+          <div class="equip-screen-body">
+            <div class="equip-slots-grid">
+              @for (slot of visibleEquipmentSlots(); track slot.key) {
+                <div class="equip-slot">
+                  <div class="equip-slot-header">
+                    <span class="equip-slot-icon">{{ slot.icon }}</span>
+                    <span class="equip-slot-label">{{ slot.label }}</span>
+                  </div>
+                  <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
+                         class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
+                  <div class="equip-bonus-grid">
+                    @for (entry of statEntries; track entry[1]) {
                       <div class="equip-bonus-cell">
-                        <span class="equip-bonus-label">{{ field.icon }}</span>
-                        <span class="equip-extra-label">{{ field.label }}</span>
-                        <input type="number" [value]="getEquipExtra(slot.key, field.key)"
-                               (input)="onEquipExtraInput($event, slot.key, field.key)"
+                        <span class="equip-bonus-label">{{ STAT_ICONS[entry[1]] }}</span>
+                        <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
+                               (input)="onEquipBonusInput($event, slot.key, entry[1])"
                                class="equip-bonus-input" min="0" placeholder="0">
                       </div>
                     }
                   </div>
-                }
-              </div>
-            }
+                  @if (slot.extraFields) {
+                    <div class="equip-extra-fields">
+                      @for (field of slot.extraFields; track field.key) {
+                        <div class="equip-bonus-cell">
+                          <span class="equip-bonus-label">{{ field.icon }}</span>
+                          <span class="equip-extra-label">{{ field.label }}</span>
+                          <input type="number" [value]="getEquipExtra(slot.key, field.key)"
+                                 (input)="onEquipExtraInput($event, slot.key, field.key)"
+                                 class="equip-bonus-input" min="0" placeholder="0">
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
-          <div class="modal-actions">
+          <div class="equip-screen-footer">
             <button class="action-btn" (click)="showEquipment.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
@@ -665,6 +682,31 @@
             <button class="action-btn" (click)="copyJson()">{{ trSvc.t('copy') }}</button>
             <button class="action-btn" (click)="downloadJson()">{{ trSvc.t('download') }}</button>
             <button class="action-btn" (click)="showExportModal.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showLoadModal()) {
+      <div class="modal-overlay" (click)="showLoadModal.set(false)">
+        <div class="modal-content load-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">{{ trSvc.t('load_character') }}</div>
+          <div class="load-list">
+            @if (savedCharacters().length === 0) {
+              <div class="load-empty">{{ trSvc.t('no_saved_characters') }}</div>
+            }
+            @for (char of savedCharacters(); track char.key) {
+              <button type="button" class="load-item" (click)="loadFromFirebase(char.name)">
+                <div class="load-item-main">
+                  <span class="load-name">{{ char.name }}</span>
+                  <span class="load-meta">{{ savedClassLabel(char.classKey) }} · {{ trSvc.t('nv') }} {{ char.level }}</span>
+                </div>
+                <span class="load-date">{{ formatSavedDate(char.savedAt) }}</span>
+              </button>
+            }
+          </div>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showLoadModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
