@@ -39,7 +39,7 @@ export const HUNTER: CharacterClass = {
 
   capstones: [
     { id: 'lone_wolf', name: 'Lone Wolf', icon: '🐺', iconImg: 'img/capstones/hunter/lone_wolf.jpg', description: 'No puedes tener un pet activo durante el resto del combate. Tu dano a distancia +10% y tienes 1 accion adicional por turno.' },
-    { id: 'explosive_shot', name: 'Explosive Shot', icon: '💥', iconImg: 'img/capstones/hunter/explosive_shot.jpg', description: 'Coste: 50 Focus. Cast. Dispara un proyectil que se incrusta 3 turnos: dano de Fuego cada turno al objetivo y a todos los enemigos cercanos.' },
+    { id: 'explosive_shot', name: 'Explosive Shot', icon: '💥', iconImg: 'img/capstones/hunter/explosive_shot.jpg', description: 'Coste: 50 Focus. Cast. Dispara un proyectil que impacta de inmediato con dano de Fuego en área y se incrusta dejando un DOT de Fuego cada turno durante 3 turnos, también en área.' },
     { id: 'animal_companion', name: 'Animal Companion', icon: '🐾', iconImg: 'img/capstones/hunter/animal_companion.jpg', description: 'Invoca Wolf y Bear a la vez. Ambos atacan, usan sus habilidades y generan Focus por separado.' },
   ],
 
