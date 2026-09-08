@@ -1326,10 +1326,14 @@ export class CharacterService {
 
   characterAvatarPaths(): CharacterAvatarPaths {
     const c = this.character();
-    const known = KNOWN_CHARACTER_AVATARS[c.name.trim().toUpperCase()];
+    return this.resolveAvatarFor(c.name, c.imageHorizontal, c.imageVertical);
+  }
+
+  resolveAvatarFor(name: string, horizontal?: string, vertical?: string): CharacterAvatarPaths {
+    const known = KNOWN_CHARACTER_AVATARS[(name || '').trim().toUpperCase()];
     return {
-      horizontal: known?.horizontal || c.imageHorizontal || '',
-      vertical: known?.vertical || c.imageVertical || '',
+      horizontal: known?.horizontal || horizontal || '',
+      vertical: known?.vertical || vertical || '',
     };
   }
 
