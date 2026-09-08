@@ -34,7 +34,6 @@ interface CombatPlayer {
   level?: number;
   imageHorizontal?: string;
   imageVertical?: string;
-  effects?: any[];
 }
 
 @Component({
@@ -148,19 +147,6 @@ interface CombatPlayer {
                 <div class="hp-bar-text">{{ p.hp }} / {{ p.maxHp }}</div>
               </div>
             </div>
-            @if (p.effects && p.effects.length > 0) {
-              <div class="player-effects">
-                @for (eff of p.effects; track $index) {
-                  <span class="effect-chip" [class]="eff.type">
-                    {{ eff.type === 'dot' ? '🩸' : eff.type === 'hot' ? '💚' : eff.type === 'status' ? '⛔' : eff.type === 'debuff' ? '📉' : '✨' }} {{ eff.name }}
-                    @if (eff.value > 0) {
-                      <span> {{ eff.value }}</span>
-                    }
-                    <span class="effect-dur">{{ eff.duration }}t</span>
-                  </span>
-                }
-              </div>
-            }
           </div>
         }
       </div>
@@ -253,23 +239,6 @@ interface CombatPlayer {
     .player-card .hp-bar-wrapper { padding: 0 8px 8px; }
     .player-card .hp-bar-track { height: 20px; }
     .player-card .hp-bar-text { font-size: 11px; }
-
-    .player-effects {
-      display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
-      padding: 0 6px 8px; max-height: 52px; overflow-y: auto;
-    }
-    .player-effects .effect-chip {
-      font-size: 10px; padding: 2px 6px;
-    }
-    .player-effects .effect-chip.buff {
-      background: rgba(201,178,126,0.18); color: var(--gold-light); border: 1px solid rgba(201,178,126,0.4);
-    }
-    .player-effects .effect-chip.hot {
-      background: rgba(95,168,95,0.2); color: #8bd08b; border: 1px solid rgba(95,168,95,0.4);
-    }
-    .player-effects .effect-chip.misc {
-      background: rgba(155,89,182,0.2); color: #b388e0; border: 1px solid rgba(155,89,182,0.4);
-    }
 
     .combat-grid {
       display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
@@ -468,7 +437,6 @@ export class CombatComponent implements OnInit {
         level: val?.level || undefined,
         imageHorizontal: val?.imageHorizontal || '',
         imageVertical: val?.imageVertical || '',
-        effects: Array.isArray(val?.effects) ? val.effects : [],
       })).filter(p => p.name);
       list.sort((a, b) => a.name.localeCompare(b.name));
       this.players.set(list);
