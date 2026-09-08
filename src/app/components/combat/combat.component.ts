@@ -50,36 +50,6 @@ interface CombatPlayer {
       </div>
     </div>
 
-    @if (players().length > 0) {
-      <div class="combat-party">
-        @for (p of players(); track p.name) {
-          <div class="player-card" [class.no-image]="!p.imageHorizontal">
-            <div class="player-portrait">
-              @if (p.imageHorizontal) {
-                <img [src]="p.imageHorizontal" class="player-portrait-img" alt="" />
-              } @else {
-                <span class="player-portrait-placeholder">{{ (p.name || '?').charAt(0) }}</span>
-              }
-              @if (p.level) {
-                <span class="player-level-badge">Nv. {{ p.level }}</span>
-              }
-            </div>
-            <div class="player-name">{{ p.name }}</div>
-            <div class="hp-bar-wrapper">
-              <div class="hp-bar-track">
-                <div
-                  class="hp-bar-fill"
-                  [class]="playerHpClass(p)"
-                  [style.width.%]="playerHpPercent(p)"
-                ></div>
-                <div class="hp-bar-text">{{ p.hp }} / {{ p.maxHp }}</div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-
     @if (monsters().length > 0) {
       <div class="combat-grid">
         @for (monster of monsters(); track monster.id) {
@@ -151,6 +121,36 @@ interface CombatPlayer {
         Esperando a que el master añada enemigos...
       </div>
     }
+
+    @if (players().length > 0) {
+      <div class="combat-party">
+        @for (p of players(); track p.name) {
+          <div class="player-card" [class.no-image]="!p.imageHorizontal">
+            <div class="player-portrait">
+              @if (p.imageHorizontal) {
+                <img [src]="p.imageHorizontal" class="player-portrait-img" alt="" />
+              } @else {
+                <span class="player-portrait-placeholder">{{ (p.name || '?').charAt(0) }}</span>
+              }
+              @if (p.level) {
+                <span class="player-level-badge">Nv. {{ p.level }}</span>
+              }
+            </div>
+            <div class="player-name">{{ p.name }}</div>
+            <div class="hp-bar-wrapper">
+              <div class="hp-bar-track">
+                <div
+                  class="hp-bar-fill"
+                  [class]="playerHpClass(p)"
+                  [style.width.%]="playerHpPercent(p)"
+                ></div>
+                <div class="hp-bar-text">{{ p.hp }} / {{ p.maxHp }}</div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
   `,
   styles: [`
     :host {
@@ -199,16 +199,16 @@ interface CombatPlayer {
     .status-dot.disconnected { background: var(--danger); }
 
     .combat-party {
-      display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
-      padding: 10px 30px 8px; max-width: 1400px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;
+      padding: 6px 30px 24px; max-width: 1400px; margin: 0 auto;
     }
 
     .player-card {
       background: var(--bg-panel); border: 2px solid var(--gold-dark);
-      border-radius: var(--radius); overflow: hidden; width: 340px;
+      border-radius: var(--radius); overflow: hidden; width: 180px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(138,115,68,0.1);
     }
-    .player-card.no-image { width: 220px; }
+    .player-card.no-image { width: 130px; }
 
     .player-portrait {
       width: 100%; background: var(--bg-dark);
@@ -220,22 +220,25 @@ interface CombatPlayer {
       width: 100%; height: auto; display: block;
     }
     .player-portrait-placeholder {
-      font-family: 'Cinzel', serif; font-size: 72px; font-weight: 900;
-      color: var(--gold-dark); min-height: 160px;
+      font-family: 'Cinzel', serif; font-size: 34px; font-weight: 900;
+      color: var(--gold-dark); min-height: 90px;
       display: flex; align-items: center; justify-content: center;
     }
     .player-level-badge {
-      position: absolute; top: 8px; right: 8px;
-      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      position: absolute; top: 5px; right: 5px;
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
       background: var(--bg-dark); border: 1px solid var(--gold-dark);
-      border-radius: 4px; padding: 2px 10px; color: var(--gold-light); z-index: 2;
+      border-radius: 4px; padding: 1px 6px; color: var(--gold-light); z-index: 2;
     }
 
     .player-name {
-      font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #7ec8ff;
-      text-align: center; padding: 10px 16px 6px; letter-spacing: 0.05em;
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: #7ec8ff;
+      text-align: center; padding: 6px 8px 4px; letter-spacing: 0.05em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .player-card .hp-bar-wrapper { padding: 0 16px 14px; }
+    .player-card .hp-bar-wrapper { padding: 0 8px 8px; }
+    .player-card .hp-bar-track { height: 20px; }
+    .player-card .hp-bar-text { font-size: 11px; }
 
     .combat-grid {
       display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
