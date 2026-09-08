@@ -27,6 +27,15 @@ interface FlashNumber {
   heal: boolean;
 }
 
+interface CombatPlayer {
+  name: string;
+  hp: number;
+  maxHp: number;
+  level?: number;
+  imageHorizontal?: string;
+  imageVertical?: string;
+}
+
 @Component({
   selector: 'app-combat',
   standalone: true,
@@ -40,6 +49,36 @@ interface FlashNumber {
         {{ connected() ? 'Conectado' : 'Sin conexión' }}
       </div>
     </div>
+
+    @if (players().length > 0) {
+      <div class="combat-party">
+        @for (p of players(); track p.name) {
+          <div class="player-card" [class.no-image]="!p.imageHorizontal">
+            <div class="player-portrait">
+              @if (p.imageHorizontal) {
+                <img [src]="p.imageHorizontal" class="player-portrait-img" alt="" />
+              } @else {
+                <span class="player-portrait-placeholder">{{ (p.name || '?').charAt(0) }}</span>
+              }
+              @if (p.level) {
+                <span class="player-level-badge">Nv. {{ p.level }}</span>
+              }
+            </div>
+            <div class="player-name">{{ p.name }}</div>
+            <div class="hp-bar-wrapper">
+              <div class="hp-bar-track">
+                <div
+                  class="hp-bar-fill"
+                  [class]="playerHpClass(p)"
+                  [style.width.%]="playerHpPercent(p)"
+                ></div>
+                <div class="hp-bar-text">{{ p.hp }} / {{ p.maxHp }}</div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
 
     @if (monsters().length > 0) {
       <div class="combat-grid">
@@ -158,6 +197,45 @@ interface FlashNumber {
     .status-dot { width: 8px; height: 8px; border-radius: 50%; }
     .status-dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
     .status-dot.disconnected { background: var(--danger); }
+
+    .combat-party {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+      padding: 10px 30px 8px; max-width: 1400px; margin: 0 auto;
+    }
+
+    .player-card {
+      background: var(--bg-panel); border: 2px solid var(--gold-dark);
+      border-radius: var(--radius); overflow: hidden; width: 340px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(138,115,68,0.1);
+    }
+    .player-card.no-image { width: 220px; }
+
+    .player-portrait {
+      width: 100%; background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      border-bottom: 2px solid var(--gold-dark);
+    }
+    .player-portrait-img {
+      width: 100%; height: auto; display: block;
+    }
+    .player-portrait-placeholder {
+      font-family: 'Cinzel', serif; font-size: 72px; font-weight: 900;
+      color: var(--gold-dark); min-height: 160px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .player-level-badge {
+      position: absolute; top: 8px; right: 8px;
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      background: var(--bg-dark); border: 1px solid var(--gold-dark);
+      border-radius: 4px; padding: 2px 10px; color: var(--gold-light); z-index: 2;
+    }
+
+    .player-name {
+      font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #7ec8ff;
+      text-align: center; padding: 10px 16px 6px; letter-spacing: 0.05em;
+    }
+    .player-card .hp-bar-wrapper { padding: 0 16px 14px; }
 
     .combat-grid {
       display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
@@ -321,6 +399,7 @@ export class CombatComponent implements OnInit {
   private firebase = inject(FirebaseService);
 
   monsters = signal<Monster[]>([]);
+  players = signal<CombatPlayer[]>([]);
   connected = signal<boolean>(false);
   symbolIcon = (index: number | null | undefined) => symbolIconOf(index);
   symbolImg = (index: number | null | undefined) => symbolImgOf(index);
@@ -342,6 +421,35 @@ export class CombatComponent implements OnInit {
         this.monsters.set([]);
       }
     });
+
+    this.firebase.onValue('players', (data) => {
+      if (!data || typeof data !== 'object') {
+        this.players.set([]);
+        return;
+      }
+      const list: CombatPlayer[] = Object.values(data).map((val: any) => ({
+        name: val?.name || '',
+        hp: val?.hp ?? 0,
+        maxHp: val?.maxHp ?? 0,
+        level: val?.level || undefined,
+        imageHorizontal: val?.imageHorizontal || '',
+        imageVertical: val?.imageVertical || '',
+      })).filter(p => p.name);
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      this.players.set(list);
+    });
+  }
+
+  playerHpPercent(p: CombatPlayer): number {
+    if (!p.maxHp || p.maxHp <= 0) return 0;
+    return Math.max(0, Math.floor((p.hp / p.maxHp) * 100));
+  }
+
+  playerHpClass(p: CombatPlayer): string {
+    const pct = this.playerHpPercent(p);
+    if (pct > 50) return 'high';
+    if (pct > 25) return 'medium';
+    return 'low';
   }
 
   onMonstersUpdate(list: Monster[]) {

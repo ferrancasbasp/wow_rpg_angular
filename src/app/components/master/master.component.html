@@ -291,6 +291,33 @@
           } @else {
             <div class="damage-empty">{{ trSvc.t('no_monsters') }}</div>
           }
+
+          @if (partyMembers().length > 0) {
+            <div class="party-section">
+              <div class="party-title">👥 {{ trSvc.t('party') }}</div>
+              <div class="party-list">
+                @for (p of partyMembers(); track p.name) {
+                  <div class="party-card">
+                    <div class="party-header">
+                      <span class="party-name">{{ p.name }}</span>
+                      @if (p.level) {
+                        <span class="party-level">Nv. {{ p.level }}</span>
+                      }
+                    </div>
+                    <div class="party-hp-bar">
+                      <div
+                        class="party-hp-fill"
+                        [class.low]="partyHPPercent(p) > 25 && partyHPPercent(p) <= 50"
+                        [class.critical]="partyHPPercent(p) <= 25"
+                        [style.width]="partyHPPercent(p) + '%'"
+                      ></div>
+                      <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </div>
 

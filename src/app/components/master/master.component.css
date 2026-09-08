@@ -387,6 +387,95 @@
       font-family: 'Cinzel', serif;
     }
 
+    .party-section {
+      border-top: 1px solid var(--gold-dark);
+      margin-top: 14px;
+      padding-top: 10px;
+    }
+
+    .party-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .party-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .party-card {
+      background: var(--bg-card);
+      border: 1px solid var(--gold-dark);
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+
+    .party-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .party-name {
+      font-weight: 700;
+      color: #7ec8ff;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+    }
+
+    .party-level {
+      font-size: 11px;
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+    }
+
+    .party-hp-bar {
+      height: 18px;
+      background: var(--bg-dark);
+      border: 1px solid var(--gold-dark);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .party-hp-fill {
+      height: 100%;
+      background: linear-gradient(180deg, #4a8e3a 0%, #2d6b1f 100%);
+      transition: width 0.4s ease;
+      border-radius: 2px;
+    }
+
+    .party-hp-fill.low {
+      background: linear-gradient(180deg, #c4a830 0%, #8a7a1e 100%);
+    }
+
+    .party-hp-fill.critical {
+      background: linear-gradient(180deg, #c0392b 0%, #8b2e1e 100%);
+    }
+
+    .party-hp-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      font-family: 'Cinzel', serif;
+    }
+
     .monster-hp-controls {
       display: flex;
       gap: 6px;

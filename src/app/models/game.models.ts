@@ -314,6 +314,8 @@ export interface Character {
   soulShards?: number;
   sunShards?: number;
   elementalOrbs?: ElementalOrb[];
+  imageHorizontal?: string;
+  imageVertical?: string;
   raidSymbol?: number | null;
   trainedRanks: Record<string, number>;
   currentCooldowns: Record<string, number>;

@@ -5,6 +5,18 @@ import { FirebaseService } from './firebase.service';
 import { SimCombatService } from './sim-combat.service';
 import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, STORAGE_KEY, EQUIPMENT_SLOTS } from '../data/game-data';
 
+interface CharacterAvatarPaths {
+  horizontal: string;
+  vertical: string;
+}
+
+const KNOWN_CHARACTER_AVATARS: Record<string, CharacterAvatarPaths> = {
+  KAS: {
+    horizontal: 'img/chars/Kas-Horizontal.jpeg',
+    vertical: 'img/chars/Kas-Vertical.jpeg',
+  },
+};
+
 @Injectable({ providedIn: 'root' })
 export class CharacterService {
   private classRegistry = inject(ClassRegistryService);
@@ -1314,7 +1326,29 @@ export class CharacterService {
     if (parsed.sunShards === undefined) parsed.sunShards = 0;
     if (!parsed.musicalNotes) parsed.musicalNotes = [];
     this.character.set(parsed);
+    this.applyKnownAvatar();
     return true;
+  }
+
+  characterAvatarPaths(): CharacterAvatarPaths {
+    const c = this.character();
+    const known = KNOWN_CHARACTER_AVATARS[c.name.trim().toUpperCase()];
+    return {
+      horizontal: c.imageHorizontal || known?.horizontal || '',
+      vertical: c.imageVertical || known?.vertical || '',
+    };
+  }
+
+  private applyKnownAvatar() {
+    const c = this.character();
+    const known = KNOWN_CHARACTER_AVATARS[(c.name || '').trim().toUpperCase()];
+    if (!known) return;
+    const updates: { imageHorizontal?: string; imageVertical?: string } = {};
+    if (!c.imageHorizontal) updates.imageHorizontal = known.horizontal;
+    if (!c.imageVertical) updates.imageVertical = known.vertical;
+    if (Object.keys(updates).length > 0) {
+      this.character.update(char => ({ ...char, ...updates }));
+    }
   }
 
   async saveToFirebase(): Promise<boolean> {
@@ -1381,16 +1415,33 @@ export class CharacterService {
     const newChar = createDefaultCharacter(classKey, this.classRegistry.getAll());
     newChar.name = currentName;
     this.character.set(newChar);
+    this.applyKnownAvatar();
     this.saveToLocalStorage();
   }
 
   // ==================== FIREBASE ====================
 
   registerPlayer() {
+    this.syncPlayerStatus();
+  }
+
+  syncPlayerStatus() {
+    if (this.simMode()) return;
     const name = (this.character().name || '').trim();
     if (!name) return;
+    this.applyKnownAvatar();
+    const paths = this.characterAvatarPaths();
     try {
-      this.firebase.setData('players/' + name, { name, timestamp: Date.now() });
+      this.firebase.setData('players/' + name, {
+        name,
+        hp: this.hpActual(),
+        maxHp: this.maxHP(),
+        level: this.character().level || 0,
+        classKey: this.character().classKey || '',
+        imageHorizontal: paths.horizontal,
+        imageVertical: paths.vertical,
+        timestamp: Date.now(),
+      });
     } catch (e) {
       console.error('Firebase register player error:', e);
     }
@@ -1660,6 +1711,7 @@ export class CharacterService {
       c.currentHP = Math.max(0, Math.min(maxHP, c.currentHP + delta));
       return { ...c };
     });
+    this.syncPlayerStatus();
   }
 
   nextTurn() {

@@ -1363,6 +1363,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.processTotems(oldTurn);
 
     this.charSvc.nextTurn();
+    this.charSvc.syncPlayerStatus();
     const resType = this.charSvc.resourceConfig().type;
     if (resType === 'rage') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
@@ -1538,6 +1539,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentHP: Math.min(maxHP, this.charSvc.hpActual() + amount),
       }));
       this.charSvc.showToast('+' + amount + ' ' + this.trSvc.t('health_restored'));
+      this.charSvc.syncPlayerStatus();
       return;
     }
 
@@ -1663,6 +1665,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('-' + amount + ' ' + this.trSvc.t('life_lost') + rageText);
       }
     }
+    this.charSvc.syncPlayerStatus();
   }
 
   castSpell(ability: any) {
@@ -3074,6 +3077,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   fullRest() {
+    if (!this.charSvc.simMode()) {
+      this.charSvc.registerPlayer();
+    }
     const maxHP = this.charSvc.maxHP();
     const maxMana = this.charSvc.maxMana();
     const resourceMax = this.charSvc.resourceMax();

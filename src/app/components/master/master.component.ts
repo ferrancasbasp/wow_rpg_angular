@@ -44,6 +44,14 @@ interface PlayerDmgLog {
   abilities: DmgAbilityLog[];
 }
 
+interface PartyMember {
+  name: string;
+  hp: number;
+  maxHp: number;
+  level?: number;
+  classKey?: string;
+}
+
 interface Monster {
   id: number;
   name: string;
@@ -113,6 +121,7 @@ export class MasterComponent implements OnInit {
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
   knownPlayers = signal<string[]>([]);
+  partyMembers = signal<PartyMember[]>([]);
   dotAmount = signal<number | null>(null);
   dotDuration = signal<number | null>(null);
   xpAmount = signal<number | null>(null);
@@ -251,6 +260,18 @@ export class MasterComponent implements OnInit {
           if (players.includes(val.name)) return players;
           return [...players, val.name].sort();
         });
+        this.upsertPartyMember(val);
+      }
+    });
+
+    onChildChanged(ref(db, 'players'), (snapshot) => {
+      const val = snapshot.val();
+      if (val?.name) {
+        this.knownPlayers.update(players => {
+          if (players.includes(val.name)) return players;
+          return [...players, val.name].sort();
+        });
+        this.upsertPartyMember(val);
       }
     });
 
@@ -258,6 +279,7 @@ export class MasterComponent implements OnInit {
       const val = snapshot.val();
       if (val?.name) {
         this.knownPlayers.update(players => players.filter(p => p !== val.name));
+        this.partyMembers.update(list => list.filter(p => p.name !== val.name));
       }
     });
 
@@ -898,7 +920,28 @@ export class MasterComponent implements OnInit {
       remove(ref(db, 'players/' + name));
     }
     this.knownPlayers.set([]);
+    this.partyMembers.set([]);
     this.showToast(this.trSvc.t('players_cleared'));
+  }
+
+  upsertPartyMember(val: any) {
+    if (typeof val.hp !== 'number' || typeof val.maxHp !== 'number') return;
+    const member: PartyMember = {
+      name: val.name,
+      hp: val.hp,
+      maxHp: val.maxHp,
+      level: val.level || undefined,
+      classKey: val.classKey || undefined,
+    };
+    this.partyMembers.update(list => {
+      const others = list.filter(p => p.name !== val.name);
+      return [...others, member].sort((a, b) => a.name.localeCompare(b.name));
+    });
+  }
+
+  partyHPPercent(p: PartyMember): number {
+    if (!p.maxHp || p.maxHp <= 0) return 0;
+    return Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
   }
 
   selectPlayerTarget(name: string) {
