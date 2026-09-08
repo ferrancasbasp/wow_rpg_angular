@@ -84,8 +84,6 @@
                     [value]="xpAmount() || ''" (input)="xpAmount.set($any($event.target).valueAsNumber || null)"
                     (keyup.enter)="sendXP()" />
                   <button class="quick-btn xp-btn" (click)="sendXP()">XP</button>
-                  <button class="quick-btn xp-btn" (click)="sendLevel(1)">+1 Nivel</button>
-                  <button class="quick-btn xp-btn" (click)="sendLevel(2)">+2 Niveles</button>
                 </div>
               </div>
             </div>
