@@ -1328,8 +1328,8 @@ export class CharacterService {
     const c = this.character();
     const known = KNOWN_CHARACTER_AVATARS[c.name.trim().toUpperCase()];
     return {
-      horizontal: c.imageHorizontal || known?.horizontal || '',
-      vertical: c.imageVertical || known?.vertical || '',
+      horizontal: known?.horizontal || c.imageHorizontal || '',
+      vertical: known?.vertical || c.imageVertical || '',
     };
   }
 
@@ -1337,12 +1337,11 @@ export class CharacterService {
     const c = this.character();
     const known = KNOWN_CHARACTER_AVATARS[(c.name || '').trim().toUpperCase()];
     if (!known) return;
-    const updates: { imageHorizontal?: string; imageVertical?: string } = {};
-    if (!c.imageHorizontal) updates.imageHorizontal = known.horizontal;
-    if (!c.imageVertical) updates.imageVertical = known.vertical;
-    if (Object.keys(updates).length > 0) {
-      this.character.update(char => ({ ...char, ...updates }));
-    }
+    this.character.update(char => ({
+      ...char,
+      imageHorizontal: known.horizontal,
+      imageVertical: known.vertical,
+    }));
   }
 
   async saveToFirebase(): Promise<boolean> {
