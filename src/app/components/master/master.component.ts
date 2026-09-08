@@ -124,6 +124,7 @@ export class MasterComponent implements OnInit {
   playerTargetName = signal('');
   knownPlayers = signal<string[]>([]);
   partyMembers = signal<PartyMember[]>([]);
+  savedCharacters = signal<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]>([]);
   dotAmount = signal<number | null>(null);
   dotDuration = signal<number | null>(null);
   xpAmount = signal<number | null>(null);
@@ -283,6 +284,22 @@ export class MasterComponent implements OnInit {
         this.knownPlayers.update(players => players.filter(p => p !== val.name));
         this.partyMembers.update(list => list.filter(p => p.name !== val.name));
       }
+    });
+
+    // Lista viva de personajes guardados en Firebase (para limpiar guardados corruptos)
+    this.firebase.onValue('characters', (data) => {
+      if (!data || typeof data !== 'object') {
+        this.savedCharacters.set([]);
+        return;
+      }
+      const list = Object.entries(data).map(([key, val]: [string, any]) => ({
+        key,
+        name: val?.name || key,
+        classKey: val?.classKey || '',
+        level: val?.level || 1,
+        savedAt: val?.savedAt || 0,
+      })).sort((a, b) => b.savedAt - a.savedAt);
+      this.savedCharacters.set(list);
     });
 
     // Sincroniza monstruos desde Firebase (los añade el master de cualquier PC)
@@ -914,6 +931,29 @@ export class MasterComponent implements OnInit {
     this.pendingEvents.set([]);
     this.selectedEventId.set(null);
     this.showToast(this.trSvc.t('events_cleared'));
+  }
+
+  deleteSavedCharacter(member: { key: string; name: string }) {
+    if (!confirm('Eliminar el personaje guardado "' + member.name + '" de Firebase?')) return;
+    try {
+      this.firebase.removeData('characters/' + member.key);
+      if (member.name) this.firebase.removeData('players/' + member.name);
+      this.showToast('Personaje eliminado: ' + member.name);
+    } catch (e) {
+      console.error('Delete character error:', e);
+      this.showToast('Error al eliminar el personaje.');
+    }
+  }
+
+  removePartyMember(name: string) {
+    if (!confirm('Quitar a "' + name + '" del grupo de Firebase?')) return;
+    try {
+      this.firebase.removeData('players/' + name);
+      this.showToast(name + ' eliminado del grupo');
+    } catch (e) {
+      console.error('Remove player error:', e);
+      this.showToast('Error al quitar del grupo.');
+    }
   }
 
   clearPlayers() {

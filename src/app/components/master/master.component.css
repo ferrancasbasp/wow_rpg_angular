@@ -431,6 +431,71 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 6px;
+      position: relative;
+    }
+
+    .party-del {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      border: 1px solid var(--gold-dark);
+      background: rgba(0, 0, 0, 0.55);
+      color: #ff8a80;
+      font-size: 11px;
+      line-height: 1;
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .party-del:hover {
+      background: rgba(120, 20, 20, 0.75);
+    }
+
+    .saved-chars-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .saved-char-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-dark);
+      border: 1px solid var(--gold-dark);
+      border-radius: 3px;
+      padding: 4px 8px;
+    }
+
+    .saved-char-name {
+      font-weight: 700;
+      color: #7ec8ff;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+    }
+
+    .saved-char-meta {
+      flex: 1;
+      font-size: 11px;
+      color: var(--font-dim);
+      font-family: 'Cinzel', serif;
+    }
+
+    .saved-char-del {
+      border: 1px solid var(--gold-dark);
+      background: rgba(0, 0, 0, 0.55);
+      color: #ff8a80;
+      font-size: 12px;
+      line-height: 1;
+      padding: 3px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .saved-char-del:hover {
+      background: rgba(120, 20, 20, 0.75);
     }
 
     .party-avatar-img {

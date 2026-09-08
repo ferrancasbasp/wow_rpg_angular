@@ -304,6 +304,7 @@
                       } @else {
                         <span class="party-avatar-placeholder">{{ (p.name || '?').charAt(0) }}</span>
                       }
+                      <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name)">✕</button>
                     </div>
                     <div class="party-header">
                       <span class="party-name">{{ p.name }}</span>
@@ -320,6 +321,21 @@
                       ></div>
                       <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
                     </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (savedCharacters().length > 0) {
+            <div class="party-section">
+              <div class="party-title">🗂️ {{ trSvc.t('saved_characters') }}</div>
+              <div class="saved-chars-list">
+                @for (c of savedCharacters(); track c.key) {
+                  <div class="saved-char-row">
+                    <span class="saved-char-name">{{ c.name }}</span>
+                    <span class="saved-char-meta">{{ c.classKey }} · Nv. {{ c.level }}</span>
+                    <button class="saved-char-del" title="{{ trSvc.t('delete_character') }}" (click)="deleteSavedCharacter(c)">🗑</button>
                   </div>
                 }
               </div>
