@@ -296,19 +296,14 @@
               <div class="party-list">
                 @for (p of partyMembers(); track p.name) {
                   <div class="party-card">
-                    <div class="party-avatar">
-                      @if (p.imageHorizontal) {
-                        <img [src]="p.imageHorizontal" class="party-avatar-img" alt="" />
-                      } @else {
-                        <span class="party-avatar-placeholder">{{ (p.name || '?').charAt(0) }}</span>
-                      }
-                      <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name)">✕</button>
-                    </div>
                     <div class="party-header">
                       <span class="party-name">{{ p.name }}</span>
-                      @if (p.level) {
-                        <span class="party-level">Nv. {{ p.level }}</span>
-                      }
+                      <span class="party-header-right">
+                        @if (p.level) {
+                          <span class="party-level">Nv. {{ p.level }}</span>
+                        }
+                        <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name)">✕</button>
+                      </span>
                     </div>
                     <div class="party-hp-bar">
                       <div

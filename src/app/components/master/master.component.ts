@@ -50,8 +50,6 @@ interface PartyMember {
   maxHp: number;
   level?: number;
   classKey?: string;
-  imageHorizontal?: string;
-  imageVertical?: string;
 }
 
 interface Monster {
@@ -974,8 +972,6 @@ export class MasterComponent implements OnInit {
       maxHp: val.maxHp,
       level: val.level || undefined,
       classKey: val.classKey || undefined,
-      imageHorizontal: val.imageHorizontal || '',
-      imageVertical: val.imageVertical || '',
     };
     this.partyMembers.update(list => {
       const others = list.filter(p => p.name !== val.name);
