@@ -1431,6 +1431,17 @@ export class CharacterService {
     if (!name) return;
     this.applyKnownAvatar();
     const paths = this.characterAvatarPaths();
+    const effects = (this.character().activeEffects || [])
+      .filter(e => e.target !== 'stealth')
+      .map(e => ({
+        type: e.type,
+        name: e.name,
+        target: e.target,
+        value: e.value || 0,
+        duration: e.duration,
+        isPercent: e.isPercent ?? false,
+        debuffType: e.debuffType || 'none',
+      }));
     try {
       this.firebase.setData('players/' + name, {
         name,
@@ -1440,6 +1451,7 @@ export class CharacterService {
         classKey: this.character().classKey || '',
         imageHorizontal: paths.horizontal,
         imageVertical: paths.vertical,
+        effects,
         timestamp: Date.now(),
       });
     } catch (e) {
@@ -1611,6 +1623,7 @@ export class CharacterService {
       next.push(effectWithId);
       return { ...c, activeEffects: next };
     });
+    this.syncPlayerStatus();
   }
 
   removeEffect(effectId: number) {
@@ -1618,6 +1631,7 @@ export class CharacterService {
       c.activeEffects = c.activeEffects.filter(e => e.id !== effectId);
       return { ...c };
     });
+    this.syncPlayerStatus();
   }
 
   // ==================== MUSICAL NOTES ====================
