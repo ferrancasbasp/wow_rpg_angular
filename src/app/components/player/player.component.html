@@ -737,6 +737,22 @@
       </div>
     }
 
+    @if (showSaveConfirm()) {
+      <div class="modal-overlay" (click)="showSaveConfirm.set(false)">
+        <div class="modal-content save-confirm-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">{{ trSvc.t('confirm_save_title') }}</div>
+          <p class="modal-text">{{ saveConfirmText() }}</p>
+          <p class="modal-meta">
+            {{ savedClassLabel(charSvc.character().classKey) }} · {{ trSvc.t('nv') }} {{ charSvc.character().level }}
+          </p>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="showSaveConfirm.set(false)">{{ trSvc.t('cerrar') }}</button>
+            <button class="action-btn" (click)="confirmSaveToFirebase()">{{ trSvc.t('confirmar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (showLoadModal()) {
       <div class="modal-overlay" (click)="showLoadModal.set(false)">
         <div class="modal-content load-modal" (click)="$event.stopPropagation()">

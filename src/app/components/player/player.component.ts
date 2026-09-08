@@ -69,6 +69,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showStatsModal = signal(false);
   showEquipment = signal(false);
   showLoadModal = signal(false);
+  showSaveConfirm = signal(false);
   savedCharacters = signal<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]>([]);
   showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
@@ -3188,10 +3189,26 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   saveChar() {
+    this.showSaveConfirm.set(true);
+  }
+
+  confirmSaveToFirebase() {
+    const name = (this.charSvc.character().name || '').trim();
+    if (!name) {
+      this.showSaveConfirm.set(false);
+      this.charSvc.showToast(this.trSvc.t('name_required_save'));
+      return;
+    }
+    this.showSaveConfirm.set(false);
     this.charSvc.saveToLocalStorage();
     this.charSvc.saveToFirebase().then((ok) => {
       this.charSvc.showToast(ok ? 'Ficha guardada en la nube' : 'No se pudo guardar');
     });
+  }
+
+  saveConfirmText(): string {
+    const name = (this.charSvc.character().name || '').trim() || '?';
+    return this.trSvc.t('confirm_save_body') + ' "' + name + '". ' + this.trSvc.t('confirm_save_overwrite');
   }
 
   async openLoadModal() {

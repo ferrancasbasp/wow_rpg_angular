@@ -793,6 +793,12 @@
       font-size: 12px; resize: vertical; outline: none;
     }
     .modal-actions { display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end; }
+    .modal-text {
+      font-size: 14px; line-height: 1.5; color: var(--text); margin: 0 0 8px;
+    }
+    .modal-meta {
+      font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold); margin: 0;
+    }
 
     .talent-modal {
       max-width: 900px; max-height: 90vh; display: flex; flex-direction: column;
