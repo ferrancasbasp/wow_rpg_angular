@@ -22,6 +22,14 @@ export const STAT_ICONS: Record<StatKey, string> = {
   espiritu: '✨',
 };
 
+export const STAT_ABBR: Record<StatKey, string> = {
+  fuerza: 'FUE',
+  agilidad: 'AGI',
+  intelecto: 'INT',
+  aguante: 'AGU',
+  espiritu: 'ESP',
+};
+
 export const STAT_LABELS: Record<StatKey, string> = {
   fuerza: 'Fuerza',
   agilidad: 'Agilidad',

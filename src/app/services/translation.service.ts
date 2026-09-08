@@ -182,6 +182,8 @@ export class TranslationService {
     armor_phys: { es: 'Armadura Fisica', en: 'Physical Armor' },
     armor_magic: { es: 'Armadura Magica', en: 'Magic Armor' },
     equipment: { es: 'Equipo', en: 'Equipment' },
+    equipment_armor: { es: 'Armadura', en: 'Armor' },
+    equipment_weapons: { es: 'Armas', en: 'Weapons' },
     not_equipped: { es: 'Sin equipar', en: 'Not equipped' },
     export_sheet: { es: 'Exportar Ficha (JSON)', en: 'Export Sheet (JSON)' },
     load_character: { es: 'Cargar personaje', en: 'Load character' },

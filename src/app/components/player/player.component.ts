@@ -6,7 +6,7 @@ import { SimCombatService } from '../../services/sim-combat.service';
 import { onChildAdded, ref, off } from 'firebase/database';
 import { ClassRegistryService } from '../../services/class-registry.service';
 import {
-  STAT_KEYS, STAT_ICONS, EFFECT_TYPES, BUFF_DEBUFF_STATS,
+  STAT_KEYS, STAT_ICONS, STAT_ABBR, EFFECT_TYPES, BUFF_DEBUFF_STATS,
   DEBUFF_TYPES, debuffColor,
   NOTE_NAMES, NOTE_COLORS,
   STATUS_OPTIONS, HOT_DOT_TARGETS, EQUIPMENT_SLOTS, MAX_LEVEL,
@@ -41,6 +41,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   MAX_LEVEL = MAX_LEVEL;
   STAT_ICONS = STAT_ICONS;
+  STAT_ABBR = STAT_ABBR;
   EFFECT_TYPES = EFFECT_TYPES;
   DEBUFF_TYPES = DEBUFF_TYPES;
   debuffColor = debuffColor;
@@ -97,6 +98,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   classColor = computed(() => this.charSvc.classConfig().color || '#C79C6E');
   classGlow = computed(() => this.classColor() + '4D');
+  portraitUrl = computed(() => this.charSvc.characterAvatarPaths().vertical);
 
   get statEntries(): [string, StatKey][] {
     return Object.entries(STAT_KEYS);
@@ -3362,23 +3364,27 @@ export class PlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  visibleEquipmentSlots(): any[] {
+  armorSlots(): any[] {
+    return EQUIPMENT_SLOTS.filter(s => ['head', 'chest', 'legs', 'feet', 'hands'].includes(s.key));
+  }
+
+  weaponSlots(): any[] {
     const classKey = this.charSvc.character().classKey;
-    const slots = [...EQUIPMENT_SLOTS];
+    const slots = EQUIPMENT_SLOTS.filter(s => s.key === 'mainHand' || s.key === 'offHand');
     if (classKey === 'warrior' && this.charSvc.character().level >= 8) {
       slots.push({
         key: 'twoHand',
         label: 'Dos Manos',
-        icon: '⚔️',
-        extraFields: [{ key: 'weaponDamage', label: 'Dano', icon: '💥' }],
+        icon: '',
+        extraFields: [{ key: 'weaponDamage', label: 'Daño', icon: '' }],
       });
     }
     if (classKey === 'hunter') {
       slots.push({
         key: 'ranged',
         label: 'A Distancia',
-        icon: '🏹',
-        extraFields: [{ key: 'weaponDamage', label: 'Dano', icon: '💥' }],
+        icon: '',
+        extraFields: [{ key: 'weaponDamage', label: 'Daño', icon: '' }],
       });
     }
     return slots;

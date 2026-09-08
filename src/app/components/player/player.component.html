@@ -630,40 +630,88 @@
             <button type="button" class="equip-close-btn" (click)="showEquipment.set(false)">✕</button>
           </div>
           <div class="equip-screen-body">
-            <div class="equip-slots-grid">
-              @for (slot of visibleEquipmentSlots(); track slot.key) {
-                <div class="equip-slot">
-                  <div class="equip-slot-header">
-                    <span class="equip-slot-icon">{{ slot.icon }}</span>
-                    <span class="equip-slot-label">{{ slot.label }}</span>
-                  </div>
-                  <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
-                         class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
-                  <div class="equip-bonus-grid">
-                    @for (entry of statEntries; track entry[1]) {
-                      <div class="equip-bonus-cell">
-                        <span class="equip-bonus-label">{{ STAT_ICONS[entry[1]] }}</span>
-                        <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
-                               (input)="onEquipBonusInput($event, slot.key, entry[1])"
-                               class="equip-bonus-input" min="0" placeholder="0">
+            <div class="equip-layout">
+              <div class="equip-col equip-armor-col">
+                <div class="equip-col-title">{{ trSvc.t('equipment_armor') }}</div>
+                <div class="equip-slots-stack">
+                  @for (slot of armorSlots(); track slot.key) {
+                    <div class="equip-slot">
+                      <div class="equip-slot-header">
+                        <span class="equip-slot-label">{{ slot.label }}</span>
                       </div>
-                    }
-                  </div>
-                  @if (slot.extraFields) {
-                    <div class="equip-extra-fields">
-                      @for (field of slot.extraFields; track field.key) {
-                        <div class="equip-bonus-cell">
-                          <span class="equip-bonus-label">{{ field.icon }}</span>
-                          <span class="equip-extra-label">{{ field.label }}</span>
-                          <input type="number" [value]="getEquipExtra(slot.key, field.key)"
-                                 (input)="onEquipExtraInput($event, slot.key, field.key)"
-                                 class="equip-bonus-input" min="0" placeholder="0">
+                      <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
+                             class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
+                      <div class="equip-bonus-grid">
+                        @for (entry of statEntries; track entry[1]) {
+                          <div class="equip-bonus-cell">
+                            <span class="equip-bonus-label">{{ STAT_ABBR[entry[1]] }}</span>
+                            <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
+                                   (input)="onEquipBonusInput($event, slot.key, entry[1])"
+                                   class="equip-bonus-input" min="0" placeholder="0">
+                          </div>
+                        }
+                      </div>
+                      @if (slot.extraFields) {
+                        <div class="equip-extra-fields">
+                          @for (field of slot.extraFields; track field.key) {
+                            <div class="equip-bonus-cell">
+                              <span class="equip-extra-label">{{ field.label }}</span>
+                              <input type="number" [value]="getEquipExtra(slot.key, field.key)"
+                                     (input)="onEquipExtraInput($event, slot.key, field.key)"
+                                     class="equip-bonus-input" min="0" placeholder="0">
+                            </div>
+                          }
                         </div>
                       }
                     </div>
                   }
                 </div>
-              }
+              </div>
+
+              <div class="equip-col equip-portrait-col">
+                <div class="equip-portrait-frame">
+                  @if (portraitUrl()) {
+                    <img [src]="portraitUrl()" class="equip-portrait-img" alt="" />
+                  }
+                </div>
+              </div>
+
+              <div class="equip-col equip-weapon-col">
+                <div class="equip-col-title">{{ trSvc.t('equipment_weapons') }}</div>
+                <div class="equip-slots-stack">
+                  @for (slot of weaponSlots(); track slot.key) {
+                    <div class="equip-slot">
+                      <div class="equip-slot-header">
+                        <span class="equip-slot-label">{{ slot.label }}</span>
+                      </div>
+                      <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
+                             class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
+                      <div class="equip-bonus-grid">
+                        @for (entry of statEntries; track entry[1]) {
+                          <div class="equip-bonus-cell">
+                            <span class="equip-bonus-label">{{ STAT_ABBR[entry[1]] }}</span>
+                            <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
+                                   (input)="onEquipBonusInput($event, slot.key, entry[1])"
+                                   class="equip-bonus-input" min="0" placeholder="0">
+                          </div>
+                        }
+                      </div>
+                      @if (slot.extraFields) {
+                        <div class="equip-extra-fields">
+                          @for (field of slot.extraFields; track field.key) {
+                            <div class="equip-bonus-cell">
+                              <span class="equip-extra-label">{{ field.label }}</span>
+                              <input type="number" [value]="getEquipExtra(slot.key, field.key)"
+                                     (input)="onEquipExtraInput($event, slot.key, field.key)"
+                                     class="equip-bonus-input" min="0" placeholder="0">
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
             </div>
           </div>
           <div class="equip-screen-footer">
