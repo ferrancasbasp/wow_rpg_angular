@@ -2378,6 +2378,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + hpGain),
             currentMana: Math.min(resourceMax, (c.currentMana ?? resourceMax) + manaGain),
           }));
+          this.charSvc.syncPlayerStatus();
           fotwText = ' · +' + hpGain + ' vida · +' + manaGain + ' maná (First of the Wild)';
         }
       }
@@ -2390,6 +2391,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           ...c,
           currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + heal),
         }));
+        this.charSvc.syncPlayerStatus();
         lifestealText = ' · +' + heal + ' vida';
       }
       if (ability.id === 'basic_attack' && this.charSvc.selectedCapstone() === 'hope_and_grace') {
@@ -2407,6 +2409,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ...c,
             currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + leechHeal),
           }));
+          this.charSvc.syncPlayerStatus();
           lifestealText += ' · 🩸 Veneno Vampírico +' + leechHeal + ' vida';
         }
       }
@@ -2730,6 +2733,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ...c,
         currentHP: Math.max(1, hpActual - healthLost),
       }));
+      this.charSvc.syncPlayerStatus();
       if (ability.rageGain && isRage) {
         const rageGain = this.charSvc.getEffectiveRageGain(ability);
         this.charSvc.character.update(c => ({
@@ -2858,6 +2862,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentHP: Math.max(1, hpActual - healthLost),
         currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGained),
       }));
+      this.charSvc.syncPlayerStatus();
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
       if (ability.id === 'inner_fire') {
@@ -2937,6 +2942,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }
         }
         this.charSvc.character.update(c => ({ ...c, currentHP: newHP }));
+        this.charSvc.syncPlayerStatus();
       }
       if (ability.id === 'inner_focus') {
         this.charSvc.showToast('🎯 Inner Focus: durante 3 turnos tu próximo hechizo no cuesta maná y tiene +25% de crítico');
