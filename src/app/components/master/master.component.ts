@@ -988,10 +988,6 @@ export class MasterComponent implements OnInit {
     return Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
   }
 
-  selectPlayerTarget(name: string) {
-    this.playerTargetName.set(name);
-  }
-
   onPlayerChipClick(name: string) {
     if (this.isPlayerTargeting()) {
       const event = this.selectedEvent();
@@ -1129,22 +1125,6 @@ export class MasterComponent implements OnInit {
     this.sendLog.update(log => [`${label}: +${amount} XP`, ...log].slice(0, 8));
     this.showToast(`+${amount} XP → ${label}`);
     this.xpAmount.set(null);
-  }
-
-  sendLevel(levels: number) {
-    const targets = this.getSendTargets();
-    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
-    for (const target of targets) {
-      this.firebase.pushData('playerEvents', {
-        target,
-        type: 'levelup',
-        amount: levels,
-        timestamp: Date.now(),
-      });
-    }
-    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
-    this.sendLog.update(log => [`${label}: +${levels} nivel(es)`, ...log].slice(0, 8));
-    this.showToast(`+${levels} nivel(es) → ${label}`);
   }
 
   assignToPlayer(event: DamageEvent) {

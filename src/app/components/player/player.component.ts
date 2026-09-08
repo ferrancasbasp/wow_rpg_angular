@@ -874,57 +874,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => ({ ...c, name: value }));
   }
 
-  onLevelInput(event: Event) {
-    const value = +(event.target as HTMLInputElement).value;
-    this.charSvc.character.update(c => ({ ...c, level: value }));
-  }
-
-  onXpInput(event: Event) {
-    const value = +(event.target as HTMLInputElement).value || 0;
-    this.xpInputAmount.set(value);
-  }
-
-  onHpActionTypeChange(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.hpActionType.set(value);
-  }
-
-  onHpLossInput(event: Event) {
-    const value = +(event.target as HTMLInputElement).value || 0;
-    this.hpLossAmount.set(value);
-  }
-
-  onNewEffectTypeChange(event: Event) {
-    const value = (event.target as HTMLSelectElement).value as ActiveEffect['type'];
-    this.newEffect.update(ne => ({ ...ne, type: value }));
-    this.onEffectTypeChange();
-  }
-
-  onNewEffectNameInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.newEffect.update(ne => ({ ...ne, name: value }));
-  }
-
-  onNewEffectTargetChange(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.newEffect.update(ne => ({ ...ne, target: value }));
-  }
-
-  onNewEffectValueInput(event: Event) {
-    const value = +(event.target as HTMLInputElement).value || 0;
-    this.newEffect.update(ne => ({ ...ne, value }));
-  }
-
-  onNewEffectDurationInput(event: Event) {
-    const value = +(event.target as HTMLInputElement).value || 1;
-    this.newEffect.update(ne => ({ ...ne, duration: value }));
-  }
-
-  onNewEffectMiscTargetInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.newEffect.update(ne => ({ ...ne, target: value }));
-  }
-
   onEquipNameInput(event: Event, slotKey: string) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({
@@ -961,13 +910,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }));
   }
 
-  changeLevel(delta: number) {
-    const n = this.charSvc.character().level + delta;
-    if (n >= 1 && n <= MAX_LEVEL) {
-      this.charSvc.character.update(c => ({ ...c, level: n, currentXP: 0 }));
-    }
-  }
-
   instantLevel25() {
     this.charSvc.character.update(c => ({ ...c, level: 25, currentXP: 0 }));
     this.charSvc.upgradeStarterWeaponsToLevel25();
@@ -995,16 +937,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.warriorWeaponMode.set(mode);
   }
 
-  clampLevel() {
-    this.charSvc.character.update(c => {
-      let level = c.level;
-      if (!level || level < 1) level = 1;
-      if (level > MAX_LEVEL) level = MAX_LEVEL;
-      return { ...c, level, currentXP: 0 };
-    });
-  }
-
-  onClassChange(event: Event) {
+    onClassChange(event: Event) {
     const classKey = (event.target as HTMLSelectElement).value;
     this.charSvc.selectClass(classKey);
     this.charSvc.turnNumber.set(1);

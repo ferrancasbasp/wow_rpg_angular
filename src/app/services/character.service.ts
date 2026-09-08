@@ -1199,16 +1199,6 @@ export class CharacterService {
     this.toastTimeout = setTimeout(() => this.toastMessage.set(''), 4000);
   }
 
-  trainAbility(abilityId: string) {
-    this.character.update(c => {
-      const maxRank = this.maxAvailableRank(this.classConfig().abilities.find(a => a.id === abilityId)!);
-      if (maxRank > (c.trainedRanks[abilityId] || 0)) {
-        c.trainedRanks[abilityId] = (c.trainedRanks[abilityId] || 0) + 1;
-      }
-      return { ...c };
-    });
-  }
-
   trainAll() {
     this.character.update(c => {
       for (const ab of this.trainableAbilities()) {
