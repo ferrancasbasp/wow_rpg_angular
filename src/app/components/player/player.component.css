@@ -1131,6 +1131,17 @@
       max-height: calc(100vh - 150px);
       width: auto;
     }
+    .equip-portrait-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 220px;
+      min-height: 220px;
+      font-family: 'Cinzel', serif;
+      font-size: 64px;
+      font-weight: 900;
+      color: var(--gold-dark);
+    }
     .equip-screen-footer {
       display: flex; justify-content: flex-end; gap: 12px;
       padding-top: 12px; border-top: 1px solid var(--gold-dark);

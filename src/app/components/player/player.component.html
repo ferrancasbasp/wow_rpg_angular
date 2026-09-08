@@ -672,6 +672,8 @@
                 <div class="equip-portrait-frame">
                   @if (portraitUrl()) {
                     <img [src]="portraitUrl()" class="equip-portrait-img" alt="" />
+                  } @else {
+                    <span class="equip-portrait-placeholder">{{ (charSvc.character().name || '?').charAt(0) }}</span>
                   }
                 </div>
               </div>

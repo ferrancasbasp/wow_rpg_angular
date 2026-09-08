@@ -298,6 +298,13 @@
               <div class="party-list">
                 @for (p of partyMembers(); track p.name) {
                   <div class="party-card">
+                    <div class="party-avatar">
+                      @if (p.imageHorizontal) {
+                        <img [src]="p.imageHorizontal" class="party-avatar-img" alt="" />
+                      } @else {
+                        <span class="party-avatar-placeholder">{{ (p.name || '?').charAt(0) }}</span>
+                      }
+                    </div>
                     <div class="party-header">
                       <span class="party-name">{{ p.name }}</span>
                       @if (p.level) {
