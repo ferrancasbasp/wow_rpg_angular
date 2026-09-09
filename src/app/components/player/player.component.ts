@@ -2867,21 +2867,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('Ya estás volando');
         return;
       }
-      this.charSvc.character.update(c => ({
-        ...c,
-        activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.target !== 'flying'),
-          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Volando', target: 'flying', value: 0, duration: 2 },
-        ],
-      }));
-      const ifnRank = this.charSvc.talentRank('improved_fly_the_nest');
-      let flyEnergyText = '';
-      if (ifnRank > 0) {
-        const energy = this.charSvc.character().level * ifnRank;
-        this.charSvc.addSpearCharge(energy);
-        this.charSvc.addShieldCharge(energy);
-        flyEnergyText = ' · ⚔️🛡️ lanza y escudo +' + energy;
-      }
+      const flyEnergyText = this.charSvc.valkyrieApplyFlight(2, false);
       this.charSvc.useAction(actionCost);
       this.charSvc.showToast(ability.name + ': asciendes al cielo' + flyEnergyText);
       return;
@@ -3219,7 +3205,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({
         ...c,
         ...(ability.id === 'slice_and_dice' ? { comboPoints: 0 } : {}),
-        ...(odinsFlyGrant ? { odinsFlyUsed: true } : {}),
         activeEffects: [
           ...(c.activeEffects || []).filter(e => e.name !== ability.name && (poisonClearTargets.length > 0 ? !poisonClearTargets.includes(e.target) : true)),
           {
@@ -3231,7 +3216,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
             duration: sndDuration,
             isPercent: ability.buff.isPercent || false,
           },
-          ...(odinsFlyGrant ? [{ id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Volando', target: 'flying', value: 0, duration: sndDuration }] : []),
         ],
       }));
       if (ability.buff.isPercent && ability.currentBuffStat === 'maxHP') {
@@ -3252,7 +3236,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
       const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
-      const odinsFlyText = odinsFlyGrant ? ' · 🦅 también vuelas' : '';
+      const odinsFlyText = odinsFlyGrant
+        ? ' · 🕊️ Fly the Nest gratuito' + this.charSvc.valkyrieApplyFlight(sndDuration, true)
+        : '';
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': +' + buffValue +
         (ability.buff.isPercent ? '%' : '') + ' ' + ability.currentBuffStat +
