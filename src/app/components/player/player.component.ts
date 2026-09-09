@@ -1282,6 +1282,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (enemy.currentHP <= 0) return;
     const atk = this.simCombat.rollAttack(enemy, 0);
     this.simCombat.pushLog(`👹 ${enemy.name} usa ${atk.name}`);
+    const misfireEff = (enemy.effects || []).find((e: any) => e.type === 'debuff' && (e.target === 'misfire_chance' || e.stat === 'misfire_chance'));
+    if (misfireEff && (misfireEff.value || 0) > 0 && Math.random() * 100 < (misfireEff.value || 0)) {
+      this.simCombat.pushLog(`✨ ${enemy.name}: ${atk.name} falla (${misfireEff.name} — ${misfireEff.value}%)`);
+      return;
+    }
     if (atk.inflictsEffects) {
       this.simCombat.applyEffectsToEnemy(enemy, atk.inflictsEffects, { player: enemy.name, ability: atk.name });
       this.simCombat.enemy.update((e) => ({ ...(e as any), effects: enemy.effects.map((x: any) => ({ ...x })) }));
@@ -3043,6 +3048,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       }
       this.charSvc.showToast(ability.name + ' R' + fRank + ': trampa AOE -' + slowVal + '% movimiento (3 turnos) — enviado al Master' + lnlText);
+      return;
+    } else if (ability.id === 'valk_luminous_cone') {
+      const coRank = ability.currentRank || 1;
+      const coBuff = ability.buffRanks?.find((br: any) => br.rank === coRank);
+      const misfireVal = coBuff ? coBuff.value : 20;
+      this.charSvc.sendDamageEvent({ ...ability, inflictsEffects: [{ type: 'debuff', name: 'Cone of Light', target: 'misfire_chance', value: misfireVal, duration: 2, debuffType: 'magic', stackable: false }] }, 0, 1, 1);
+      this.charSvc.showToast(ability.name + ' R' + coRank + ': ✨ el enemigo falla sus ataques (' + misfireVal + '%, 2 turnos) — enviado al Master');
       return;
     } else if (ability.isPetSummon) {
       if (this.charSvc.selectedCapstone() === 'lone_wolf') {
