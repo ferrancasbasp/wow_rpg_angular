@@ -155,9 +155,11 @@ export class CharacterService {
     this.character.update(c => ({ ...c, valkyriePool: pool }));
   }
 
-  valkyrieChargeGainMult() {
-    const eff = (this.character().activeEffects || []).find(e => e.target === 'valkyrie_charge_gain');
-    return eff && (eff.value || 0) > 0 ? 1 + (eff.value / 100) : 1;
+  odinsWillRegen() {
+    const ab = this.classConfig().abilities.find(a => a.id === 'valk_odins_will');
+    const rank = this.trainedRank('valk_odins_will');
+    const br = ab?.buffRanks?.find((r: any) => r.rank === rank);
+    return br ? (br.value || 0) : 0;
   }
 
   odinsWillActive() {

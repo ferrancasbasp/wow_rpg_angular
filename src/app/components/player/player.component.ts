@@ -177,7 +177,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           let effText = '';
           const recvRank = this.charSvc.talentRank('valk_recover_magic');
           if (this.charSvc.character().classKey === 'valkyrie' && recvRank > 0 && (event.damageType === 'magical')) {
-            const shieldGain = Math.max(1, Math.round(event.amount * recvRank * 0.30 * this.charSvc.valkyrieChargeGainMult()));
+            const shieldGain = Math.max(1, Math.round(event.amount * recvRank * 0.30));
             this.charSvc.addShieldCharge(shieldGain);
             effText += ' · 🛡️ Carga de escudo +' + shieldGain;
           }
@@ -1251,12 +1251,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
     if (this.charSvc.character().classKey === 'valkyrie' && this.charSvc.odinsWillActive()) {
-      this.charSvc.character.update(c => ({
-        ...c,
-        spearCharge: Math.max(c.spearCharge || 0, 100),
-        shieldCharge: Math.max(c.shieldCharge || 0, 100),
-      }));
-      this.charSvc.showToast('🪽 Odin\'s Will: cargas de lanza y escudo regeneradas hasta 100');
+      const regen = this.charSvc.odinsWillRegen();
+      if (regen > 0) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          spearCharge: (c.spearCharge || 0) + regen,
+          shieldCharge: (c.shieldCharge || 0) + regen,
+        }));
+        this.charSvc.showToast('🪽 Odin\'s Will: +' + regen + ' carga de lanza y escudo');
+      }
     }
     this.processEffects();
 
@@ -2545,11 +2548,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let valkTauntText = '';
       if (this.charSvc.character().classKey === 'valkyrie') {
         if (ability.id === 'empalar') {
-          const gained = Math.round(roll * 0.5 * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 0.5);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'shield_bash') {
-          const gained = Math.round(roll * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll);
           this.charSvc.addShieldCharge(gained);
           const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
           const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
@@ -2558,7 +2561,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           valkChargeText = ' · 🛡️ Escudo +' + gained;
           valkTauntText = ' · 🗯️ Provocas al enemigo';
         } else if (ability.id === 'valk_cleave') {
-          const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 0.3);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         }
