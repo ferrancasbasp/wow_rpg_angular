@@ -184,12 +184,24 @@ export class CharacterService {
   }
 
   spendValkyriePool(amount: number) {
-    const current = this.selectedValkyriePool() === 'shield' ? (this.character().shieldCharge || 0) : (this.character().spearCharge || 0);
+    const pool = this.selectedValkyriePool();
+    const current = pool === 'shield' ? (this.character().shieldCharge || 0) : (this.character().spearCharge || 0);
     const spent = Math.min(amount, current);
     this.character.update(c => {
-      if (c.valkyriePool === 'shield') return { ...c, shieldCharge: (c.shieldCharge || 0) - spent };
+      if (pool === 'shield') return { ...c, shieldCharge: (c.shieldCharge || 0) - spent };
       return { ...c, spearCharge: (c.spearCharge || 0) - spent };
     });
+    if (spent > 0 && this.character().classKey === 'valkyrie') {
+      const conduitRank = this.talentRank('energy_conduit');
+      if (conduitRank > 0) {
+        const transfer = Math.round(spent * 0.10 * conduitRank);
+        if (transfer > 0) {
+          if (pool === 'shield') this.addSpearCharge(transfer);
+          else this.addShieldCharge(transfer);
+          this.showToast('🔄 Energy Conduit: ' + (pool === 'shield' ? 'escudo → lanza' : 'lanza → escudo') + ' +' + transfer);
+        }
+      }
+    }
     return spent;
   }
 
@@ -1203,6 +1215,7 @@ export class CharacterService {
     const texts: Record<string, string> = {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
+      energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
