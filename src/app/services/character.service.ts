@@ -19,6 +19,10 @@ const KNOWN_CHARACTER_AVATARS: Record<string, CharacterAvatarPaths> = {
     horizontal: 'img/chars/Vastago-Horizontal.jpeg',
     vertical: 'img/chars/Vastago-Vertical.jpeg',
   },
+  'ELDAN VEL GRIS': {
+    horizontal: 'img/chars/Eldan-Vel-Gris-Horizontal.jpeg',
+    vertical: 'img/chars/Eldan-Vel-Gris-Vertical.jpeg',
+  },
 };
 
 @Injectable({ providedIn: 'root' })
