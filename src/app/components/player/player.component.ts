@@ -1250,6 +1250,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
+    if (this.charSvc.character().classKey === 'valkyrie' && this.charSvc.odinsWillActive()) {
+      this.charSvc.character.update(c => ({
+        ...c,
+        spearCharge: Math.max(c.spearCharge || 0, 100),
+        shieldCharge: Math.max(c.shieldCharge || 0, 100),
+      }));
+      this.charSvc.showToast('🪽 Odin\'s Will: cargas de lanza y escudo regeneradas hasta 100');
+    }
     this.processEffects();
 
     if (this.charSvc.character().classKey === 'mage') {
@@ -2549,6 +2557,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
           sendAbility = { ...sendAbility, inflictsEffects: effects };
           valkChargeText = ' · 🛡️ Escudo +' + gained;
           valkTauntText = ' · 🗯️ Provocas al enemigo';
+        } else if (ability.id === 'valk_cleave') {
+          const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult());
+          this.charSvc.addSpearCharge(gained);
+          valkChargeText = ' · ⚔️ Lanza +' + gained;
         }
       }
 
