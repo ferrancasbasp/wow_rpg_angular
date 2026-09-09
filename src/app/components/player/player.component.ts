@@ -178,9 +178,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.hpAction(event.amount, event.damageType || 'physical');
           this.exitStealth();
           let effText = '';
-          const recvRank = this.charSvc.talentRank('valk_recover_magic');
-          if (this.charSvc.character().classKey === 'valkyrie' && recvRank > 0 && (event.damageType === 'magical')) {
-            const shieldGain = Math.max(1, Math.round(event.amount * recvRank * 0.30 * this.charSvc.valkyrieChargeGainMult()));
+          if (this.charSvc.character().classKey === 'valkyrie' && this.charSvc.hasPassive('valk_recover_magic') && (event.damageType === 'magical')) {
+            const improved = 1 + this.charSvc.talentRank('improved_abs_magic') * 0.05;
+            const shieldGain = Math.max(1, Math.round(event.amount * 0.30 * this.charSvc.valkyrieChargeGainMult() * improved));
             this.charSvc.addShieldCharge(shieldGain);
             effText += ' · 🛡️ Carga de escudo +' + shieldGain;
           }

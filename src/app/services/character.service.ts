@@ -870,6 +870,11 @@ export class CharacterService {
     return this.character().equipment?.offHand?.defense || 0;
   }
 
+  hasPassive(abilityId: string): boolean {
+    const a = this.classConfig().abilities.find(x => x.id === abilityId);
+    return !!a && !!a.passive && this.character().level >= (a.requiredLevel || 0);
+  }
+
   isMaxed(talentId: string, maxRank: number): boolean {
     return this.talentRank(talentId) >= maxRank;
   }
