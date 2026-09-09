@@ -224,7 +224,7 @@ export class SimCombatService {
         resist -= eff.value || 0;
       }
     }
-    return Math.max(0, resist);
+    return resist;
   }
 
   applyReduction(enemy: SimEnemy, damageType: string, damage: number): number {
@@ -238,8 +238,10 @@ export class SimCombatService {
       }
     } else if (dmgType === 'magical') {
       const resist = this.getEffectiveMagicResist(enemy);
-      if (resist > 0) {
-        const reduction = Math.round((resist / (resist + 50 + 5 * lvl)) * 100);
+      if (resist !== 0) {
+        const denom = resist + 50 + 5 * lvl;
+        if (denom <= 0) return Math.round(damage * 2);
+        const reduction = Math.round((resist / denom) * 100);
         return Math.round(damage * (1 - reduction / 100));
       }
     }

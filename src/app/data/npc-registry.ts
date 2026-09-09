@@ -177,7 +177,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     ],
   },
   elite_rock_elemental_garzuk: {
-    id: 'elite_rock_elemental_garzuk', name: 'Garzuk, Elemental de Roca', level: 22, hp: 2600, armor: 110, magicResist: 45, zone: 'Redridge Mountains',
+    id: 'elite_rock_elemental_garzuk', name: 'Garzuk, Elemental de Roca', level: 22, hp: 2600, armor: 110, magicResist: -45, zone: 'Redridge Mountains',
     imageUrl: 'img/enemies/Elite-rock-elemental-Garzuk.jpeg', isElite: true, description: 'Avalancha viviente',
     attacks: [
       { name: 'Puñetazo de Roca', minDamage: 70, maxDamage: 100 },

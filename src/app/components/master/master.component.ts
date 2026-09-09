@@ -482,7 +482,7 @@ export class MasterComponent implements OnInit {
         }
       }
     }
-    return Math.max(0, resist);
+    return resist;
   }
 
   processMonsterEffects(monster: Monster): string {
@@ -579,10 +579,10 @@ export class MasterComponent implements OnInit {
       }
     } else if (dmgType === 'magical') {
       const resist = this.getEffectiveMagicResist(monster);
-      if (resist > 0) {
-        const reduction = Math.round(
-          (resist / (resist + 50 + 5 * lvl)) * 100,
-        );
+      if (resist !== 0) {
+        const denom = resist + 50 + 5 * lvl;
+        if (denom <= 0) return Math.round(damage * 2);
+        const reduction = Math.round((resist / denom) * 100);
         return Math.round(damage * (1 - reduction / 100));
       }
     }
@@ -608,6 +608,15 @@ export class MasterComponent implements OnInit {
           ' (−' +
           Math.round((resist / (resist + 50 + 5 * lvl)) * 100) +
           '% resist)'
+        );
+      }
+      if (resist < 0) {
+        const denom = resist + 50 + 5 * lvl;
+        const pct = denom <= 0 ? 100 : Math.abs(Math.round((resist / denom) * 100));
+        return (
+          ' (+' +
+          pct +
+          '% vulnerable)'
         );
       }
     }
