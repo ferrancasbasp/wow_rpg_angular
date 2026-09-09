@@ -2453,6 +2453,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
 
+      let valkChargeText = '';
+      let valkTauntText = '';
+      if (this.charSvc.character().classKey === 'valkyrie') {
+        if (ability.id === 'empalar') {
+          const gained = Math.round(roll * 0.5);
+          this.charSvc.addSpearCharge(gained);
+          valkChargeText = ' · ⚔️ Lanza +' + gained;
+        } else if (ability.id === 'shield_bash') {
+          const gained = Math.round(roll);
+          this.charSvc.addShieldCharge(gained);
+          const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
+          const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
+          effects.push({ type: 'debuff' as const, name: 'Provocar', target: 'taunt' as const, value: myName, duration: 2, debuffType: 'none' as const, stackable: false });
+          sendAbility = { ...sendAbility, inflictsEffects: effects };
+          valkChargeText = ' · 🛡️ Escudo +' + gained;
+          valkTauntText = ' · 🗯️ Provocas al enemigo';
+        }
+      }
+
       let arcaneOrbText = '';
       let orbText = '';
       if (this.charSvc.hasElementalOrbs() && ability.type === 'damage') {
@@ -2474,7 +2493,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
