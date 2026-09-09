@@ -270,6 +270,7 @@ export interface ActiveEffect {
   duration: number;
   isPercent?: boolean;
   debuffType?: 'disease' | 'poison' | 'magic' | 'curse' | 'none';
+  stanceId?: string;
 }
 
 export interface Pet {

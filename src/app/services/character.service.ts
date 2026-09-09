@@ -116,6 +116,23 @@ export class CharacterService {
   readonly warriorStance = signal<string>('battle');
   readonly warriorWeaponMode = signal<string>('twohanded');
 
+  flowStance(): string | null {
+    const eff = (this.character().activeEffects || []).find(e => e.target === 'stance_flow');
+    return eff && eff.duration > 0 ? (eff.stanceId || null) : null;
+  }
+
+  inBattleStance(): boolean {
+    return this.warriorStance() === 'battle' || this.flowStance() === 'battle';
+  }
+
+  inFuryStance(): boolean {
+    return this.warriorStance() === 'fury' || this.flowStance() === 'fury';
+  }
+
+  inProtectionStance(): boolean {
+    return this.warriorStance() === 'protection' || this.flowStance() === 'protection';
+  }
+
   private toastTimeout: any;
 
   readonly classConfig = computed<CharacterClass>(() => {
@@ -248,7 +265,7 @@ export class CharacterService {
     const fromAgi = this.finalStats().agilidad / 20;
     const fromLevel = this.character().level * 0.02;
     const impStances = this.talentRank('improved_stances');
-    const stanceBonus = this.warriorStance() === 'fury' ? (5 + impStances * 2) : 0;
+    const stanceBonus = this.inFuryStance() ? (5 + impStances * 2) : 0;
     const fromTalent = this.talentRank('cruelty') + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
     const fromReckless = this.hasEffect('recklessness') ? 20 : 0;
@@ -288,7 +305,7 @@ export class CharacterService {
   readonly armorTotal = computed<number>(() => {
     let total = this.classConfig().armor || 0;
     total += this.talentRank('anticipation') * 5;
-    if (this.warriorStance() === 'protection' && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 4;
+    if (this.inProtectionStance() && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 4;
     const gear = this.character().equipment;
     if (gear) {
       for (const slot of Object.values(gear)) {
@@ -1141,6 +1158,8 @@ export class CharacterService {
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 6}% AP, −${rank * 2} ira`,
       improved_stances: `Stances: +${rank * 2}% daño Battle, +${rank * 2}% crit Fury, +${rank * 4} armor Protection`,
+      deep_wounds: `Críticos: DoT ${rank * 10}% del daño crítico (3 turnos)`,
+      battle_flow: `Al cambiar de postura: beneficio previo ${rank} turno${rank > 1 ? 's' : ''} · sin doble postura`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
       vitality: `Regen energía: +${(rank * (50 / 3)).toFixed(1)}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 3}% daño, +${rank * 2} energía (+${rank * 4} si crit)`,

@@ -563,7 +563,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.hasEffect('recklessness')) critMult = critMult * 1.20;
       roll = Math.round(roll * critMult);
     }
-    if (this.charSvc.warriorStance() === 'battle') {
+    if (this.charSvc.inBattleStance()) {
       roll = Math.round(roll * (1.10 + this.charSvc.talentRank('improved_stances') * 0.02));
     }
     this.charSvc.addTurnDamage(roll);
@@ -922,13 +922,34 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   changeStance(stance: string) {
-    if (this.charSvc.warriorStance() === stance) return;
+    const previous = this.charSvc.warriorStance();
+    if (previous === stance) return;
     if (!this.charSvc.canAct(1)) {
       this.charSvc.showToast(this.trSvc.t('no_actions_stance'));
       return;
     }
     this.charSvc.useAction(1);
     this.charSvc.warriorStance.set(stance);
+    const bfRank = this.charSvc.talentRank('battle_flow');
+    if (bfRank > 0) {
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => !(e.target === 'stance_flow' && e.stanceId === stance)),
+          {
+            id: Date.now() + Math.random(),
+            type: 'buff' as const,
+            name: 'Battle Flow',
+            target: 'stance_flow',
+            value: 0,
+            duration: bfRank,
+            stanceId: previous,
+          },
+        ],
+      }));
+      const stanceLabel = this.charSvc.classConfig().stances?.find((s: any) => s.id === previous)?.name || previous;
+      this.charSvc.showToast('Battle Flow: conservas el beneficio de ' + stanceLabel + ' (' + bfRank + (bfRank > 1 ? ' turnos)' : ' turno)'));
+    }
   }
 
   changeWeaponMode(mode: string) {
@@ -1832,7 +1853,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(efMax, (c.comboPoints || 0) + 1) }));
       efCritText = ' · +1 Maelstorm (crit)';
     }
-    if ((isRage || isEnergy) && this.charSvc.warriorStance() === 'battle') {
+    if ((isRage || isEnergy) && this.charSvc.inBattleStance()) {
       const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
       roll = Math.round(roll * battleMult);
     }
@@ -2376,6 +2397,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
         );
         igniteText = ' · 🔥 Ignite ' + igniteTotal + ' (' + igniteTick + '/t · 3t)';
       }
+      const dwRank = this.charSvc.talentRank('deep_wounds');
+      let deepWoundsText = '';
+      if (isCrit && dwRank > 0 && ability.type === 'damage' && ability.damageType !== 'heal' && !ability.isDot && !ability.isHot && this.charSvc.character().classKey === 'warrior') {
+        const dwTotal = Math.max(1, Math.round(roll * 0.10 * dwRank));
+        const dwTick = Math.max(1, Math.round(dwTotal / 3));
+        this.charSvc.sendDamageEvent(
+          { ...ability, id: 'deep_wounds', name: 'Deep Wounds', isDot: true, dotTick: dwTick, dotDuration: 3, stackable: false, damageType: 'physical' },
+          0, 1, 1
+        );
+        deepWoundsText = ' · 🩸 Deep Wounds ' + dwTotal + ' (' + dwTick + '/t · 3t)';
+      }
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
       let serpentText = '';
       let sendAbility: any = ability;
@@ -2441,7 +2473,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
 
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
+        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2449,7 +2481,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         if (hits > 1 && h > 0) {
           hitRoll = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
           if (isCrit) hitRoll = Math.round(hitRoll * 1.5);
-          if (isRage && this.charSvc.warriorStance() === 'battle') {
+          if (isRage && this.charSvc.inBattleStance()) {
             const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
             hitRoll = Math.round(hitRoll * battleMult);
           }
