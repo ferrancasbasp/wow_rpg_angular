@@ -611,7 +611,7 @@ export class CharacterService {
   readonly unlockedAbilities = computed<Ability[]>(() => {
     const weaponDmg = this.totalWeaponDamage();
     const apBonus = Math.round(this.attackPower() / 7);
-    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && this.trainedRank(a.id) > 0 && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(a => {
+    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && (a.id === 'basic_attack' || this.trainedRank(a.id) > 0) && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(a => {
       const rank = a.id === 'basic_attack' ? 1 : (a.talentGate ? this.maxAvailableRank(a) : this.trainedRank(a.id));
       const dmgRange = a.damageRanges?.find(dr => dr.rank === rank);
       const isPhysical = a.damageType === 'physical';
