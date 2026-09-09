@@ -2832,6 +2832,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('Necesitas el buffo de Odins Will para usar ' + ability.name);
         return;
       }
+      if (this.charSvc.valkyrieFlying()) {
+        this.charSvc.showToast('Ya estás volando');
+        return;
+      }
       this.charSvc.character.update(c => ({
         ...c,
         activeEffects: [
