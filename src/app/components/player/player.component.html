@@ -278,9 +278,6 @@
       </div>
 
       <div class="top-side-controls">
-        <button class="lang-toggle-btn" (click)="trSvc.toggleLang()" [title]="trSvc.lang() === 'es' ? 'Switch to English' : 'Cambiar a Español'">
-          {{ trSvc.lang() === 'es' ? '🇬🇧 EN' : '🇪🇸 ES' }}
-        </button>
         @if (charSvc.character().classKey === 'warrior') {
           <div class="warrior-stance-row">
             <button class="stance-btn" [class.active]="charSvc.warriorStance() === 'battle'" (click)="changeStance('battle')">
