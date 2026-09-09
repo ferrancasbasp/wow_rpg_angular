@@ -216,7 +216,7 @@ export class CharacterService {
     if (spent > 0 && this.character().classKey === 'valkyrie') {
       const conduitRank = this.talentRank('energy_conduit');
       if (conduitRank > 0) {
-        const transfer = Math.round(spent * 0.10 * conduitRank);
+        const transfer = Math.round(spent * 0.06 * conduitRank);
         if (transfer > 0) {
           if (pool === 'shield') this.addSpearCharge(transfer);
           else this.addShieldCharge(transfer);
@@ -1239,7 +1239,7 @@ export class CharacterService {
     const texts: Record<string, string> = {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
-      energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
+      energy_conduit: `Al gastar cargas: ${rank * 6}% de la lanza pasa al escudo y viceversa`,
       improved_javelin: `Javelin: tu carga aporta ${70 + rank * 10}% al daño`,
       hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
       odins_fly: `Al lanzar Odin's Will: Fly the Nest gratuito`,
