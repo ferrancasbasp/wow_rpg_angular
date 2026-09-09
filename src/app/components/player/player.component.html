@@ -210,7 +210,7 @@
               <img src="img/abilities/rogue/ability_stealth.jpg" class="stealth-icon" [title]="trSvc.t('stealth')" (error)="onImgError($event)">
             }
             @if (charSvc.character().classKey === 'valkyrie' && charSvc.valkyrieFlying()) {
-              <span class="stealth-icon" [title]="'Volando'">🪽</span>
+              <img src="img/abilities/valkyrie/fly_indicator.jpg" class="stealth-icon" [title]="'Volando'" (error)="onImgError($event)">
             }
           </div>
         }
