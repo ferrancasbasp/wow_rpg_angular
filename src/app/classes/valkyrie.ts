@@ -23,20 +23,10 @@ export const VALKYRIE: CharacterClass = {
   resource: { type: 'rage', label: 'Ira', color: '#c0392b', max: 100, start: '0' },
 
   talents: [
-    { id: 'valk_toughness', name: 'Dureza Valkiria', icon: '🛡️', iconImg: '', description: 'Aumenta tu armadura física en 3 por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'valk_rage_fury', name: 'Furia de Batalla', icon: '😤', iconImg: '', description: 'Tus ataques básicos generan 2 de ira extra por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'valk_shield_mastery', name: 'Maestría de Escudo', icon: '🛡️', iconImg: '', description: 'Golpe de Escudo inflige un 15% más de daño y tiene un 10% de probabilidad por punto de no gastar CD.', maxRank: 2, tier: 2, requires: null },
-    { id: 'valk_taunt', name: 'Voz de Mando', icon: '🗯️', iconImg: '', description: 'Provocar reduce el daño que recibes del objetivo un 5% por punto durante 2 turnos.', maxRank: 2, tier: 2, requires: null },
-    { id: 'valk_aegis', name: 'Égida Valkiria', icon: '🛡️', iconImg: '', description: 'Bloqueo de Escudo también otorga un escudo de vida igual al 10% de tu vida máxima por punto.', maxRank: 3, tier: 3, requires: null },
-    { id: 'valk_last_breath', name: 'Último Aliento', icon: '💙', iconImg: '', description: 'Cuando tu vida baja del 25% durante el combate, recuperas un 8% de tu vida máxima por punto (una vez por encuentro).', maxRank: 2, tier: 3, requires: null },
     { id: 'valk_recover_magic', name: 'Recover of Magic', icon: '🔮', iconImg: '', description: 'Requiere nivel 5. Al recibir daño mágico, un 30% del daño por punto se añade a tu carga de escudo.', maxRank: 3, tier: 1, requires: null },
   ],
 
-  capstones: [
-    { id: 'valk_wings', name: 'Alas de la Valquiria', icon: '🪽', iconImg: '', description: 'Provisional: despliegas tus alas y te vuelves inmune a aturdimientos durante 3 turnos, con +20% de armadura. CD 10.' },
-    { id: 'valk_havel', name: 'Valhalla', icon: '⚔️', iconImg: '', description: 'Provisional: canal para resucitar a un aliado caído o aumentar su vida máxima un 15% durante 5 turnos. CD 10.' },
-    { id: 'valk_judgment', name: 'Juicio Divino', icon: '✨', iconImg: '', description: 'Provisional: castiga al enemigo con daño sagrado y reduce su poder de ataque un 25% durante 3 turnos. CD 6.' },
-  ],
+  capstones: [],
 
   abilities: [
     { id: 'basic_attack', name: 'Basic Attack', icon: '👊', iconImg: 'img/abilities/warrior/basic_attack.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, generatesRage: 5, castType: 'instant', cooldown: 0, description: 'Un golpe básico que genera ira. El daño depende del arma equipada.', usesWeaponDamage: true },
@@ -51,9 +41,6 @@ export const VALKYRIE: CharacterClass = {
     { id: 'valk_take_flight', name: 'Alza el Vuelo', icon: '🕊️', iconImg: '', school: 'Físico', type: 'utility', requiredLevel: 18, costPct: 0, costRage: 0, castType: 'instant', cooldown: 0, description: 'Asciendes al cielo. Solo usable mientras dura el buffo de Odins Will.', buff: null },
     { id: 'valk_dive_strike', name: 'Golpe en Picado', icon: '🦅', iconImg: '', school: 'Físico', type: 'damage', requiredLevel: 20, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 30, castType: 'instant', cooldown: 0, description: 'Requiere estar en el cielo. Gasta 30 de ira y causa mucho daño.', damageRanges: [{ rank: 1, level: 20, min: 60, max: 80 }, { rank: 2, level: 27, min: 110, max: 145 }, { rank: 3, level: 34, min: 180, max: 230 }] },
     { id: 'valk_lightning_bolt', name: 'Descarga de Rayo', icon: '⚡', iconImg: '', school: 'Sagrado', type: 'damage', requiredLevel: 22, damageType: 'magical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, castType: 'instant', cooldown: 0, description: 'Ataque a distancia: causa un daño plano más toda la carga de lanza o escudo seleccionada que gastes. Solo usable durante Odins Will.', damageRanges: [{ rank: 1, level: 22, min: 30, max: 40 }, { rank: 2, level: 30, min: 50, max: 65 }, { rank: 3, level: 38, min: 80, max: 100 }] },
-    { id: 'taunt', name: 'Provocar', icon: '🗯️', iconImg: 'img/abilities/warrior/taunt.jpg', school: 'Físico', type: 'utility', requiredLevel: 4, costPct: 0, costRage: 0, castType: 'instant', cooldown: 4, description: 'Obliga al enemigo a atacarte durante su próximo turno.', buff: null },
-    { id: 'shield_block', name: 'Bloqueo de Escudo', icon: '🛡️', iconImg: '', school: 'Físico', type: 'utility', requiredLevel: 6, costPct: 0, costRage: 5, castType: 'instant', cooldown: 3, description: 'Levantas el escudo: +10 de armadura durante 3 turnos.', buff: { stat: 'armor', duration: 3, applySelf: true }, buffRanks: [{ rank: 1, level: 6, value: 10, costRage: 5 }, { rank: 2, level: 14, value: 16, costRage: 5 }, { rank: 3, level: 22, value: 24, costRage: 5 }] },
-    { id: 'valk_shout', name: 'Grito de Guerra', icon: '📢', iconImg: '', school: 'Físico', type: 'utility', requiredLevel: 10, costPct: 0, costRage: 10, castType: 'instant', cooldown: 0, description: 'Aumenta el Poder de Ataque de todo el equipo.', buff: { stat: 'attackPower', duration: 6, applySelf: true }, partyBuff: true, buffRanks: [{ rank: 1, level: 10, value: 25, costRage: 10 }, { rank: 2, level: 18, value: 50, costRage: 10 }, { rank: 3, level: 26, value: 85, costRage: 10 }] },
     { id: 'valk_cleave', name: 'Barrido Valkirio', icon: '🪓', iconImg: '', school: 'Físico', type: 'damage', requiredLevel: 12, damageType: 'physical', baseDamage: 18, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Ataca en cono a hasta tres enemigos. Envía tres ataques al master.', weaponMultiplier: 1.0, bonusPerRank: [7, 13, 22], multiHit: 3 },
   ],
 };
