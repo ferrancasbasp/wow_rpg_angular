@@ -161,6 +161,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + applied + ' HP' + reducedNote);
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
+          if (this.charSvc.character().classKey === 'valkyrie') {
+            const rageMax = this.charSvc.resourceMax();
+            const rageNow = this.charSvc.resourceActual();
+            this.charSvc.character.update(c => ({
+              ...c,
+              currentRage: Math.min(rageMax, rageNow + 3),
+            }));
+          }
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
           this.exitStealth();
         } else if (event.type === 'monsterAttack') {
@@ -1534,7 +1542,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (Math.random() * 100 < evadeChance) {
         let rageText = '';
         if (this.charSvc.resourceConfig().type === 'rage') {
-          const rageGain = 2 + Math.floor(Math.random() * 3);
+          const rageGain = this.charSvc.character().classKey === 'valkyrie' ? 3 : 2 + Math.floor(Math.random() * 3);
           const resourceMax = this.charSvc.resourceMax();
           const resourceActual = this.charSvc.resourceActual();
           this.charSvc.character.update(c => ({
@@ -1617,7 +1625,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
       let rageText = '';
       if (this.charSvc.resourceConfig().type === 'rage') {
-        const rageGain = 2 + Math.floor(Math.random() * 3);
+        const rageGain = this.charSvc.character().classKey === 'valkyrie' ? 3 : 2 + Math.floor(Math.random() * 3);
         const resourceMax = this.charSvc.resourceMax();
         const resourceActual = this.charSvc.resourceActual();
         this.charSvc.character.update(c => ({
