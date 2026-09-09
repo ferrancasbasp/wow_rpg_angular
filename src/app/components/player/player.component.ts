@@ -70,6 +70,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showEquipment = signal(false);
   showLoadModal = signal(false);
   showSaveConfirm = signal(false);
+  pendingEndTurn = signal(false);
   savedCharacters = signal<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]>([]);
   showEffectsPanel = signal(true);
   hoveredTalent = signal<any>(null);
@@ -1292,6 +1293,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.simCombat.enemy.update((e) => ({ ...(e as any), effects: enemy.effects.map((x: any) => ({ ...x })) }));
     }
     this.hpAction(atk.roll, atk.damageType);
+  }
+
+  onEndTurnClick() {
+    const remaining = this.charSvc.maxActions() - this.charSvc.actionsUsed();
+    if (remaining > 0 && this.charSvc.turnDamage() > 0) {
+      this.pendingEndTurn.set(true);
+      return;
+    }
+    this.endTurn();
+  }
+
+  confirmEndTurn() {
+    this.pendingEndTurn.set(false);
+    this.endTurn();
   }
 
   endTurn() {

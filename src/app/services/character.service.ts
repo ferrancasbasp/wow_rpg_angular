@@ -1199,6 +1199,7 @@ export class CharacterService {
     if (rank === 0) return '';
     const texts: Record<string, string> = {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
+      improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,

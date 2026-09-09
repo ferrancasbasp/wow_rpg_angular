@@ -328,7 +328,7 @@
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
         <div class="turn-btn-row">
-          <button class="action-btn end-turn-btn" (click)="endTurn()">{{ trSvc.t('finalizar_turno') }} ({{ charSvc.turnNumber() }})</button>
+          <button class="action-btn end-turn-btn" (click)="onEndTurnClick()">{{ trSvc.t('finalizar_turno') }} ({{ charSvc.turnNumber() }})</button>
           <button class="action-btn full-rest-btn" (click)="fullRest()" title="Full Rest: vida/mana al maximo, buffs -2 turnos">🥐</button>
         </div>
         <div class="action-slots-row">
@@ -919,6 +919,22 @@
       </div>
     }
 
+    @if (pendingEndTurn()) {
+      <div class="modal-overlay" (click)="pendingEndTurn.set(false)">
+        <div class="modal-content end-turn-confirm-modal" (click)="$event.stopPropagation()">
+          <div class="modal-title">⏳ ¿Terminar el turno?</div>
+          <p class="modal-text">
+            Aún te quedan <b>{{ charSvc.maxActions() - charSvc.actionsUsed() }}</b>
+            acción{{ (charSvc.maxActions() - charSvc.actionsUsed()) === 1 ? '' : 'es' }} sin gastar
+            de {{ charSvc.maxActions() }}. ¿Terminas el turno igualmente o sigues jugando?
+          </p>
+          <div class="modal-actions">
+            <button class="action-btn" (click)="pendingEndTurn.set(false)">Seguir jugando</button>
+            <button class="action-btn end-turn-btn" (click)="confirmEndTurn()">Confirmar fin de turno</button>
+          </div>
+        </div>
+      </div>
+    }
     @if (charSvc.toastMessage()) {
       <div class="toast">{{ charSvc.toastMessage() }}</div>
     }
