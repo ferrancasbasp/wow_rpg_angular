@@ -87,6 +87,9 @@
               <img src="img/abilities/valkyrie/shield_charge.jpg" alt="Escudo" class="valkyrie-pool-img" (error)="onImgError($event)">
               <span class="valkyrie-pool-value">{{ charSvc.shieldCharge() }}</span>
             </button>
+            @if (charSvc.valkyrieFlying()) {
+              <img src="img/abilities/valkyrie/fly_indicator.jpg" class="stealth-icon valkyrie-fly-icon" [title]="'Volando'" (error)="onImgError($event)">
+            }
           </div>
         }
 
@@ -208,9 +211,6 @@
             }
             @if (charSvc.character().classKey === 'rogue' && charSvc.isStealthed()) {
               <img src="img/abilities/rogue/ability_stealth.jpg" class="stealth-icon" [title]="trSvc.t('stealth')" (error)="onImgError($event)">
-            }
-            @if (charSvc.character().classKey === 'valkyrie' && charSvc.valkyrieFlying()) {
-              <img src="img/abilities/valkyrie/fly_indicator.jpg" class="stealth-icon" [title]="'Volando'" (error)="onImgError($event)">
             }
           </div>
         }
@@ -381,14 +381,14 @@
     <div class="effects-section">
       <div class="effects-header">
         <span class="effects-title">{{ trSvc.t('efectos') }}</span>
-        @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
-          <span class="effects-count">{{ charSvc.character().activeEffects.length }}</span>
+        @if (visibleEffects().length > 0) {
+          <span class="effects-count">{{ visibleEffects().length }}</span>
         }
       </div>
       <div class="effects-body">
-        @if (charSvc.character().activeEffects && charSvc.character().activeEffects.length > 0) {
+        @if (visibleEffects().length > 0) {
           <div class="effects-active-list">
-            @for (eff of charSvc.character().activeEffects; track eff.id) {
+            @for (eff of visibleEffects(); track eff.id) {
               <div class="effect-chip" [style.--eff-color]="debuffColor(eff)">
                 <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
                 <span class="effect-name">{{ eff.name }}</span>

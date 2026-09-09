@@ -1550,6 +1550,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return 3 + this.charSvc.talentRank('hate') * 2;
   }
 
+  visibleEffects() {
+    return (this.charSvc.character().activeEffects || []).filter((e: any) => e.target !== 'flying');
+  }
+
   valkyrieDeathCheck() {
     if (this.charSvc.character().classKey !== 'valkyrie') return;
     if (this.charSvc.hpActual() > 0) return;

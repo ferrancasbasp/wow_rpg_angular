@@ -347,6 +347,9 @@
     .valk-fallen {
       pointer-events: none; opacity: 0.55; filter: grayscale(1);
     }
+    .valkyrie-fly-icon {
+      margin-left: 8px;
+    }
     .valkyrie-pool-btn.active {
       border-color: var(--gold-light);
       box-shadow: 0 0 10px var(--gold-glow), inset 0 0 6px rgba(255,215,120,0.25);
