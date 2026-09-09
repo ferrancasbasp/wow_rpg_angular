@@ -1132,6 +1132,22 @@ export class MasterComponent implements OnInit {
     this.xpAmount.set(null);
   }
 
+  sendInstant25() {
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'instant25',
+        amount: 25,
+        timestamp: Date.now(),
+      });
+    }
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: nivel 25`, ...log].slice(0, 8));
+    this.showToast(`⚡ ${label} → nivel 25`);
+  }
+
   assignToPlayer(event: DamageEvent) {
     const target = this.playerTargetName().trim();
     if (!target) {

@@ -84,6 +84,7 @@
                     [value]="xpAmount() || ''" (input)="xpAmount.set($any($event.target).valueAsNumber || null)"
                     (keyup.enter)="sendXP()" />
                   <button class="quick-btn xp-btn" (click)="sendXP()">XP</button>
+                  <button class="quick-btn lvl25-btn" (click)="sendInstant25()" title="{{ trSvc.t('instant_25') }}">⚡25</button>
                 </div>
               </div>
             </div>

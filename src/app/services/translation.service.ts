@@ -174,6 +174,7 @@ export class TranslationService {
     confirm_save_body: { es: 'Este personaje se va a guardar en la nube bajo el nombre', en: 'This character will be saved to the cloud under the name' },
     confirm_save_overwrite: { es: 'Si ya existe un guardado con ese nombre, se reemplazará.', en: 'If a save with that name already exists, it will be overwritten.' },
     name_required_save: { es: 'Ponle nombre a tu personaje para guardarlo en la nube.', en: 'Give your character a name to save it to the cloud.' },
+    instant_25: { es: 'Subir al jugador seleccionado a nivel 25', en: 'Set the selected player to level 25' },
     load: { es: 'Cargar', en: 'Load' },
     export_json: { es: 'Exportar JSON', en: 'Export JSON' },
     reset: { es: 'Reiniciar', en: 'Reset' },

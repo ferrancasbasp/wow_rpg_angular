@@ -188,6 +188,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         } else if (event.type === 'levelup') {
           this.grantLevel(event.amount || 1);
           this.incomingMasterMsg.set('✦ +' + (event.amount || 1) + ' nivel');
+        } else if (event.type === 'instant25') {
+          this.instantLevel25();
+          this.incomingMasterMsg.set('⚡ Master: subido a nivel 25');
         } else if (event.type === 'soul_shards') {
           this.charSvc.addShard(event.amount || 0);
           this.incomingMasterMsg.set('🌱 Seed of Corruption: +' + (event.amount || 0) + ' Soul Shards');
@@ -914,6 +917,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => ({ ...c, level: 25, currentXP: 0 }));
     this.charSvc.upgradeStarterWeaponsToLevel25();
     this.charSvc.equipTestGear();
+    this.charSvc.syncPlayerStatus();
     this.charSvc.showToast('Test Gear equipado: +1 Fza · +1 Agi · +1 Int · +3 Aguante · +2 Espiritu · +3 armadura (pecho y manos)');
   }
 
