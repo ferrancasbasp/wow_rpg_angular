@@ -35,7 +35,7 @@ export const VALKYRIE: CharacterClass = {
     { id: 'improved_odins_will', name: "Improved Odin's Will", icon: '🪽', iconImg: 'img/abilities/valkyrie/odins_will.jpg', description: "Aumenta la energía generada durante Odin's Will un 5% adicional por punto.", maxRank: 3, tier: 3, requires: null },
     { id: 'odins_fly', name: "Odin's Fly", icon: '🦅', iconImg: 'img/abilities/valkyrie/fly_indicator.jpg', description: "Al lanzar Odin's Will haces un Fly the Nest gratuito: vuelas y se beneficia de sus talentos (Improved Fly the Nest).", maxRank: 1, tier: 3, requires: { id: 'improved_odins_will', points: 3 } },
     { id: 'hurtfull_lightning', name: 'Hurtfull lightning', icon: '⚡', iconImg: 'img/talents/valkyrie/hurtfull_lightning.jpg', description: 'Aumenta tu daño crítico un 5% y tu probabilidad de crítico un 1% por punto.', maxRank: 3, tier: 3, requires: null },
-    { id: 'lightning_vortex', name: 'Lightning Vortex', icon: '🌀', iconImg: 'img/talents/valkyrie/lightning_vortex.jpg', description: 'Aumenta el daño de Javelin of Lightning un 10% por punto.', maxRank: 2, tier: 3, requires: null },
+    { id: 'lightning_vortex', name: 'Lightning Vortex', icon: '🌀', iconImg: 'img/talents/valkyrie/lightning_vortex.jpg', description: 'Aumenta el daño de Javelin of Lightning un 10% por punto y la contribución de energía de Plunge, Impale y Slam un 5% por punto.', maxRank: 2, tier: 3, requires: null },
     { id: 'perseverance', name: 'Perseverance', icon: '⏳', iconImg: 'img/talents/valkyrie/perseverance.jpg', description: 'Aumenta la duración de Holy Mantle y Speed of Light en 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
   ],
 

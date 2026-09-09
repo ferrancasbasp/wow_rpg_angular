@@ -2670,12 +2670,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let valkTauntText = '';
       if (this.charSvc.character().classKey === 'valkyrie') {
         const critEnergyMult = isCrit ? 1 + this.charSvc.talentRank('critical_energy') * 0.33 : 1;
+        const lvEnergyMult = 1 + this.charSvc.talentRank('lightning_vortex') * 0.05;
         if (ability.id === 'empalar') {
-          const gained = Math.round(roll * 0.5 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
+          const gained = Math.round(roll * 0.5 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'shield_bash') {
-          const gained = Math.round(roll * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 0.80 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult());
           this.charSvc.addShieldCharge(gained);
           const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
           const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
@@ -2688,7 +2689,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'valk_dive_strike') {
-          const gained = Math.round(roll * 0.4 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
+          const gained = Math.round(roll * 0.4 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
           this.charSvc.character.update(c => ({
