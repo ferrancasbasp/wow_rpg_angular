@@ -325,6 +325,16 @@
     .combo-inline {
       display: flex; align-items: center; gap: 8px; margin-top: 2px;
     }
+    .valkyrie-charges-row {
+      display: flex; justify-content: space-between; gap: 10px; padding: 2px 0;
+    }
+    .valkyrie-charge {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold);
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .valkyrie-charge b {
+      color: #fff; font-family: inherit; margin-left: 2px;
+    }
     .combo-label {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold);
       letter-spacing: 0.05em; text-transform: uppercase;

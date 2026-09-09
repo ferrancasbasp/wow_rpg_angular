@@ -136,6 +136,18 @@ export class CharacterService {
     return this.warriorStance() === 'protection' || this.flowStance() === 'protection';
   }
 
+  readonly spearCharge = computed<number>(() => this.character().spearCharge || 0);
+
+  readonly shieldCharge = computed<number>(() => this.character().shieldCharge || 0);
+
+  addSpearCharge(n: number) {
+    this.character.update(c => ({ ...c, spearCharge: Math.max(0, (c.spearCharge || 0) + n) }));
+  }
+
+  addShieldCharge(n: number) {
+    this.character.update(c => ({ ...c, shieldCharge: Math.max(0, (c.shieldCharge || 0) + n) }));
+  }
+
   private toastTimeout: any;
 
   readonly classConfig = computed<CharacterClass>(() => {
@@ -1349,6 +1361,8 @@ export class CharacterService {
     if (parsed.comboPoints === undefined) parsed.comboPoints = 0;
     if (parsed.soulShards === undefined) parsed.soulShards = 0;
     if (parsed.sunShards === undefined) parsed.sunShards = 0;
+    if (parsed.spearCharge === undefined) parsed.spearCharge = 0;
+    if (parsed.shieldCharge === undefined) parsed.shieldCharge = 0;
     if (!parsed.musicalNotes) parsed.musicalNotes = [];
     this.character.set(parsed);
     this.applyKnownAvatar();

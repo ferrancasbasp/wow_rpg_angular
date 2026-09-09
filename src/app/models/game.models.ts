@@ -314,6 +314,8 @@ export interface Character {
   musicalNotes?: number[];
   soulShards?: number;
   sunShards?: number;
+  spearCharge?: number;
+  shieldCharge?: number;
   elementalOrbs?: ElementalOrb[];
   imageHorizontal?: string;
   imageVertical?: string;

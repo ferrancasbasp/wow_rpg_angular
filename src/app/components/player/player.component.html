@@ -67,6 +67,13 @@
           </div>
         </div>
 
+        @if (charSvc.character().classKey === 'valkyrie') {
+          <div class="valkyrie-charges-row">
+            <span class="valkyrie-charge">⚔️ Lanza: <b>{{ charSvc.spearCharge() }}</b></span>
+            <span class="valkyrie-charge">🛡️ Escudo: <b>{{ charSvc.shieldCharge() }}</b></span>
+          </div>
+        }
+
         @if (charSvc.character().classKey === 'warlock') {
           <div class="warlock-bottom-row">
             @if (charSvc.infernalActive()) {
