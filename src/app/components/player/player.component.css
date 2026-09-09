@@ -344,6 +344,9 @@
     .valkyrie-pool-btn:hover {
       border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.05);
     }
+    .valk-fallen {
+      pointer-events: none; opacity: 0.55; filter: grayscale(1);
+    }
     .valkyrie-pool-btn.active {
       border-color: var(--gold-light);
       box-shadow: 0 0 10px var(--gold-glow), inset 0 0 6px rgba(255,215,120,0.25);

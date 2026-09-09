@@ -24,9 +24,25 @@ export const VALKYRIE: CharacterClass = {
 
   talents: [
     { id: 'valk_recover_magic', name: 'Absortion of Magic', icon: '🔮', iconImg: '', description: 'Pasiva: al recibir daño mágico, un 30% del daño por punto se añade a tu carga de escudo.', maxRank: 3, tier: 1, requires: null },
+    { id: 'hate', name: 'Hate', icon: '😡', iconImg: '', description: 'Al recibir un golpe ganas 2 puntos de ira adicionales por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'endurance', name: 'Endurance', icon: '❤️', iconImg: '', description: 'Aumenta tu stamina un 3% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_abs_magic', name: 'Improved ABS Magic', icon: '✨', iconImg: '', description: 'Aumenta la carga de energía de la pasiva Absortion of Magic un 5% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'critical_energy', name: 'Critical energy', icon: '💥', iconImg: '', description: 'Los críticos con ataques de lanza cargan un 33% más de energía por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'twin_mending', name: 'Twin Mending', icon: '🤝', iconImg: '', description: 'Mending cura además a otra persona de la party un 20% de su potencia por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'warded', name: 'Warded', icon: '🛡️', iconImg: '', description: 'Reduce el coste de ira de Slam en 1 por punto y aumenta su daño un 10% por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'improved_fly_the_nest', name: 'Improved Fly the Nest', icon: '🕊️', iconImg: '', description: 'Fly the Nest te da energía de lanza y escudo igual a tu nivel por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'improved_odins_will', name: "Improved Odin's Will", icon: '🪽', iconImg: '', description: "Aumenta la energía generada durante Odin's Will un 5% adicional por punto.", maxRank: 3, tier: 3, requires: null },
+    { id: 'odins_fly', name: "Odin's Fly", icon: '🦅', iconImg: '', description: "Mientras dura Odin's Will también obtienes el estado volando.", maxRank: 1, tier: 3, requires: { id: 'improved_odins_will', points: 3 } },
+    { id: 'hurtfull_lightning', name: 'Hurtfull lightning', icon: '⚡', iconImg: '', description: 'Aumenta tu daño crítico un 5% por punto.', maxRank: 3, tier: 3, requires: null },
+    { id: 'lightning_vortex', name: 'Lightning Vortex', icon: '🌀', iconImg: '', description: 'Aumenta el daño de Javelin of Lightning un 10% por punto.', maxRank: 2, tier: 3, requires: null },
+    { id: 'perseverance', name: 'Perseverance', icon: '⏳', iconImg: '', description: 'Aumenta la duración de Holy Mantle y Speed of Light en 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
   ],
 
-  capstones: [],
+  capstones: [
+    { id: 'bless_by_odin', name: 'Bless by Odin', icon: '🪽', iconImg: '', description: "Odin's Will dura 1 turno más y aumentas un 25% la energía que generas mientras está activo." },
+    { id: 'call_from_valhalla', name: 'Call from Valhalla', icon: '⚔️', iconImg: '', description: 'Si tu vida llega a 0 en combate, una vez por encuentro renaces al instante con el 50% de tu vida máxima.' },
+    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: '', description: 'Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima.' },
+  ],
 
   abilities: [
     { id: 'basic_attack', name: 'Basic Attack', icon: '👊', iconImg: 'img/abilities/warrior/basic_attack.jpg', school: 'Físico', type: 'damage', requiredLevel: 1, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, generatesRage: 5, castType: 'instant', cooldown: 0, description: 'Un golpe básico que genera ira. El daño depende del arma equipada.', usesWeaponDamage: true },
@@ -42,5 +58,6 @@ export const VALKYRIE: CharacterClass = {
     { id: 'valk_dive_strike', name: 'Plunge', icon: '🦅', iconImg: '', school: 'Físico', type: 'damage', requiredLevel: 20, damageType: 'physical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Requiere estar volando. Causa mucho daño. CD 0.', damageRanges: [{ rank: 1, level: 20, min: 60, max: 80 }, { rank: 2, level: 27, min: 110, max: 145 }, { rank: 3, level: 34, min: 180, max: 230 }] },
     { id: 'valk_lightning_bolt', name: 'Javelin of Lightning', icon: '⚡', iconImg: '', school: 'Sagrado', type: 'damage', requiredLevel: 22, damageType: 'magical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, castType: 'instant', cooldown: 0, description: 'Lanza una jabalina de rayos a distancia: causa un gran daño plano más toda la carga seleccionada que gastes. Solo usable durante Odin\'s Will.', damageRanges: [{ rank: 1, level: 22, min: 30, max: 40 }, { rank: 2, level: 30, min: 50, max: 65 }, { rank: 3, level: 38, min: 80, max: 100 }] },
     { id: 'valk_cleave', name: 'Multi Attack', icon: '🪓', iconImg: '', school: 'Físico', type: 'damage', requiredLevel: 12, damageType: 'physical', baseDamage: 18, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Realiza 3 golpes básicos en cono con un extra de daño. El 30% del daño infligido carga la lanza.', weaponMultiplier: 1.0, bonusPerRank: [7, 13, 22], multiHit: 3 },
+    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: '', school: 'Sagrado', type: 'utility', requiredLevel: 1, costPct: 0, costRage: 0, castType: 'instant', cooldown: 6, capstoneGate: 'valkyries_call', description: "Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima. CD 6.", buff: null },
   ],
 };

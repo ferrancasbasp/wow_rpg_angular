@@ -417,7 +417,7 @@
           </button>
         </div>
         <div class="panel-body">
-          <div class="ability-grid">
+          <div class="ability-grid" [class.valk-fallen]="charSvc.character().classKey === 'valkyrie' && valkFallen()">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
                      [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_lightning_bolt' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || charSvc.valkyriePoolValue() === 0)) || (ability.id === 'valk_dive_strike' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || !charSvc.valkyrieFlying()))"

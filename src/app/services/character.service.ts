@@ -157,7 +157,13 @@ export class CharacterService {
 
   valkyrieChargeGainMult() {
     const eff = (this.character().activeEffects || []).find(e => e.target === 'valkyrie_charge_gain');
-    return eff && (eff.value || 0) > 0 ? 1 + (eff.value / 100) : 1;
+    const base = eff ? (eff.value || 0) : 0;
+    const bonus = this.talentRank('improved_odins_will') * 5 + (this.selectedCapstone() === 'bless_by_odin' ? 25 : 0);
+    return base + bonus > 0 ? 1 + ((base + bonus) / 100) : 1;
+  }
+
+  odinsDuration() {
+    return 2 + (this.selectedCapstone() === 'bless_by_odin' ? 1 : 0);
   }
 
   odinsWillActive() {
@@ -165,7 +171,8 @@ export class CharacterService {
   }
 
   valkyrieFlying() {
-    return (this.character().activeEffects || []).some(e => e.target === 'flying');
+    return (this.character().activeEffects || []).some(e => e.target === 'flying')
+      || (this.talentRank('odins_fly') > 0 && this.odinsWillActive());
   }
 
   valkyriePoolValue() {
@@ -216,6 +223,10 @@ export class CharacterService {
       if (key === 'agilidad' && this.character().classKey === 'bard') {
         const quickFingers = this.talentRank('quick_fingers');
         if (quickFingers > 0) result[key] = Math.round(result[key] * (1 + quickFingers * 0.01));
+      }
+      if (key === 'aguante' && this.character().classKey === 'valkyrie') {
+        const enduranceRank = this.talentRank('endurance');
+        if (enduranceRank > 0) result[key] = Math.round(result[key] * (1 + enduranceRank * 0.03));
       }
       if (this.selectedCapstone() === 'gift_of_the_wild') {
         result[key] += level;
@@ -909,6 +920,7 @@ export class CharacterService {
     let cost = ability.costRage || 0;
     if (ability.id === 'heroic_strike') cost -= this.talentRank('improved_heroic_strike');
     if (ability.id === 'shout') cost -= this.talentRank('improved_battle_shout') * 2;
+    if (ability.id === 'shield_bash') cost -= this.talentRank('warded');
     return Math.max(0, cost);
   }
 

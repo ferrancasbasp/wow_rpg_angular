@@ -80,6 +80,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   levelUpFlash = signal(false);
   abilityRolls = signal<Record<string, { roll: number; crit: boolean }>>({});
   incomingMasterMsg = signal('');
+  valkFallen = signal(false);
+  valhallaUsed = signal(false);
 
   private playerEventUnsub: (() => void) | null = null;
 
@@ -166,8 +168,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
             const rageNow = this.charSvc.resourceActual();
             this.charSvc.character.update(c => ({
               ...c,
-              currentRage: Math.min(rageMax, rageNow + 3),
+              currentRage: Math.min(rageMax, rageNow + this.valkyrieHitRage()),
             }));
+            this.valkyrieDeathCheck();
           }
           this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' daño');
           this.exitStealth();
@@ -703,6 +706,46 @@ export class PlayerComponent implements OnInit, OnDestroy {
       assigned: false,
     });
     this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos y ' + heal + ' cura a todos los aliados — 2 eventos AOE al Master');
+  }
+
+  castValkyriesCall(ability: any) {
+    const myName = this.charSvc.character().name || 'Jugador';
+    const turn = this.charSvc.turnNumber();
+    const now = Date.now();
+    const heal = Math.round(this.charSvc.maxHP() * 0.15);
+    this.sendDamagePayload({
+      player: myName,
+      ability: ability.name + ' (Cura)',
+      rank: ability.currentRank || 1,
+      damage: heal,
+      damageType: 'heal',
+      aoe: true,
+      effects: null,
+      isHot: false,
+      hotTick: 0,
+      hotDuration: 0,
+      isShield: false,
+      turn,
+      timestamp: now,
+      assigned: false,
+    });
+    this.sendDamagePayload({
+      player: myName,
+      ability: ability.name + ' (Accion)',
+      rank: ability.currentRank || 1,
+      damage: 0,
+      damageType: 'buff',
+      aoe: true,
+      buffStat: 'actions_per_turn',
+      buffValue: 1,
+      buffDuration: 1,
+      isPercent: false,
+      effects: null,
+      turn,
+      timestamp: now,
+      assigned: false,
+    });
+    this.charSvc.showToast("Valkyrie's Call: +1 accion a todos los aliados y cura de " + heal + ' HP — 2 eventos AOE al Master');
   }
 
   castSeedOfCorruption(ability: any) {
@@ -1503,6 +1546,27 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  valkyrieHitRage(): number {
+    return 3 + this.charSvc.talentRank('hate') * 2;
+  }
+
+  valkyrieDeathCheck() {
+    if (this.charSvc.character().classKey !== 'valkyrie') return;
+    if (this.charSvc.hpActual() > 0) return;
+    if (this.charSvc.selectedCapstone() === 'call_from_valhalla' && !this.valhallaUsed()) {
+      const maxHP = this.charSvc.maxHP();
+      const reviveHP = Math.max(1, Math.round(maxHP * 0.5));
+      this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
+      this.valhallaUsed.set(true);
+      this.valkFallen.set(false);
+      this.charSvc.syncPlayerStatus();
+      this.charSvc.showToast('⚔️ Call from Valhalla: renaces con ' + reviveHP + ' de vida');
+    } else {
+      this.valkFallen.set(true);
+      this.charSvc.showToast('💀 Has caído en combate');
+    }
+  }
+
   hpAction(amount: number, actionType: string) {
     if (amount <= 0) return;
     this.hpLossAmount.set(0);
@@ -1542,7 +1606,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (Math.random() * 100 < evadeChance) {
         let rageText = '';
         if (this.charSvc.resourceConfig().type === 'rage') {
-          const rageGain = this.charSvc.character().classKey === 'valkyrie' ? 3 : 2 + Math.floor(Math.random() * 3);
+          const rageGain = this.charSvc.character().classKey === 'valkyrie' ? this.valkyrieHitRage() : 2 + Math.floor(Math.random() * 3);
           const resourceMax = this.charSvc.resourceMax();
           const resourceActual = this.charSvc.resourceActual();
           this.charSvc.character.update(c => ({
@@ -1625,7 +1689,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
       let rageText = '';
       if (this.charSvc.resourceConfig().type === 'rage') {
-        const rageGain = this.charSvc.character().classKey === 'valkyrie' ? 3 : 2 + Math.floor(Math.random() * 3);
+        const rageGain = this.charSvc.character().classKey === 'valkyrie' ? this.valkyrieHitRage() : 2 + Math.floor(Math.random() * 3);
         const resourceMax = this.charSvc.resourceMax();
         const resourceActual = this.charSvc.resourceActual();
         this.charSvc.character.update(c => ({
@@ -1639,6 +1703,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast('-' + amount + ' ' + this.trSvc.t('life_lost') + rageText);
       }
+      this.valkyrieDeathCheck();
     }
     this.charSvc.syncPlayerStatus();
   }
@@ -1747,7 +1812,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
         });
       }
       const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName + ' + ' + mFlat + ')');
+      const tmRank = this.charSvc.talentRank('twin_mending');
+      let twinMendingText = '';
+      if (tmRank > 0) {
+        const tmHeal = Math.round(healAmount * 0.20 * tmRank);
+        if (tmHeal > 0) {
+          this.charSvc.sendHealEvent({ ...ability, name: 'Twin Mending' }, tmHeal);
+          twinMendingText = ' · 🤝 +' + tmHeal + ' a un aliado (Twin Mending)';
+        }
+      }
+      const nowHP = this.charSvc.hpActual();
+      if (nowHP >= this.charSvc.maxHP()) {
+        this.valhallaUsed.set(false);
+        this.valkFallen.set(false);
+      }
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName + ' + ' + mFlat + ')' + twinMendingText);
       return;
     }
 
@@ -1771,11 +1850,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const spent = this.charSvc.spendValkyriePool(poolActual);
       const flat = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
-      const roll = flat + spent;
+      const vortexMult = 1 + this.charSvc.talentRank('lightning_vortex') * 0.10;
+      const flatBoosted = Math.round(flat * vortexMult);
+      const roll = flatBoosted + spent;
       this.charSvc.useAction(actionCost);
       this.charSvc.turnDamage.update(d => d + roll);
       this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' R' + ability.currentRank }, roll, 1, 1);
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flat + ' plano + ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ') — ' + this.trSvc.t('sent_to_master'));
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flatBoosted + ' plano + ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ') — ' + this.trSvc.t('sent_to_master'));
       return;
     }
 
@@ -1847,6 +1928,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const min = ability.currentMin || 0;
     const max = ability.currentMax || 0;
     let roll = min + Math.floor(Math.random() * (max - min + 1));
+    if (ability.id === 'shield_bash' && this.charSvc.character().classKey === 'valkyrie') {
+      const wardedRank = this.charSvc.talentRank('warded');
+      if (wardedRank > 0) roll = Math.round(roll * (1 + wardedRank * 0.10));
+    }
     let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 2;
@@ -1884,6 +1969,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let critMult = 1.5;
       if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
         critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.10;
+      }
+      if (this.charSvc.character().classKey === 'valkyrie' && ability.type === 'damage') {
+        critMult = critMult + this.charSvc.talentRank('hurtfull_lightning') * 0.05;
       }
       if (this.charSvc.hasEffect('demonic_form')) {
         critMult = critMult * 1.25;
@@ -2536,8 +2624,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let valkChargeText = '';
       let valkTauntText = '';
       if (this.charSvc.character().classKey === 'valkyrie') {
+        const critEnergyMult = isCrit ? 1 + this.charSvc.talentRank('critical_energy') * 0.33 : 1;
         if (ability.id === 'empalar') {
-          const gained = Math.round(roll * 0.5 * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 0.5 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'shield_bash') {
@@ -2550,7 +2639,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           valkChargeText = ' · 🛡️ Escudo +' + gained;
           valkTauntText = ' · 🗯️ Provocas al enemigo';
         } else if (ability.id === 'valk_cleave') {
-          const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         }
@@ -2584,7 +2673,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         let hitRoll = roll;
         if (hits > 1 && h > 0) {
           hitRoll = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
-          if (isCrit) hitRoll = Math.round(hitRoll * 1.5);
+          if (isCrit) hitRoll = Math.round(hitRoll * (this.charSvc.character().classKey === 'valkyrie' ? 1.5 + this.charSvc.talentRank('hurtfull_lightning') * 0.05 : 1.5));
           if (isRage && this.charSvc.inBattleStance()) {
             const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
             hitRoll = Math.round(hitRoll * battleMult);
@@ -2697,7 +2786,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const spent = this.charSvc.spendValkyriePool(poolActual);
       const armValue = ability.currentBuffValue || 10;
-      const baseDur = (ability.buff && ability.buff.duration) || 2;
+      const baseDur = ((ability.buff && ability.buff.duration) || 2) + this.charSvc.talentRank('perseverance');
       const duration = baseDur + Math.floor(spent / 100);
       this.charSvc.character.update(c => ({
         ...c,
@@ -2730,8 +2819,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
           { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Volando', target: 'flying', value: 0, duration: 2 },
         ],
       }));
+      const ifnRank = this.charSvc.talentRank('improved_fly_the_nest');
+      let flyEnergyText = '';
+      if (ifnRank > 0) {
+        const energy = this.charSvc.character().level * ifnRank;
+        this.charSvc.addSpearCharge(energy);
+        this.charSvc.addShieldCharge(energy);
+        flyEnergyText = ' · ⚔️🛡️ lanza y escudo +' + energy;
+      }
       this.charSvc.useAction(actionCost);
-      this.charSvc.showToast(ability.name + ': asciendes al cielo');
+      this.charSvc.showToast(ability.name + ': asciendes al cielo' + flyEnergyText);
       return;
     }
 
@@ -2946,6 +3043,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castDemonicSacrifice(ability);
     } else if (ability.id === 'holy_nova') {
       this.castHolyNova(ability);
+    } else if (ability.id === 'valkyries_call') {
+      this.castValkyriesCall(ability);
     } else if (ability.id === 'dark_star') {
       this.castDarkStar(ability);
     } else if (ability.id === 'finale') {
@@ -3043,6 +3142,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let sndDuration = ability.currentBuffDuration;
       if (ability.id === 'slice_and_dice') {
         sndDuration = sndComboSpent + this.charSvc.talentRank('improved_slice_and_dice') * 1;
+      }
+      if (ability.id === 'valk_speed_of_light') {
+        sndDuration += this.charSvc.talentRank('perseverance');
+      }
+      if (ability.id === 'valk_odins_will') {
+        sndDuration = this.charSvc.odinsDuration();
       }
       const poisonBuffTargets = ['poisonDamage', 'leechPoison', 'woundPoison'];
       const poisonClearTargets = poisonBuffTargets.includes(ability.currentBuffStat)
