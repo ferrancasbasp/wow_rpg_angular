@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, ActivePet, Capstone, ElementalOrb } from '../models/game.models';
+import { onDisconnect, ref } from 'firebase/database';
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { SimCombatService } from './sim-combat.service';
@@ -364,6 +365,62 @@ export class CharacterService {
     const current = this.character().currentXP || 0;
     return Math.min(100, Math.floor((current / this.xpForNextLevel()) * 100));
   });
+
+  readonly sessionId = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
+    ? (crypto as any).randomUUID()
+    : 's' + Date.now() + '-' + Math.random().toString(36).slice(2);
+
+  private leader = true;
+  private heartbeatTimer: any = null;
+
+  isLeader(): boolean {
+    return this.leader;
+  }
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatTimer = setInterval(() => this.heartbeatTick(), 5000);
+    this.heartbeatTick();
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+  }
+
+  private heartbeatTick() {
+    if (this.simMode()) return;
+    const name = (this.character().name || '').trim();
+    if (!name) return;
+    const sessionPath = 'sessions/' + name + '/' + this.sessionId;
+    try {
+      const db = this.firebase.getDb();
+      this.firebase.setData(sessionPath, { lastSeen: Date.now(), role: 'player' });
+      onDisconnect(ref(db, sessionPath)).remove();
+    } catch (e) {
+      console.error('Heartbeat error:', e);
+    }
+    this.firebase.onceValue('sessions/' + name).then((sessions: any) => {
+      const ids = sessions && typeof sessions === 'object' ? Object.keys(sessions) : [];
+      if (ids.length === 0) {
+        this.leader = true;
+        return;
+      }
+      const now = Date.now();
+      let bestId = ids[0];
+      for (const id of ids) {
+        const seen = sessions[id]?.lastSeen || 0;
+        const bestSeen = sessions[bestId]?.lastSeen || 0;
+        if (seen > bestSeen || (seen === bestSeen && id > bestId)) bestId = id;
+        if (id !== this.sessionId && seen > 0 && now - seen > 120000) {
+          this.firebase.removeData('sessions/' + name + '/' + id);
+        }
+      }
+      this.leader = bestId === this.sessionId;
+    });
+  }
 
   readonly hpActual = computed<number>(() => {
     const char = this.character();
@@ -1428,6 +1485,7 @@ export class CharacterService {
 
   syncPlayerStatus() {
     if (this.simMode()) return;
+    if (!this.leader) return;
     const name = (this.character().name || '').trim();
     if (!name) return;
     this.applyKnownAvatar();
