@@ -324,7 +324,7 @@ export class TranslationService {
     evangelism: { es: 'Evangelism', en: 'Evangelism' },
     bloodrage: { es: 'Blood Rage', en: 'Blood Rage' },
     last_stand: { es: 'Last Stand', en: 'Last Stand' },
-    iron_wall: { es: 'Iron Wall', en: 'Iron Wall' },
+    iron_wall: { es: 'Rallying Cry', en: 'Rallying Cry' },
     battle_shout: { es: 'Battle Shout', en: 'Battle Shout' },
     slice_and_dice: { es: 'Slice and Dice', en: 'Slice and Dice' },
     adrenal_rush: { es: 'Adrenal Rush', en: 'Adrenal Rush' },
