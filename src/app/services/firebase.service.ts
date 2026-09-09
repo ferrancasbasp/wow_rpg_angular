@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, off, remove, update, get, runTransaction } from 'firebase/database';
+import { getDatabase, ref, push, onValue, off, remove, update, get } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCxsMUUHvw_LQrl24VgDtJiperHF2rRL_Y',
@@ -41,25 +41,6 @@ export class FirebaseService {
   async onceValue(path: string): Promise<any> {
     const snapshot = await get(ref(this.db, path));
     return snapshot.val();
-  }
-
-  async claimEvent(key: string, claimer: string): Promise<boolean> {
-    const r = ref(this.db, 'playerEvents/' + key);
-    try {
-      const res = await runTransaction(r, (current: any) => {
-        if (current === null) return undefined;
-        if (current.processedBy) {
-          const stale = Date.now() - (current.claimedAt || 0) >= 30000;
-          if (!stale) return current;
-        }
-        return { ...current, processedBy: claimer, claimedAt: Date.now() };
-      });
-      const val = res.snapshot ? res.snapshot.val() : null;
-      return !!(val && val.processedBy === claimer);
-    } catch (e) {
-      console.error('claimEvent error:', e);
-      return false;
-    }
   }
 
   getDb() {

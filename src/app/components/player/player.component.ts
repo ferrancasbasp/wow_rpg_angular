@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CharacterService } from '../../services/character.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { TranslationService } from '../../services/translation.service';
@@ -82,7 +82,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
   incomingMasterMsg = signal('');
 
   private playerEventUnsub: (() => void) | null = null;
-  private mirrorUnsub: (() => void) | null = null;
 
   newEffect = signal<{
     type: ActiveEffect['type'];
@@ -116,15 +115,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.charSvc.loadFromLocalStorage();
-    this.charSvc.startHeartbeat();
     this.initPlayerEventListener();
-    this.initMirrorListener();
   }
 
   ngOnDestroy() {
     this.playerEventUnsub?.();
-    this.mirrorUnsub?.();
-    this.charSvc.stopHeartbeat();
   }
 
   initPlayerEventListener() {
@@ -141,11 +136,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const isPetTarget = petName && targetName === petName;
 
         if (!isPetTarget && myName !== targetName) return;
-
-        if (!this.charSvc.isLeader()) return;
-
-        this.firebase.claimEvent(snapshot.key!, this.charSvc.sessionId).then((claimed) => {
-          if (!claimed) return;
 
         if (isPetTarget) {
           if (event.type === 'heal') {
@@ -249,33 +239,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
         this.firebase.removeData('playerEvents/' + snapshot.key);
         setTimeout(() => this.incomingMasterMsg.set(''), 4000);
-        });
       });
       this.playerEventUnsub = () => off(ref(db, 'playerEvents'), 'child_added', cb);
     } catch (e) {
       console.error('Player event listener error:', e);
     }
-  }
-
-  initMirrorListener() {
-    effect(() => {
-      const name = (this.charSvc.character().name || '').trim();
-      this.mirrorUnsub?.();
-      this.mirrorUnsub = null;
-      if (!name) return;
-      const db = this.firebase.getDb();
-      this.mirrorUnsub = this.firebase.onValue('players/' + name, (data) => {
-        if (this.charSvc.simMode() || this.charSvc.isLeader()) return;
-        const hp = data?.hp;
-        const maxHp = data?.maxHp;
-        if (typeof hp === 'number' && typeof maxHp === 'number') {
-          const clamped = Math.min(maxHp, Math.max(0, hp));
-          if (clamped !== this.charSvc.hpActual()) {
-            this.charSvc.character.update(c => ({ ...c, currentHP: clamped }));
-          }
-        }
-      });
-    });
   }
 
   comboPointArray(max: number): number[] {
