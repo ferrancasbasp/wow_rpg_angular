@@ -631,7 +631,7 @@ export class CharacterService {
       const spBonus = ((!isPhysical || a.spellPowerRatio) && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0) * (a.type === 'heal' ? 1.5 : 1)) : 0;
       let minVal: number, maxVal: number;
       if (a.id === 'shield_bash' && this.character().classKey === 'valkyrie') {
-        const base = this.shieldDefense() + Math.round(this.character().level * 2);
+        const base = this.shieldDefense() + Math.round(this.character().level * 2) + Math.round(this.attackPower() / 7);
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
       } else if (a.usesWeaponDamage) {
