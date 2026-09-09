@@ -9,6 +9,7 @@ import { DRUID } from '../classes/druid';
 import { BARD } from '../classes/bard';
 import { WARLOCK } from '../classes/warlock';
 import { HUNTER } from '../classes/hunter';
+import { VALKYRIE } from '../classes/valkyrie';
 
 @Injectable({ providedIn: 'root' })
 export class ClassRegistryService {
@@ -22,6 +23,7 @@ export class ClassRegistryService {
     bard: BARD,
     warlock: WARLOCK,
     hunter: HUNTER,
+    valkyrie: VALKYRIE,
   };
 
   getAll(): Record<string, CharacterClass> {

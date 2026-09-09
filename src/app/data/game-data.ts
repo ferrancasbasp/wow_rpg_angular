@@ -157,6 +157,9 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
       equipment.mainHand = { name: 'Bastón Oscuro', bonus: { ...emptyBonus, intelecto: 2 }, weaponDamage: 4 };
     } else if (cls.name === 'Hunter') {
       equipment.ranged = { name: 'Arco de Cazador', bonus: { ...emptyBonus, agilidad: 2 }, weaponDamage: 5 };
+    } else if (cls.name === 'Valkyrie') {
+      equipment.mainHand = { name: 'Espada Valkiria', bonus: { ...emptyBonus, fuerza: 2 }, weaponDamage: 4 };
+      equipment.offHand = { name: 'Escudo de Valquiria', bonus: { ...emptyBonus, aguante: 1 }, weaponDamage: 0, defense: 5 };
     }
   }
 

@@ -122,14 +122,17 @@ export class CharacterService {
   }
 
   inBattleStance(): boolean {
+    if (!this.classConfig().stances) return false;
     return this.warriorStance() === 'battle' || this.flowStance() === 'battle';
   }
 
   inFuryStance(): boolean {
+    if (!this.classConfig().stances) return false;
     return this.warriorStance() === 'fury' || this.flowStance() === 'fury';
   }
 
   inProtectionStance(): boolean {
+    if (!this.classConfig().stances) return false;
     return this.warriorStance() === 'protection' || this.flowStance() === 'protection';
   }
 
@@ -1285,6 +1288,10 @@ export class CharacterService {
         break;
       case 'priest':
         table.push({ slot: 'mainHand', from: ['Arma básica'], item: { name: 'Bastón Sagrado', bonus: { ...E, espiritu: 5 }, weaponDamage: 24 } });
+        break;
+      case 'valkyrie':
+        table.push({ slot: 'mainHand', from: ['Espada Valkiria'], item: { name: 'Espada de Valor', bonus: { ...E, fuerza: 5 }, weaponDamage: 26 } });
+        table.push({ slot: 'offHand', from: ['Escudo de Valquiria'], item: { name: 'Égida de la Valquiria', bonus: { ...E, aguante: 5 }, weaponDamage: 0, defense: 8 } });
         break;
     }
     if (table.length === 0) return;
