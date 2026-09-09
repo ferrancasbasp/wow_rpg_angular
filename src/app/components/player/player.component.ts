@@ -2472,8 +2472,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       }
 
+      const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        ability.name + ' R' + ability.currentRank + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + efCritText + arcaneOrbText + orbText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
