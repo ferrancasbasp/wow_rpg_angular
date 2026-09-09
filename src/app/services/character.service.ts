@@ -1197,6 +1197,9 @@ export class CharacterService {
   getTalentEffectText(talentId: string): string {
     const rank = this.talentRank(talentId);
     if (rank === 0) return '';
+    if (talentId === 'endurance' && this.character().classKey === 'valkyrie') {
+      return `Stamina +${rank * 3}% · Prob. crítico +${rank}%`;
+    }
     const texts: Record<string, string> = {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
