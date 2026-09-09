@@ -24,10 +24,10 @@ export const VALKYRIE: CharacterClass = {
 
   talents: [
     { id: 'hate', name: 'Hate', icon: '😡', iconImg: 'img/talents/valkyrie/hate.jpg', description: 'Al recibir un golpe ganas 2 puntos de ira adicionales por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'endurance', name: 'Endurance', icon: '❤️', iconImg: 'img/talents/valkyrie/endurance.jpg', description: 'Aumenta tu stamina un 3% y tu probabilidad de crítico un 1% por punto.', maxRank: 3, tier: 2, requires: null },
+    { id: 'endurance', name: 'Endurance', icon: '❤️', iconImg: 'img/talents/valkyrie/endurance.jpg', description: 'Aumenta tu stamina un 3% y tu probabilidad de crítico un 1% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_abs_magic', name: 'Improved ABS Magic', icon: '✨', iconImg: 'img/abilities/valkyrie/absortion_of_magic.jpg', description: 'Aumenta la carga de energía de la pasiva Absortion of Magic un 5% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'critical_energy', name: 'Critical energy', icon: '💥', iconImg: 'img/talents/valkyrie/critical_energy.jpg', description: 'Los críticos con ataques de lanza cargan un 33% más de energía por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'energy_conduit', name: 'Energy Conduit', icon: '🔄', iconImg: 'img/talents/valkyrie/energy_conduit.jpg', description: 'El 10% de la energía gastada en la lanza se transfiere al escudo, y viceversa, por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'energy_conduit', name: 'Energy Conduit', icon: '🔄', iconImg: 'img/talents/valkyrie/energy_conduit.jpg', description: 'El 10% de la energía gastada en la lanza se transfiere al escudo, y viceversa, por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'twin_mending', name: 'Twin Mending', icon: '🤝', iconImg: 'img/talents/valkyrie/twin_mending.jpg', description: 'Mending cura además a otra persona de la party un 20% de su potencia por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'warded', name: 'Warded', icon: '🛡️', iconImg: 'img/talents/valkyrie/warded.jpg', description: 'Reduce el coste de ira de Slam en 1 por punto y aumenta su daño un 10% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'improved_fly_the_nest', name: 'Improved Fly the Nest', icon: '🕊️', iconImg: 'img/abilities/valkyrie/fly_the_nest.jpg', description: 'Fly the Nest te da energía de lanza y escudo: R1 = tu nivel, R2 = 2×nivel, R3 = 3×nivel de cada una.', maxRank: 3, tier: 2, requires: null },
