@@ -171,8 +171,11 @@ export class CharacterService {
   }
 
   valkyrieFlying() {
-    return (this.character().activeEffects || []).some(e => e.target === 'flying')
-      || (this.talentRank('odins_fly') > 0 && this.odinsWillActive());
+    return (this.character().activeEffects || []).some(e => e.target === 'flying');
+  }
+
+  valkyrieOdinsFlyPending() {
+    return this.talentRank('odins_fly') > 0 && !this.character().odinsFlyUsed;
   }
 
   valkyriePoolValue() {
@@ -1217,6 +1220,7 @@ export class CharacterService {
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
       energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
       hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
+      odins_fly: `Al lanzar Odin's Will (1ª vez por encuentro): vuelas hasta hacer Plunge o que expire`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
