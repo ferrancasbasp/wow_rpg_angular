@@ -148,6 +148,30 @@ export class CharacterService {
     this.character.update(c => ({ ...c, shieldCharge: Math.max(0, (c.shieldCharge || 0) + n) }));
   }
 
+  readonly selectedValkyriePool = computed<'spear' | 'shield'>(() => this.character().valkyriePool === 'shield' ? 'shield' : 'spear');
+
+  setValkyriePool(pool: 'spear' | 'shield') {
+    this.character.update(c => ({ ...c, valkyriePool: pool }));
+  }
+
+  valkyriePoolValue() {
+    return this.selectedValkyriePool() === 'shield' ? (this.character().shieldCharge || 0) : (this.character().spearCharge || 0);
+  }
+
+  valkyriePoolHas(amount: number) {
+    return this.valkyriePoolValue() >= amount;
+  }
+
+  spendValkyriePool(amount: number) {
+    const current = this.selectedValkyriePool() === 'shield' ? (this.character().shieldCharge || 0) : (this.character().spearCharge || 0);
+    const spent = Math.min(amount, current);
+    this.character.update(c => {
+      if (c.valkyriePool === 'shield') return { ...c, shieldCharge: (c.shieldCharge || 0) - spent };
+      return { ...c, spearCharge: (c.spearCharge || 0) - spent };
+    });
+    return spent;
+  }
+
   private toastTimeout: any;
 
   readonly classConfig = computed<CharacterClass>(() => {
@@ -1363,6 +1387,7 @@ export class CharacterService {
     if (parsed.sunShards === undefined) parsed.sunShards = 0;
     if (parsed.spearCharge === undefined) parsed.spearCharge = 0;
     if (parsed.shieldCharge === undefined) parsed.shieldCharge = 0;
+    if (parsed.valkyriePool !== 'shield') parsed.valkyriePool = parsed.valkyriePool === 'shield' ? 'shield' : 'spear';
     if (!parsed.musicalNotes) parsed.musicalNotes = [];
     this.character.set(parsed);
     this.applyKnownAvatar();

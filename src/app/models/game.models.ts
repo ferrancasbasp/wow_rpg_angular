@@ -77,6 +77,7 @@ export interface Ability {
   costRage?: number;
   costEnergy?: number;
   costFocus?: number;
+  energyCost?: number;
   focusGain?: number;
   castType: CastType;
   cooldown: number;
@@ -316,6 +317,7 @@ export interface Character {
   sunShards?: number;
   spearCharge?: number;
   shieldCharge?: number;
+  valkyriePool?: 'spear' | 'shield';
   elementalOrbs?: ElementalOrb[];
   imageHorizontal?: string;
   imageVertical?: string;

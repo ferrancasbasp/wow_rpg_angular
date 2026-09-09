@@ -1699,6 +1699,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    let valkSpendText = '';
+    if (ability.energyCost && this.charSvc.character().classKey === 'valkyrie' && !this.charSvc.valkyriePoolHas(ability.energyCost)) {
+      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+      this.charSvc.showToast('No tienes suficiente carga de ' + poolName);
+      return;
+    }
+    if (ability.energyCost && this.charSvc.character().classKey === 'valkyrie') {
+      const spent = this.charSvc.spendValkyriePool(ability.energyCost);
+      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+      valkSpendText = ' · −' + spent + ' carga de ' + poolName;
+    }
+
     if (ability.spendsSunShards && (this.charSvc.getSunShards() || 0) === 0) {
       this.charSvc.showToast(this.trSvc.t('no_sun_shards'));
       return;
@@ -2493,7 +2505,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkSpendText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

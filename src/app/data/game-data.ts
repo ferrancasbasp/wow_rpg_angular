@@ -181,6 +181,7 @@ export function createDefaultCharacter(classKey: string, classData: Record<strin
     sunShards: 0,
     spearCharge: 0,
     shieldCharge: 0,
+    valkyriePool: 'spear',
     elementalOrbs: [],
     trainedRanks: {},
     currentCooldowns: {},
