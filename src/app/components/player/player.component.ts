@@ -3237,7 +3237,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
       const odinsFlyText = odinsFlyGrant
-        ? ' · 🕊️ Fly the Nest gratuito' + this.charSvc.valkyrieApplyFlight(sndDuration, true)
+        ? ' · 🕊️ Fly the Nest gratuito' + this.charSvc.valkyrieApplyFlight(sndDuration)
         : '';
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': +' + buffValue +
