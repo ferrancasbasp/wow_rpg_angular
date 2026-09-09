@@ -178,11 +178,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.hpAction(event.amount, event.damageType || 'physical');
           this.exitStealth();
           let effText = '';
-          if (this.charSvc.character().classKey === 'valkyrie' && this.charSvc.hasPassive('valk_recover_magic') && (event.damageType === 'magical')) {
-            const improved = 1 + this.charSvc.talentRank('improved_abs_magic') * 0.05;
-            const shieldGain = Math.max(1, Math.round(event.amount * 0.30 * this.charSvc.valkyrieChargeGainMult() * improved));
-            this.charSvc.addShieldCharge(shieldGain);
-            effText += ' · 🛡️ Carga de escudo +' + shieldGain;
+          if (this.charSvc.character().classKey === 'valkyrie') {
+            const shieldGain = this.valkyrieAbsorbAmount(event.amount, event.damageType);
+            if (shieldGain > 0) effText += ' · 🛡️ Carga de escudo +' + shieldGain;
           }
           if (event.inflictsEffects && Array.isArray(event.inflictsEffects)) {
             for (const eff of event.inflictsEffects) {
@@ -1550,6 +1548,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return 3 + this.charSvc.talentRank('hate') * 2;
   }
 
+  valkyrieAbsorbAmount(amount: number, damageType?: string): number {
+    if (damageType !== 'magical' || this.charSvc.character().classKey !== 'valkyrie' || !this.charSvc.hasPassive('valk_recover_magic')) return 0;
+    const improved = 1 + this.charSvc.talentRank('improved_abs_magic') * 0.05;
+    return Math.max(1, Math.round(amount * 0.30 * this.charSvc.valkyrieChargeGainMult() * improved));
+  }
+
+  valkyrieAbsorbMagic(amount: number, damageType?: string): number {
+    const gain = this.valkyrieAbsorbAmount(amount, damageType);
+    if (gain > 0) this.charSvc.addShieldCharge(gain);
+    return gain;
+  }
+
   visibleEffects() {
     return (this.charSvc.character().activeEffects || []).filter((e: any) => e.target !== 'flying');
   }
@@ -1623,6 +1633,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
     }
+
+    this.valkyrieAbsorbMagic(amount, actionType);
 
     let remaining = amount;
     let absorbedTotal = 0;
