@@ -1241,7 +1241,7 @@ export class CharacterService {
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
       energy_conduit: `Al gastar cargas: ${rank * 6}% de la lanza pasa al escudo y viceversa`,
       improved_javelin: `Javelin: tu carga aporta ${70 + rank * 10}% al daño`,
-      lightning_vortex: `Javelin: daño +${rank * 10}% · Carga de Plunge/Impale/Slam +${rank * 5}%`,
+      lightning_vortex: `Javelin: daño +${rank * 10}% por punto · Carga de Plunge/Impale/Slam +5% fijo`,
       hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
       odins_fly: `Al lanzar Odin's Will: Fly the Nest gratuito`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,

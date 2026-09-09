@@ -2670,7 +2670,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let valkTauntText = '';
       if (this.charSvc.character().classKey === 'valkyrie') {
         const critEnergyMult = isCrit ? 1 + this.charSvc.talentRank('critical_energy') * 0.33 : 1;
-        const lvEnergyMult = 1 + this.charSvc.talentRank('lightning_vortex') * 0.05;
+        const lvEnergyMult = this.charSvc.talentRank('lightning_vortex') > 0 ? 1.05 : 1;
         if (ability.id === 'empalar') {
           const gained = Math.round(roll * 0.5 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
