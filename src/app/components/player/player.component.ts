@@ -848,10 +848,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       ...c,
       activeEffects: [
         ...(c.activeEffects || []).filter(e => e.target !== 'recklessness'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Recklessness', target: 'recklessness', value: 20, duration },
+        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Recklessness', target: 'recklessness', value: 30, duration },
       ],
     }));
-    this.charSvc.showToast('🔥 Recklessness activa · +20% critico y danyo critico · -30% resistencia (' + duration + ' turnos)');
+    this.charSvc.showToast('🔥 Recklessness activa · +30% critico y +20% danyo critico · -30% resistencia (' + duration + ' turnos)');
   }
 
   castCombustion(ability: any) {
@@ -1568,6 +1568,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return 3 + this.charSvc.talentRank('hate') * 2;
   }
 
+  hitRageGain(): number {
+    let gain = this.charSvc.character().classKey === 'valkyrie' ? this.valkyrieHitRage() : 2 + Math.floor(Math.random() * 3);
+    if (this.charSvc.inProtectionStance()) gain *= 2;
+    return gain;
+  }
+
   valkyrieAbsorbAmount(amount: number, damageType?: string): number {
     if (damageType !== 'magical' || this.charSvc.character().classKey !== 'valkyrie' || !this.charSvc.hasPassive('valk_recover_magic')) return 0;
     const improved = 1 + this.charSvc.talentRank('improved_abs_magic') * 0.05;
@@ -1640,7 +1646,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (Math.random() * 100 < evadeChance) {
         let rageText = '';
         if (this.charSvc.resourceConfig().type === 'rage') {
-          const rageGain = this.charSvc.character().classKey === 'valkyrie' ? this.valkyrieHitRage() : 2 + Math.floor(Math.random() * 3);
+          const rageGain = this.hitRageGain();
           const resourceMax = this.charSvc.resourceMax();
           const resourceActual = this.charSvc.resourceActual();
           this.charSvc.character.update(c => ({
@@ -1725,7 +1731,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
       let rageText = '';
       if (this.charSvc.resourceConfig().type === 'rage') {
-        const rageGain = this.charSvc.character().classKey === 'valkyrie' ? this.valkyrieHitRage() : 2 + Math.floor(Math.random() * 3);
+        const rageGain = this.hitRageGain();
         const resourceMax = this.charSvc.resourceMax();
         const resourceActual = this.charSvc.resourceActual();
         this.charSvc.character.update(c => ({
@@ -2616,7 +2622,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const dwTotal = Math.max(1, Math.round(roll * 0.10 * dwRank));
         const dwTick = Math.max(1, Math.round(dwTotal / 3));
         this.charSvc.sendDamageEvent(
-          { ...ability, id: 'deep_wounds', name: 'Deep Wounds', isDot: true, dotTick: dwTick, dotDuration: 3, stackable: false, damageType: 'physical' },
+          { ...ability, id: 'deep_wounds', name: 'Deep Wounds', isDot: true, dotTick: dwTick, dotDuration: 3, stackable: true, damageType: 'physical' },
           0, 1, 1
         );
         deepWoundsText = ' · 🩸 Deep Wounds ' + dwTotal + ' (' + dwTick + '/t · 3t)';

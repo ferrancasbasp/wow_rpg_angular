@@ -370,7 +370,7 @@ export class CharacterService {
     const stanceBonus = this.inFuryStance() ? (5 + impStances * 2) : 0;
     const fromTalent = this.talentRank('cruelty') + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
-    const fromReckless = this.hasEffect('recklessness') ? 20 : 0;
+    const fromReckless = this.hasEffect('recklessness') ? 30 : 0;
     return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff + fromReckless).toFixed(2);
   });
 
