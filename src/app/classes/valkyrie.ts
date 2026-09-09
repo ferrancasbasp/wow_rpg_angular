@@ -34,13 +34,13 @@ export const VALKYRIE: CharacterClass = {
     { id: 'odins_fly', name: "Odin's Fly", icon: '🦅', iconImg: 'img/abilities/valkyrie/fly_indicator.jpg', description: "Mientras dura Odin's Will también obtienes el estado volando.", maxRank: 1, tier: 3, requires: { id: 'improved_odins_will', points: 3 } },
     { id: 'hurtfull_lightning', name: 'Hurtfull lightning', icon: '⚡', iconImg: 'img/talents/valkyrie/hurtfull_lightning.jpg', description: 'Aumenta tu daño crítico un 5% por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'lightning_vortex', name: 'Lightning Vortex', icon: '🌀', iconImg: 'img/talents/valkyrie/lightning_vortex.jpg', description: 'Aumenta el daño de Javelin of Lightning un 10% por punto.', maxRank: 2, tier: 3, requires: null },
-    { id: 'perseverance', name: 'Perseverance', icon: '⏳', iconImg: '', description: 'Aumenta la duración de Holy Mantle y Speed of Light en 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
+    { id: 'perseverance', name: 'Perseverance', icon: '⏳', iconImg: 'img/talents/valkyrie/perseverance.jpg', description: 'Aumenta la duración de Holy Mantle y Speed of Light en 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
   ],
 
   capstones: [
-    { id: 'bless_by_odin', name: 'Bless by Odin', icon: '🪽', iconImg: '', description: "Odin's Will dura 1 turno más y aumentas un 25% la energía que generas mientras está activo." },
-    { id: 'call_from_valhalla', name: 'Call from Valhalla', icon: '⚔️', iconImg: '', description: 'Si tu vida llega a 0 en combate, una vez por encuentro renaces al instante con el 50% de tu vida máxima.' },
-    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: '', description: 'Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima.' },
+    { id: 'bless_by_odin', name: 'Bless by Odin', icon: '🪽', iconImg: 'img/capstones/valkyrie/bless_by_odin.jpg', description: "Odin's Will dura 1 turno más y aumentas un 25% la energía que generas mientras está activo." },
+    { id: 'call_from_valhalla', name: 'Call from Valhalla', icon: '⚔️', iconImg: 'img/capstones/valkyrie/call_from_valhalla.jpg', description: 'Si tu vida llega a 0 en combate, una vez por encuentro renaces al instante con el 50% de tu vida máxima.' },
+    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: 'img/capstones/valkyrie/valkyries_call.jpg', description: 'Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima.' },
   ],
 
   abilities: [
@@ -58,6 +58,6 @@ export const VALKYRIE: CharacterClass = {
     { id: 'valk_dive_strike', name: 'Plunge', icon: '🦅', iconImg: 'img/abilities/valkyrie/plunge.jpg', school: 'Físico', type: 'damage', requiredLevel: 10, damageType: 'physical', baseDamage: 20, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Requiere estar volando. Igual que un ataque básico más un gran daño extra que crece mucho con el rango. CD 0.', weaponMultiplier: 1.0, bonusPerRank: [45, 80, 125, 185] },
     { id: 'valk_lightning_bolt', name: 'Javelin of Lightning', icon: '⚡', iconImg: 'img/abilities/valkyrie/lightning_javelin.jpg', school: 'Sagrado', type: 'damage', requiredLevel: 18, damageType: 'magical', baseDamage: 0, spellPowerRatio: 0, costPct: 0, costRage: 0, castType: 'instant', cooldown: 0, description: 'Lanza una jabalina de rayos a distancia: causa un gran daño plano más toda la carga seleccionada que gastes. Solo usable durante Odin\'s Will.', damageRanges: [{ rank: 1, level: 18, min: 30, max: 40 }, { rank: 2, level: 26, min: 50, max: 65 }, { rank: 3, level: 34, min: 80, max: 100 }] },
     { id: 'valk_cleave', name: 'Multi Attack', icon: '🪓', iconImg: 'img/abilities/valkyrie/multi_attack.jpg', school: 'Físico', type: 'damage', requiredLevel: 12, damageType: 'physical', baseDamage: 18, spellPowerRatio: 0, costPct: 0, costRage: 15, castType: 'instant', cooldown: 0, description: 'Realiza 3 golpes básicos en cono con un extra de daño. El 30% del daño infligido carga la lanza.', weaponMultiplier: 1.0, bonusPerRank: [7, 13, 22], multiHit: 3 },
-    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: '', school: 'Sagrado', type: 'utility', requiredLevel: 1, costPct: 0, costRage: 0, castType: 'instant', cooldown: 6, capstoneGate: 'valkyries_call', description: "Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima. CD 6.", buff: null },
+    { id: 'valkyries_call', name: "Valkyrie's Call", icon: '📯', iconImg: 'img/abilities/valkyrie/valkyries_call.jpg', school: 'Sagrado', type: 'utility', requiredLevel: 1, costPct: 0, costRage: 0, castType: 'instant', cooldown: 6, capstoneGate: 'valkyries_call', description: "Restaura 1 punto de acción a todos los aliados y les cura un 15% de tu vida máxima. CD 6.", buff: null },
   ],
 };
