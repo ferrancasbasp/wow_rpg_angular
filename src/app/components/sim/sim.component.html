@@ -35,6 +35,19 @@
           @if (e.level) {
             <span class="monster-level-badge">Nv. {{ e.level }}</span>
           }
+          <button
+            type="button"
+            class="dummy-dmg-toggle"
+            [class.toggle-magical]="simCombat.dummyDamageType() === 'magical'"
+            (click)="simCombat.toggleDummyDamageType()"
+            [title]="'Tipo de daño del dummy: ' + (simCombat.dummyDamageType() === 'physical' ? 'Físico (usa tu armadura)' : 'Mágico (usa tu resistencia mágica)')"
+          >
+            <span class="dummy-dmg-track">
+              <span class="dummy-dmg-thumb"></span>
+              <span class="dummy-dmg-option" [class.active]="simCombat.dummyDamageType() === 'physical'">⚔️</span>
+              <span class="dummy-dmg-option" [class.active]="simCombat.dummyDamageType() === 'magical'">🔮</span>
+            </span>
+          </button>
           @if (e.imageUrl) {
             <img [src]="e.imageUrl" class="monster-portrait-img" (error)="onImageError($event)" />
           } @else {

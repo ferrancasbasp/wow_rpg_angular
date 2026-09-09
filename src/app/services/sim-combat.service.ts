@@ -67,6 +67,7 @@ export interface SimEnemy {
 @Injectable({ providedIn: 'root' })
 export class SimCombatService {
   readonly enemy = signal<SimEnemy | null>(null);
+  readonly dummyDamageType = signal<'physical' | 'magical'>('physical');
   readonly log = signal<string[]>([]);
   readonly pendingCount = signal(0);
   readonly syncState = signal<'ok' | 'syncing' | 'off' | 'pending'>('off');
@@ -83,6 +84,12 @@ export class SimCombatService {
 
   setTurns(turns: number) {
     this.lastTurns = turns;
+  }
+
+  toggleDummyDamageType() {
+    const next: 'physical' | 'magical' = this.dummyDamageType() === 'physical' ? 'magical' : 'physical';
+    this.dummyDamageType.set(next);
+    this.pushLog(`🔀 el dummy ahora golpea ${next === 'physical' ? 'físico (contra tu armadura)' : 'mágico (contra tu resistencia mágica)'}`);
   }
 
   isFightInProgress(): boolean {
@@ -323,7 +330,7 @@ export class SimCombatService {
     return {
       name: at.name,
       roll,
-      damageType: at.damageType || 'physical',
+      damageType: at.damageType || this.dummyDamageType(),
       inflictsEffects: at.inflictsEffects || null,
     };
   }
