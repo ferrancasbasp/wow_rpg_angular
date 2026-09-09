@@ -968,6 +968,7 @@ export class CharacterService {
   getEffectiveRageCost(ability: any): number {
     let cost = ability.costRage || 0;
     if (ability.id === 'heroic_strike') cost -= this.talentRank('improved_heroic_strike');
+    if (ability.id === 'rend') cost -= this.talentRank('improved_rend');
     if (ability.id === 'shout') cost -= this.talentRank('improved_battle_shout') * 2;
     if (ability.id === 'shield_bash') cost -= this.talentRank('warded');
     return Math.max(0, cost);
@@ -1272,7 +1273,7 @@ export class CharacterService {
       arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 15}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2.5}%`,
       improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
-      improved_rend: `Rend: +${rank * 35}% daño`,
+      improved_rend: `Rend: +${rank * 35}% daño · −${rank} ira coste`,
       improved_taunt: `Taunt sin GCD`,
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno · coste vida −${rank * 7.5}% (R2: sin daño)`,
