@@ -657,6 +657,13 @@ export class MasterComponent implements OnInit {
       }
     }
     const dotText = this.processMonsterEffects(monster);
+    const misfireEff = (monster.effects || []).find(e => e.type === 'debuff' && (e.target === 'misfire_chance' || e.stat === 'misfire_chance'));
+    if (misfireEff && (misfireEff.value || 0) > 0 && Math.random() * 100 < (misfireEff.value || 0)) {
+      this.sendLog.update(log => [`${monster.name}: ${attack.name} falla (${misfireEff.name} — ${misfireEff.value}%)`, ...log].slice(0, 8));
+      this.showToast('✨ ' + misfireEff.name + ': el ataque de ' + monster.name + ' no hace nada (' + misfireEff.value + '%)');
+      this.selectedEventId.set(null);
+      return;
+    }
     this.attackingId.set(monster.id);
     setTimeout(() => {
       this.attackingId.set(null);

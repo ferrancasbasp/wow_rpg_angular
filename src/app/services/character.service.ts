@@ -101,9 +101,10 @@ export class CharacterService {
 
   maxActions = computed<number>(() => {
     const effects = this.character().activeEffects || [];
-    const hasSnD = effects.some(e => e.name === 'Slice and Dice');
+    const hasSnD = effects.some(e => e.name === 'Slice and Dice') ? 1 : 0;
+    const speedLight = effects.find(e => e.target === 'actions_per_turn');
     const loneWolf = this.selectedCapstone() === 'lone_wolf' ? 1 : 0;
-    return (hasSnD ? 3 : 2) + loneWolf;
+    return 2 + hasSnD + loneWolf + (speedLight ? (speedLight.value || 1) : 0);
   });
 
   canAct(cost: number): boolean {
@@ -152,6 +153,11 @@ export class CharacterService {
 
   setValkyriePool(pool: 'spear' | 'shield') {
     this.character.update(c => ({ ...c, valkyriePool: pool }));
+  }
+
+  valkyrieChargeGainMult() {
+    const eff = (this.character().activeEffects || []).find(e => e.target === 'valkyrie_charge_gain');
+    return eff && (eff.value || 0) > 0 ? 1 + (eff.value / 100) : 1;
   }
 
   valkyriePoolValue() {

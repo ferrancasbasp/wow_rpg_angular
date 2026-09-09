@@ -167,6 +167,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.hpAction(event.amount, event.damageType || 'physical');
           this.exitStealth();
           let effText = '';
+          const recvRank = this.charSvc.talentRank('valk_recover_magic');
+          if (this.charSvc.character().classKey === 'valkyrie' && recvRank > 0 && (event.damageType === 'magical')) {
+            const shieldGain = Math.max(1, Math.round(event.amount * recvRank * 0.30 * this.charSvc.valkyrieChargeGainMult()));
+            this.charSvc.addShieldCharge(shieldGain);
+            effText += ' · 🛡️ Carga de escudo +' + shieldGain;
+          }
           if (event.inflictsEffects && Array.isArray(event.inflictsEffects)) {
             for (const eff of event.inflictsEffects) {
               this.addPlayerEffect({
@@ -2469,11 +2475,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let valkTauntText = '';
       if (this.charSvc.character().classKey === 'valkyrie') {
         if (ability.id === 'empalar') {
-          const gained = Math.round(roll * 0.5);
+          const gained = Math.round(roll * 0.5 * this.charSvc.valkyrieChargeGainMult());
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'shield_bash') {
-          const gained = Math.round(roll);
+          const gained = Math.round(roll * this.charSvc.valkyrieChargeGainMult());
           this.charSvc.addShieldCharge(gained);
           const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
           const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
@@ -2591,6 +2597,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (cd > 0) {
       this.charSvc.showToast(ability.name + ' ' + this.trSvc.t('on_cd') + ' (' + cd + ' ' + (cd > 1 ? this.trSvc.t('turns') : this.trSvc.t('turn')) + ')');
+      return;
+    }
+    if (ability.id === 'valk_angel_jump') {
+      const effCdA = this.charSvc.getEffectiveCooldown(ability);
+      if (effCdA > 0) {
+        this.charSvc.character.update(c => {
+          if (!c.currentCooldowns) c.currentCooldowns = {};
+          c.currentCooldowns[ability.id] = effCdA;
+          return { ...c };
+        });
+      }
+      this.charSvc.showToast(ability.name + ': te desplazas sin gastar acción · CD ' + effCdA);
       return;
     }
     if (ability.blockedStance && this.charSvc.warriorStance() === ability.blockedStance) {
