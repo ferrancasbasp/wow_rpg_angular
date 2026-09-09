@@ -863,7 +863,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Combustion', target: 'combustion', value: 50, duration },
       ],
     }));
-    this.charSvc.showToast('🔥 Combustion activa · +50% critico de Fuego (sin bono de daño critico) · ' + duration + ' turnos');
+    this.charSvc.showToast('🔥 Combustion activa · +50% critico de Fuego · Orbes de Fuego x2 (+10% danyo critico por orbe) · ' + duration + ' turnos');
   }
 
   castIcyVeins(ability: any) {
@@ -2056,7 +2056,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         critMult += this.charSvc.talentRank('frost_power') * 0.10;
       }
       if (this.charSvc.character().classKey === 'mage') {
-        critMult += this.charSvc.countElementalOrbs('fire') * 0.05;
+        const fireOrbCritMult = this.charSvc.hasEffect('combustion') ? 0.10 : 0.05;
+        critMult += this.charSvc.countElementalOrbs('fire') * fireOrbCritMult;
       }
       if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
         critMult = critMult * 1.25;
