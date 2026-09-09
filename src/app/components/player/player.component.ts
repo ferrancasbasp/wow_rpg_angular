@@ -1743,6 +1743,34 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.charSvc.character().classKey === 'valkyrie' && (ability.id === 'valk_dive_strike' || ability.id === 'valk_lightning_bolt')) {
+      if (!this.charSvc.odinsWillActive()) {
+        this.charSvc.showToast('Necesitas el buffo de Odins Will para usar ' + ability.name);
+        return;
+      }
+      if (ability.id === 'valk_dive_strike' && !this.charSvc.valkyrieFlying()) {
+        this.charSvc.showToast(ability.name + ' requiere estar en el cielo');
+        return;
+      }
+    }
+
+    if (ability.id === 'valk_lightning_bolt' && this.charSvc.character().classKey === 'valkyrie') {
+      const poolActual = this.charSvc.valkyriePoolValue();
+      if (poolActual <= 0) {
+        const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+        this.charSvc.showToast('No tienes carga de ' + poolName);
+        return;
+      }
+      const spent = this.charSvc.spendValkyriePool(poolActual);
+      const flat = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
+      const roll = flat + spent;
+      this.charSvc.useAction(actionCost);
+      this.charSvc.turnDamage.update(d => d + roll);
+      this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' R' + ability.currentRank }, roll, 1, 1);
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flat + ' plano + ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ') — ' + this.trSvc.t('sent_to_master'));
+      return;
+    }
+
     if (ability.spendsSunShards && (this.charSvc.getSunShards() || 0) === 0) {
       this.charSvc.showToast(this.trSvc.t('no_sun_shards'));
       return;
@@ -2676,6 +2704,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
         });
       }
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + armValue + ' armadura · ' + duration + ' turnos (gastados ' + spent + ' de carga de ' + this.charSvc.selectedValkyriePool() + ')');
+      return;
+    }
+    if (ability.id === 'valk_take_flight' && this.charSvc.character().classKey === 'valkyrie') {
+      if (!this.charSvc.odinsWillActive()) {
+        this.charSvc.showToast('Necesitas el buffo de Odins Will para usar ' + ability.name);
+        return;
+      }
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.target !== 'flying'),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Volando', target: 'flying', value: 0, duration: 2 },
+        ],
+      }));
+      this.charSvc.useAction(actionCost);
+      this.charSvc.showToast(ability.name + ': asciendes al cielo');
       return;
     }
 

@@ -209,6 +209,9 @@
             @if (charSvc.character().classKey === 'rogue' && charSvc.isStealthed()) {
               <img src="img/abilities/rogue/ability_stealth.jpg" class="stealth-icon" [title]="trSvc.t('stealth')" (error)="onImgError($event)">
             }
+            @if (charSvc.character().classKey === 'valkyrie' && charSvc.valkyrieFlying()) {
+              <span class="stealth-icon" [title]="'Volando'">🪽</span>
+            }
           </div>
         }
         @if (charSvc.activePetData() && charSvc.character().classKey !== 'warlock') {
@@ -417,11 +420,11 @@
           <div class="ability-grid">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
-                     [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0)"
+                     [class.ability-locked]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_lightning_bolt' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || charSvc.valkyriePoolValue() === 0)) || (ability.id === 'valk_dive_strike' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || !charSvc.valkyrieFlying()))"
                  [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
               <div class="ability-icon castable"
                    [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || charSvc.getCooldown(ability.id) > 0 || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0)"
+                   [class.disabled]="charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability))) || charSvc.getCooldown(ability.id) > 0 || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_lightning_bolt' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || charSvc.valkyriePoolValue() === 0)) || (ability.id === 'valk_dive_strike' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || !charSvc.valkyrieFlying()))"
                    [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                    (click)="castSpell(ability)">
                  @if (ability.iconImg) {
@@ -530,11 +533,11 @@
             <div class="ability-grid">
             @for (ability of charSvc.unlockedUtility(); track ability.id) {
               <div class="ability-card"
-                   [class.ability-locked]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || ((ability.id === 'valk_divine_protection' || ability.id === 'valk_mending') && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0)"
+                   [class.ability-locked]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || ((ability.id === 'valk_divine_protection' || ability.id === 'valk_mending') && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_take_flight' && charSvc.character().classKey === 'valkyrie' && !charSvc.odinsWillActive())"
                    [class.ability-cd]="charSvc.getCooldown(ability.id) > 0">
                 <div class="ability-icon castable"
                      [class.on-cooldown]="charSvc.getCooldown(ability.id) > 0"
-                     [class.disabled]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || charSvc.getCooldown(ability.id) > 0 || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || ((ability.id === 'valk_divine_protection' || ability.id === 'valk_mending') && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0)"
+                     [class.disabled]="charSvc.resourceActual() < charSvc.getEffectiveManaCost(ability) || charSvc.getCooldown(ability.id) > 0 || ((ability.isPetSummon || ability.id === 'kill_command') && charSvc.selectedCapstone() === 'lone_wolf') || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || ((ability.id === 'valk_divine_protection' || ability.id === 'valk_mending') && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_take_flight' && charSvc.character().classKey === 'valkyrie' && !charSvc.odinsWillActive())"
                      [title]="ability.name + ' — ' + trSvc.tDesc(ability.id, ability.description, charSvc.character().classKey)"
                      (click)="castUtility(ability)">
                    @if (ability.iconImg) {

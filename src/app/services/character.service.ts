@@ -160,6 +160,14 @@ export class CharacterService {
     return eff && (eff.value || 0) > 0 ? 1 + (eff.value / 100) : 1;
   }
 
+  odinsWillActive() {
+    return (this.character().activeEffects || []).some(e => e.target === 'valkyrie_charge_gain');
+  }
+
+  valkyrieFlying() {
+    return (this.character().activeEffects || []).some(e => e.target === 'flying');
+  }
+
   valkyriePoolValue() {
     return this.selectedValkyriePool() === 'shield' ? (this.character().shieldCharge || 0) : (this.character().spearCharge || 0);
   }
