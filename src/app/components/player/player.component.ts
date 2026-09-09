@@ -1984,6 +1984,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.character().classKey === 'valkyrie') {
       critChance += this.charSvc.talentRank('endurance') * 1;
     }
+    if (this.charSvc.character().classKey === 'valkyrie') {
+      critChance += this.charSvc.talentRank('hurtfull_lightning') * 1;
+    }
     if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
       critChance += 50;
     }
