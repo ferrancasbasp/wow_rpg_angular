@@ -2658,6 +2658,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
           const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
+        } else if (ability.id === 'valk_dive_strike') {
+          const gained = Math.round(roll * 0.4 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
+          this.charSvc.addSpearCharge(gained);
+          valkChargeText = ' · ⚔️ Lanza +' + gained;
         }
       }
 
