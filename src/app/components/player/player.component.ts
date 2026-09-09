@@ -1888,11 +1888,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const flat = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
       const vortexMult = 1 + this.charSvc.talentRank('lightning_vortex') * 0.10;
       const flatBoosted = Math.round(flat * vortexMult);
-      const roll = flatBoosted + spent;
+      const ijRank = this.charSvc.talentRank('improved_javelin');
+      const energyContribution = 0.70 + ijRank * 0.10;
+      const energyDmg = Math.round(spent * energyContribution);
+      const roll = flatBoosted + energyDmg;
       this.charSvc.useAction(actionCost);
       this.charSvc.turnDamage.update(d => d + roll);
       this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' R' + ability.currentRank }, roll, 1, 1);
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flatBoosted + ' plano + ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ') — ' + this.trSvc.t('sent_to_master'));
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flatBoosted + ' plano + ' + energyDmg + ' de ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ' (' + Math.round(energyContribution * 100) + '%)' + (ijRank > 0 ? ' · Improved Javelin R' + ijRank : '') + ') — ' + this.trSvc.t('sent_to_master'));
       return;
     }
 

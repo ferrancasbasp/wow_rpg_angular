@@ -893,7 +893,9 @@ export class CharacterService {
   // ==================== HELPER METHODS ====================
 
   talentRank(id: string): number {
-    return this.character().talents?.[id] || 0;
+    const rank = this.character().talents?.[id] || 0;
+    const maxRank = this.classConfig().talents.find(t => t.id === id)?.maxRank;
+    return maxRank && rank > maxRank ? maxRank : rank;
   }
 
   trainedRank(abilityId: string): number {
@@ -1238,6 +1240,7 @@ export class CharacterService {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
       energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
+      improved_javelin: `Javelin: tu carga aporta ${70 + rank * 10}% al daño`,
       hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
       odins_fly: `Al lanzar Odin's Will: Fly the Nest gratuito`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
