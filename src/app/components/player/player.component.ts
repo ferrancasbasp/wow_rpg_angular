@@ -2648,6 +2648,37 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (ability.id === 'valk_divine_protection' && this.charSvc.character().classKey === 'valkyrie') {
+      const poolActual = this.charSvc.valkyriePoolValue();
+      if (poolActual <= 0) {
+        const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+        this.charSvc.showToast('No tienes carga de ' + poolName);
+        return;
+      }
+      const spent = this.charSvc.spendValkyriePool(poolActual);
+      const armValue = ability.currentBuffValue || 10;
+      const baseDur = (ability.buff && ability.buff.duration) || 2;
+      const duration = baseDur + Math.floor(spent / 100);
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.name !== ability.name),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: ability.name, target: 'armor', value: armValue, duration },
+        ],
+      }));
+      this.charSvc.useAction(actionCost);
+      const effCdD = this.charSvc.getEffectiveCooldown(ability);
+      if (effCdD > 0) {
+        this.charSvc.character.update(c => {
+          if (!c.currentCooldowns) c.currentCooldowns = {};
+          c.currentCooldowns[ability.id] = effCdD;
+          return { ...c };
+        });
+      }
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + armValue + ' armadura · ' + duration + ' turnos (gastados ' + spent + ' de carga de ' + this.charSvc.selectedValkyriePool() + ')');
+      return;
+    }
+
     if (ability.manaGemRanks) {
       this.charSvc.useAction(actionCost);
       const rank = Math.max(1, this.charSvc.trainedRank(ability.id));
