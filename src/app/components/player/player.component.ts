@@ -2867,7 +2867,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('Ya estás volando');
         return;
       }
-      const flyEnergyText = this.charSvc.valkyrieApplyFlight(2, false);
+      const flyEnergyText = this.charSvc.valkyrieApplyFlight(2);
       this.charSvc.useAction(actionCost);
       this.charSvc.showToast(ability.name + ': asciendes al cielo' + flyEnergyText);
       return;
@@ -3384,7 +3384,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
       const pocket = this.charSvc.talentRank('pocket_shards');
-      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: pocket, currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null, odinsFlyUsed: false };
+      return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: pocket, currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));

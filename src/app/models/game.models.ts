@@ -318,7 +318,6 @@ export interface Character {
   spearCharge?: number;
   shieldCharge?: number;
   valkyriePool?: 'spear' | 'shield';
-  odinsFlyUsed?: boolean;
   elementalOrbs?: ElementalOrb[];
   imageHorizontal?: string;
   imageVertical?: string;

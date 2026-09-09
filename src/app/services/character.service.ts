@@ -175,10 +175,10 @@ export class CharacterService {
   }
 
   valkyrieOdinsFlyPending() {
-    return this.talentRank('odins_fly') > 0 && !this.character().odinsFlyUsed;
+    return this.talentRank('odins_fly') > 0;
   }
 
-  valkyrieApplyFlight(duration: number, markOdinsFlyUsed: boolean): string {
+  valkyrieApplyFlight(duration: number): string {
     const ifnRank = this.talentRank('improved_fly_the_nest');
     let text = '';
     if (ifnRank > 0) {
@@ -189,7 +189,6 @@ export class CharacterService {
     }
     this.character.update(c => ({
       ...c,
-      ...(markOdinsFlyUsed ? { odinsFlyUsed: true } : {}),
       activeEffects: [
         ...(c.activeEffects || []).filter((e: any) => e.target !== 'flying'),
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Volando', target: 'flying', value: 0, duration },
@@ -1240,7 +1239,7 @@ export class CharacterService {
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
       energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
       hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
-      odins_fly: `Al lanzar Odin's Will (1ª vez por encuentro): Fly the Nest gratuito`,
+      odins_fly: `Al lanzar Odin's Will: Fly the Nest gratuito`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
