@@ -630,7 +630,11 @@ export class CharacterService {
       const dmgBonus = (isPhysical && !noWeaponScaling) ? (weaponDmg + apBonus) : 0;
       const spBonus = ((!isPhysical || a.spellPowerRatio) && !a.usesWeaponDamage) ? Math.round(this.spellPower() * (a.spellPowerRatio || 0) * (a.type === 'heal' ? 1.5 : 1)) : 0;
       let minVal: number, maxVal: number;
-      if (a.usesWeaponDamage) {
+      if (a.id === 'shield_bash' && this.character().classKey === 'valkyrie') {
+        const base = this.shieldDefense() + Math.round(this.character().level * 2);
+        minVal = Math.round(base * 0.50);
+        maxVal = Math.round(base * 1.50);
+      } else if (a.usesWeaponDamage) {
         const base = weaponDmg + apBonus;
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
@@ -860,6 +864,10 @@ export class CharacterService {
 
   trainedRank(abilityId: string): number {
     return this.character().trainedRanks?.[abilityId] || 0;
+  }
+
+  shieldDefense(): number {
+    return this.character().equipment?.offHand?.defense || 0;
   }
 
   isMaxed(talentId: string, maxRank: number): boolean {
