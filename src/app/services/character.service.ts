@@ -368,7 +368,7 @@ export class CharacterService {
     const fromLevel = this.character().level * 0.02;
     const impStances = this.talentRank('improved_stances');
     const stanceBonus = this.inFuryStance() ? (5 + impStances * 2) : 0;
-    const fromTalent = this.talentRank('cruelty') + this.talentRank('precision');
+    const fromTalent = this.talentRank('cruelty') * 2 + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
     const fromReckless = this.hasEffect('recklessness') ? 30 : 0;
     return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff + fromReckless).toFixed(2);
@@ -1282,7 +1282,7 @@ export class CharacterService {
       anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno · coste vida −${rank * 7.5}% (R2: sin daño)`,
       improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,
-      cruelty: `Crítico físico: +${rank}%`,
+      cruelty: `Crítico físico: +${rank * 2}%`,
       improved_last_stand: `Last Stand cura: +${rank * 5}% vida · CD -${rank}`,
       improved_cleave: `Cleave: +${rank * 20}% daño`,
       improved_battle_shout: `Battle Shout: +${rank * 6}% AP, −${rank * 2} ira`,
