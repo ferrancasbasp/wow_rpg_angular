@@ -75,7 +75,7 @@
               (click)="charSvc.setValkyriePool('spear')"
               [title]="'Cargas de lanza'"
             >
-              <span class="valkyrie-pool-icon">⚔️</span>
+              <img src="img/abilities/valkyrie/spear_charge.jpg" alt="Lanza" class="valkyrie-pool-img" (error)="onImgError($event)">
               <span class="valkyrie-pool-value">{{ charSvc.spearCharge() }}</span>
             </button>
             <button
@@ -84,7 +84,7 @@
               (click)="charSvc.setValkyriePool('shield')"
               [title]="'Cargas de escudo'"
             >
-              <span class="valkyrie-pool-icon">🛡️</span>
+              <img src="img/abilities/valkyrie/shield_charge.jpg" alt="Escudo" class="valkyrie-pool-img" (error)="onImgError($event)">
               <span class="valkyrie-pool-value">{{ charSvc.shieldCharge() }}</span>
             </button>
           </div>
