@@ -2594,16 +2594,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const slRank = this.charSvc.talentRank('soul_leech');
       if (slRank > 0 && (ability.id === 'shadow_bolt' || ability.id === 'chaos_bolt')) {
-        const shieldAmt = Math.round(roll * slRank * 0.05);
-        if (shieldAmt > 0) {
+        const leechHeal = Math.round(roll * slRank * 0.10);
+        if (leechHeal > 0) {
           this.charSvc.character.update(c => ({
             ...c,
-            activeEffects: [
-              ...(c.activeEffects || []).filter(e => e.target !== 'shield'),
-              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Soul Leech', target: 'shield', value: shieldAmt, duration: 3 },
-            ],
+            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + leechHeal),
           }));
-          lifestealText += ' · 🛡️ +' + shieldAmt + ' escudo';
+          this.charSvc.syncPlayerStatus();
+          lifestealText += ' · 🩸 Soul Leech +' + leechHeal + ' vida';
         }
       }
       const igniteRank = this.charSvc.talentRank('ignite');
