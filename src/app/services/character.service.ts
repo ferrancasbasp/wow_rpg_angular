@@ -220,7 +220,7 @@ export class CharacterService {
     if (spent > 0 && this.character().classKey === 'valkyrie') {
       const conduitRank = this.talentRank('energy_conduit');
       if (conduitRank > 0) {
-        const transfer = Math.round(spent * 0.06 * conduitRank);
+        const transfer = Math.round(spent * 0.10 * conduitRank);
         if (transfer > 0) {
           if (pool === 'shield') this.addSpearCharge(transfer);
           else this.addShieldCharge(transfer);
@@ -1239,15 +1239,15 @@ export class CharacterService {
     const rank = this.talentRank(talentId);
     if (rank === 0) return '';
     if (talentId === 'endurance' && this.character().classKey === 'valkyrie') {
-      return `Stamina +${rank * 3}% · Prob. crítico +${rank}%`;
+      return `Stamina +${rank * 3}% · Prob. crítico +${rank * 2}%`;
     }
     const texts: Record<string, string> = {
       thundering_strikes: `Crit Lightning/Chain Lightning: +${rank * 5}%`,
       improved_fly_the_nest: `Lanza y escudo +${this.character().level * rank} (nivel ${this.character().level} × R${rank})`,
-      energy_conduit: `Al gastar cargas: ${rank * 6}% de la lanza pasa al escudo y viceversa`,
+      energy_conduit: `Al gastar cargas: ${rank * 10}% de la lanza pasa al escudo y viceversa`,
       improved_javelin: `Javelin: tu carga aporta ${70 + rank * 10}% al daño`,
       lightning_vortex: `Javelin: daño +${rank * 10}% por punto · Carga de Plunge/Impale/Slam +10% fijo`,
-      hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank}%`,
+      hurtfull_lightning: `Daño crítico +${rank * 5}% · Prob. crítico +${rank * 2}%`,
       odins_fly: `Al lanzar Odin's Will: Fly the Nest gratuito`,
       elemental_focus: `Crit de Rayo/Cadena: +1 Maelstorm`,
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
