@@ -1717,6 +1717,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
       valkSpendText = ' · −' + spent + ' carga de ' + poolName;
     }
 
+    if (ability.id === 'valk_mending' && this.charSvc.character().classKey === 'valkyrie') {
+      const poolActual = this.charSvc.valkyriePoolValue();
+      if (poolActual <= 0) {
+        const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+        this.charSvc.showToast('No tienes carga de ' + poolName);
+        return;
+      }
+      const spent = this.charSvc.spendValkyriePool(poolActual);
+      const mFlat = ability.currentBuffValue || 60;
+      const healAmount = spent + mFlat;
+      this.charSvc.adjustHP(healAmount);
+      this.charSvc.syncPlayerStatus();
+      this.charSvc.useAction(actionCost);
+      const effCdM = this.charSvc.getEffectiveCooldown(ability);
+      if (effCdM > 0) {
+        this.charSvc.character.update(c => {
+          if (!c.currentCooldowns) c.currentCooldowns = {};
+          c.currentCooldowns[ability.id] = effCdM;
+          return { ...c };
+        });
+      }
+      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
+      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName + ' + ' + mFlat + ')');
+      return;
+    }
+
     if (ability.spendsSunShards && (this.charSvc.getSunShards() || 0) === 0) {
       this.charSvc.showToast(this.trSvc.t('no_sun_shards'));
       return;
