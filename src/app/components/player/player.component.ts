@@ -2751,7 +2751,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
           let wfComboText = '';
           const wfComboMax = this.charSvc.getMaelstromMax();
-          if (Math.random() * 100 < 20 && (this.charSvc.character().comboPoints || 0) < wfComboMax) {
+          const wfComboChance = this.charSvc.getEffectiveComboChance(ability);
+          if (Math.random() * 100 < wfComboChance && (this.charSvc.character().comboPoints || 0) < wfComboMax) {
             this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(wfComboMax, (c.comboPoints || 0) + 1) }));
             wfComboText = ' · +1 Maelstorm';
           }
