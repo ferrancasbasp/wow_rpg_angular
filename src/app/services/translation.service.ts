@@ -186,6 +186,7 @@ export class TranslationService {
     equipment: 'Equipo',
     equipment_armor: 'Armadura',
     equipment_weapons: 'Armas',
+    skills: 'Habilidades',
     not_equipped: 'Sin equipar',
     export_sheet: 'Exportar Ficha (JSON)',
     load_character: 'Cargar personaje',

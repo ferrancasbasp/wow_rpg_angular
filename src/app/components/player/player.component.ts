@@ -14,6 +14,7 @@ import {
 } from '../../data/game-data';
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
+import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
 
 const ORB_SYMBOLS: Record<ElementalOrb, string> = {
   fire: '🔥',
@@ -103,6 +104,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
   classColor = computed(() => this.charSvc.classConfig().color || '#C79C6E');
   classGlow = computed(() => this.classColor() + '4D');
   portraitUrl = computed(() => this.charSvc.characterAvatarPaths().vertical);
+  heroSkills = computed(() => computeSkills(this.charSvc.character().level, this.charSvc.character().classKey, this.charSvc.character().name || ''));
+  heroSkillCap = computed(() => skillCapFor(this.charSvc.character().level));
+  skillCategories = SKILL_CATEGORIES;
+
+  skillsOfCategory(category: string): SkillDef[] {
+    return SKILLS.filter((s) => s.category === category);
+  }
+
+  skillPct(skillId: string): number {
+    const cap = this.heroSkillCap();
+    return cap > 0 ? Math.round(((this.heroSkills()[skillId] || 0) / cap) * 100) : 0;
+  }
 
   get statEntries(): [string, StatKey][] {
     return Object.entries(STAT_KEYS);

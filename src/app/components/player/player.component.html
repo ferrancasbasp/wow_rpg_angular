@@ -739,6 +739,28 @@
                   }
                 </div>
               </div>
+
+              <div class="equip-col equip-skills-col">
+                <div class="equip-col-title">{{ trSvc.t('skills') }}</div>
+                <div class="equip-skills-hint">
+                  Máx/habilidad: {{ heroSkillCap() }}
+                  <span class="equip-skills-hint-sub">(nivel/3 · +4 pts por nivel)</span>
+                </div>
+                <div class="equip-skills-list">
+                  @for (cat of skillCategories; track cat.key) {
+                    <div class="equip-skills-cat">{{ cat.label }}</div>
+                    @for (sk of skillsOfCategory(cat.key); track sk.id) {
+                      <div class="equip-skill-row" [class.at-cap]="heroSkills()[sk.id] >= heroSkillCap()">
+                        <span class="equip-skill-name">{{ sk.name }}</span>
+                        <div class="equip-skill-track">
+                          <div class="equip-skill-fill" [style.width.%]="skillPct(sk.id)"></div>
+                        </div>
+                        <span class="equip-skill-val">{{ heroSkills()[sk.id] }}/{{ heroSkillCap() }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
             </div>
           </div>
           <div class="equip-screen-footer">
