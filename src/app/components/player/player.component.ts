@@ -2089,10 +2089,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let comboSpent = 0;
     if (ability.spendsCombo) {
       comboSpent = this.charSvc.character().comboPoints || 0;
-      const equinoxRank = this.charSvc.talentRank('equinox');
-      const fragPower = 0.30 * (1 + equinoxRank * 0.10);
-      const aoeMult = ability.aoe ? 0.5 : 1.0;
-      roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
+      if (this.charSvc.character().classKey === 'rogue') {
+        roll = Math.round(roll * Math.max(1, comboSpent));
+      } else {
+        const equinoxRank = this.charSvc.talentRank('equinox');
+        const fragPower = 0.30 * (1 + equinoxRank * 0.10);
+        const aoeMult = ability.aoe ? 0.5 : 1.0;
+        roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
+      }
       this.charSvc.character.update(c => {
         const ftRank = this.charSvc.talentRank('finishing_touch');
         if (ftRank > 0) {
