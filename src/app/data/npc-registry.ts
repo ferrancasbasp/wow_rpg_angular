@@ -185,4 +185,46 @@ export const NPC_REGISTRY: Record<string, Npc> = {
       { name: 'Temblor', minDamage: 40, maxDamage: 60, inflictsEffects: [{ type: 'status', name: 'Aturdido', target: 'stunned', value: 0, duration: 1, debuffType: 'none' }] },
     ],
   },
+  clock_head_boss: {
+    id: 'clock_head_boss', name: 'Cabeza del Reloj', level: 25, hp: 30000, armor: 150, magicResist: 80, zone: 'La Fortaleza del Reloj',
+    imageUrl: 'img/enemies/Elite-rock-elemental-Garzuk.jpeg', isElite: true, description: 'Jefe final: aguijones crecientes (250/500/750), debuff de sanación en el triple y Aliento de fuego a todo el grupo. Las manos son objetivos independientes.',
+    attacks: [
+      { name: 'Aguijón', minDamage: 250, maxDamage: 250 },
+      { name: 'Doble Aguijón', minDamage: 500, maxDamage: 500 },
+      { name: 'Triple Aguijón', minDamage: 750, maxDamage: 750, inflictsEffects: [{ type: 'debuff', name: 'Debuff de sanación', target: 'healing_outgoing', value: 100, duration: 2, debuffType: 'magic' }] },
+      { name: 'Aliento de fuego', minDamage: 300, maxDamage: 300, aoe: true, damageType: 'magical' },
+    ],
+  },
+  clock_hand_left: {
+    id: 'clock_hand_left', name: 'Mano del Reloj (Izq.)', level: 25, hp: 15000, armor: 80, magicResist: 60, zone: 'La Fortaleza del Reloj',
+    imageUrl: 'img/enemies/Elite-Iron-Golem-18.jpeg', isElite: true, description: 'Gesto activo: piedra/papel/tijera. Se interrumpe con stun o 1.000 de daño.',
+    attacks: [
+      { name: 'Cut', minDamage: 200, maxDamage: 200 },
+      { name: 'Punch', minDamage: 500, maxDamage: 500 },
+      { name: 'Hold', minDamage: 300, maxDamage: 300 },
+      { name: 'Gesto: Piedra', minDamage: 650, maxDamage: 650 },
+      { name: 'Gesto: Tijeras', minDamage: 350, maxDamage: 350, aoe: true },
+      { name: 'Gesto: Papel', minDamage: 40, maxDamage: 40, inflictsEffects: [{ type: 'status', name: 'Inmovilizado', target: 'stunned', value: 0, duration: 2, debuffType: 'none' }, { type: 'dot', name: 'Atrapado en la mano', target: 'hp', value: 150, duration: 3, debuffType: 'magic' }] },
+    ],
+  },
+  clock_hand_right: {
+    id: 'clock_hand_right', name: 'Mano del Reloj (Dcha.)', level: 25, hp: 15000, armor: 80, magicResist: 60, zone: 'La Fortaleza del Reloj',
+    imageUrl: 'img/enemies/Elite-Iron-Golem-18.jpeg', isElite: true, description: 'Gesto activo: piedra/papel/tijera. Se interrumpe con stun o 1.000 de daño.',
+    attacks: [
+      { name: 'Cut', minDamage: 200, maxDamage: 200 },
+      { name: 'Punch', minDamage: 500, maxDamage: 500 },
+      { name: 'Hold', minDamage: 300, maxDamage: 300 },
+      { name: 'Gesto: Piedra', minDamage: 650, maxDamage: 650 },
+      { name: 'Gesto: Tijeras', minDamage: 350, maxDamage: 350, aoe: true },
+      { name: 'Gesto: Papel', minDamage: 40, maxDamage: 40, inflictsEffects: [{ type: 'status', name: 'Inmovilizado', target: 'stunned', value: 0, duration: 2, debuffType: 'none' }, { type: 'dot', name: 'Atrapado en la mano', target: 'hp', value: 150, duration: 3, debuffType: 'magic' }] },
+    ],
+  },
+  clock_add: {
+    id: 'clock_add', name: 'Pieza del Engranaje', level: 25, hp: 1500, armor: 20, magicResist: 20, zone: 'La Fortaleza del Reloj',
+    imageUrl: 'img/enemies/Furbolg-lacer-add-18.jpeg', isElite: false, description: 'Camina hacia el jefe. Si llega: usar Devolver al jefe (+3.000) y el DM lanza un Aliento de fuego extra.',
+    attacks: [
+      { name: 'Mordisco', minDamage: 30, maxDamage: 45 },
+      { name: 'Devolver al jefe', minDamage: 3000, maxDamage: 3000, isHeal: true },
+    ],
+  },
 };

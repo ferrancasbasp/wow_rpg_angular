@@ -362,6 +362,8 @@ export interface NpcAttack {
   maxDamage: number;
   inflictsEffects?: NpcAttackEffect[];
   isHeal?: boolean;
+  aoe?: boolean;
+  damageType?: 'physical' | 'magical';
 }
 
 export interface Npc {

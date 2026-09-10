@@ -258,6 +258,8 @@
                           {{ attack.name }}
                           @if (attack.isHeal) {
                             <span class="attack-effect-indicator">💚</span>
+                          } @else if (attack.aoe) {
+                            <span class="attack-effect-indicator">🌪️</span>
                           } @else if (attack.inflictsEffects && attack.inflictsEffects.length > 0) {
                             <span class="attack-effect-indicator">⚡</span>
                           }

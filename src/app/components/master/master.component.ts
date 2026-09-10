@@ -13,6 +13,8 @@ interface MonsterAttack {
   max: number;
   inflictsEffects?: NpcAttackEffect[];
   isHeal?: boolean;
+  aoe?: boolean;
+  damageType?: string;
 }
 
 interface MonsterEffect {
@@ -670,13 +672,42 @@ export class MasterComponent implements OnInit {
     }, 400);
     monster.lastAttackAt = Date.now();
     this.saveMonsters();
+    if (attack.aoe) {
+      this.pendingMonsterAttack.set(null);
+      const targets = this.partyMembers().filter((p) => p.hp > 0);
+      if (targets.length === 0) {
+        this.selectedEventId.set(null);
+        this.showToast(monster.name + ' usa ' + attack.name + ': no hay jugadores vivos');
+        return;
+      }
+      const effText = attack.inflictsEffects && attack.inflictsEffects.length > 0
+        ? ' + ' + attack.inflictsEffects.map((e) => e.name).join(', ')
+        : '';
+      for (const t of targets) {
+        this.firebase.pushData('playerEvents', {
+          target: t.name,
+          type: 'monsterAttack',
+          amount: roll,
+          damageType: attack.damageType || 'physical',
+          sourceName: monster.name + ' - ' + attack.name,
+          inflictsEffects: attack.inflictsEffects || null,
+          timestamp: Date.now(),
+        });
+        this.sendLog.update(log => [`${t.name}: -${roll} (${attack.name}) [AoE]${effText}`, ...log].slice(0, 8));
+      }
+      this.selectedEventId.set(null);
+      this.showToast(
+        monster.name + ' usa ' + attack.name + ' (AoE): ' + roll + ' danno a todo el grupo' + dotText,
+      );
+      return;
+    }
     const tauntEff = (monster.effects || []).find(e => e.type === 'debuff' && (e.target === 'taunt' || e.stat === 'taunt'));
     if (tauntEff && tauntEff.value) {
       this.firebase.pushData('playerEvents', {
         target: tauntEff.value,
         type: 'monsterAttack',
         amount: roll,
-        damageType: 'physical',
+        damageType: attack.damageType || 'physical',
         sourceName: monster.name + ' - ' + attack.name,
         inflictsEffects: attack.inflictsEffects || null,
         timestamp: Date.now(),
@@ -690,7 +721,7 @@ export class MasterComponent implements OnInit {
     }
     this.pendingMonsterAttack.set({
       roll,
-      damageType: 'physical',
+      damageType: attack.damageType || 'physical',
       sourceName: monster.name + ' - ' + attack.name,
       inflictsEffects: attack.inflictsEffects || null,
     });
@@ -850,6 +881,8 @@ export class MasterComponent implements OnInit {
         max: a.maxDamage,
         inflictsEffects: a.inflictsEffects || undefined,
         isHeal: a.isHeal || undefined,
+        aoe: a.aoe || undefined,
+        damageType: a.damageType || undefined,
       })),
       symbol: nextFreeSymbol(this.monsters()),
     };
