@@ -27,6 +27,10 @@ const KNOWN_CHARACTER_AVATARS: Record<string, CharacterAvatarPaths> = {
     horizontal: 'img/chars/Zoldrak-Horizontal.jpg',
     vertical: 'img/chars/Zoldrak-Vertical.jpg',
   },
+  MOBY: {
+    horizontal: 'img/chars/Moby-Horizontal.jpg',
+    vertical: 'img/chars/Moby-Vertical.jpg',
+  },
 };
 
 @Injectable({ providedIn: 'root' })
