@@ -3213,7 +3213,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
         : [];
       this.charSvc.character.update(c => ({
         ...c,
-        ...(ability.id === 'slice_and_dice' ? { comboPoints: 0 } : {}),
+        // getMaelstromMax() pese al nombre es generico: para el rogue devuelve el tope de
+        // Combo Points (comboConfig.max), no algo especifico del shaman. Mismo patron que
+        // usa el bonus de Finishing Touch en castSpell() para Eviscerate.
+        ...(ability.id === 'slice_and_dice' ? (
+          this.charSvc.talentRank('finishing_touch') > 0
+            ? { comboPoints: Math.min(this.charSvc.getMaelstromMax(), 1), currentEnergy: Math.min(this.charSvc.resourceMax(), (c.currentEnergy || 0) + 15) }
+            : { comboPoints: 0 }
+        ) : {}),
         activeEffects: [
           ...(c.activeEffects || []).filter(e => e.name !== ability.name && (poisonClearTargets.length > 0 ? !poisonClearTargets.includes(e.target) : true)),
           {
