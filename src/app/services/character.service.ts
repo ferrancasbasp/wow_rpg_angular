@@ -589,6 +589,11 @@ export class CharacterService {
 
       let cost = (ability.costPct || 0) * this.baseMana();
 
+      if (ability.id === 'power_word_shield') {
+        const improvedShield = this.talentRank('improved_shield');
+        if (improvedShield > 0) cost *= 1 - improvedShield * 0.05;
+      }
+
       if (this.character().classKey === 'druid') {
         const eclipseMoon = (this.character().comboPoints || 0) * 2.5;
         if (eclipseMoon > 0) cost *= (1 - eclipseMoon / 100);
