@@ -1321,6 +1321,7 @@ export class CharacterService {
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 2}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 5}%`,
+      illumination: `Healing crit: +${rank * 2}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
       beligerance: `Basic Attack: +${rank * 10}% Espiritu como danyo · Espiritu por nivel +${rank * 3}%`,
       evangelism: `Swap holy/shadow: +${rank * 3}% siguiente spell`,

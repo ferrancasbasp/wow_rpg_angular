@@ -24,6 +24,7 @@ export const PRIEST: CharacterClass = {
 
   talents: [
     { id: 'healing_focus', name: 'Healing Focus', icon: '💚', iconImg: 'img/talents/priest/healing_focus.jpg', description: 'Aumenta la curación realizada un 5% por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'illumination', name: 'Ilumination', icon: '💡', iconImg: 'img/talents/priest/illumination.jpg', description: 'Aumenta la probabilidad de crítico de tus hechizos de sanación un 2% por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'beligerance', name: 'Beligerance', icon: '⚔️', iconImg: 'img/talents/priest/beligerance.jpg', description: 'Tu ataque básico suma el 10% de tu Espiritu al danyo fisico por punto. Además, aumenta el Espiritu ganado por nivel un 3% por punto.', maxRank: 5, tier: 1, requires: null },
     { id: 'shadow_ally', name: 'Shadow Ally', icon: '🌑', iconImg: 'img/talents/priest/shadow_ally.jpg', description: 'Aumenta el daño de sombra un 3% por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'evangelism', name: 'Evangelism', icon: '✨', iconImg: 'img/talents/priest/evangelism.jpg', description: 'Tras lanzar un hechizo sagrado, tu próximo hechizo de sombra se potencia un 3% por punto, y viceversa. Dura 2 turnos. Se trackea como buff.', maxRank: 5, tier: 2, requires: null },
