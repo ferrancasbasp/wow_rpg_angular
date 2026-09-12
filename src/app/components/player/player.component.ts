@@ -2998,15 +2998,23 @@ export class PlayerComponent implements OnInit, OnDestroy {
         currentFocus: Math.max(0, resourceActual - cost),
       }));
     } else {
-      if (manaActual < cost) {
+      const innerFocusFree = this.charSvc.hasEffect('inner_focus');
+      const effectiveCost = innerFocusFree ? 0 : cost;
+      if (manaActual < effectiveCost) {
         this.charSvc.showToast(this.trSvc.t('mana') + ' ' + this.trSvc.t('insufficient_resource'));
         return;
       }
       const clearcast = this.charSvc.checkClearcasting();
-      if (!clearcast) {
+      if (!clearcast && effectiveCost > 0) {
         this.charSvc.character.update(c => ({
           ...c,
-          currentMana: manaActual - cost,
+          currentMana: manaActual - effectiveCost,
+        }));
+      }
+      if (innerFocusFree) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          activeEffects: (c.activeEffects || []).filter(e => e.target !== 'inner_focus'),
         }));
       }
     }
