@@ -35,9 +35,9 @@ const KNOWN_CHARACTER_AVATARS: Record<string, CharacterAvatarPaths> = {
     horizontal: 'img/chars/Henkerjaer-Horizontal.jpg',
     vertical: 'img/chars/Henkerjaer-Vertical.jpg',
   },
-  'KAEL DRAVORN': {
-    horizontal: 'img/chars/Kael-Dravorn-Horizontal.jpg',
-    vertical: 'img/chars/Kael-Dravorn-Vertical.jpg',
+  RAGNAR: {
+    horizontal: 'img/chars/Ragnar-Horizontal.jpg',
+    vertical: 'img/chars/Ragnar-Vertical.jpg',
   },
 };
 
