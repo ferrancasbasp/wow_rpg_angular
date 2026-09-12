@@ -2420,7 +2420,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
-      let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.03;
+      let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.05;
       let tidalWaveText = '';
       let spiritLinkText = '';
       const spiritLinkActive = this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('spirit_link');

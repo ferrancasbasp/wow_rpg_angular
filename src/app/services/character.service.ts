@@ -776,7 +776,7 @@ export class CharacterService {
       if (a.isHot) {
         const baseDuration = a.hotDuration || 1;
         hotDuration = baseDuration + this.talentRank('improved_renew');
-        const healBonus = 1 + this.talentRank('healing_focus') * 0.03;
+        const healBonus = 1 + this.talentRank('healing_focus') * 0.05;
         hotTick = Math.round(minVal * healBonus / baseDuration);
         hotTotal = hotTick * hotDuration;
       }
@@ -1320,7 +1320,7 @@ export class CharacterService {
       initiative: `Combo extra: ${rank * 10}% prob`,
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 2}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
-      healing_focus: `Curación: +${rank * 3}%`,
+      healing_focus: `Curación: +${rank * 5}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
       beligerance: `Basic Attack: +${rank * 10}% Espiritu como danyo · Espiritu por nivel +${rank * 3}%`,
       evangelism: `Swap holy/shadow: +${rank * 3}% siguiente spell`,
