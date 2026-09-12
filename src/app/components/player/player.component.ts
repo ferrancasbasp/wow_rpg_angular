@@ -682,10 +682,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   castHolyNova(ability: any) {
-    const sp = this.charSvc.spellPower();
-    const dr = (ability.damageRanges || [])[0] || { min: 30, max: 45 };
-    const dmg = Math.round(dr.min + Math.random() * (dr.max - dr.min) + sp * (ability.spellPowerRatio || 0.6));
-    const heal = Math.round(45 + sp * 0.8);
+    const smite = this.charSvc.unlockedAbilities().find((a) => a.id === 'smite') as any;
+    const healSpell = this.charSvc.unlockedAbilities().find((a) => a.id === 'heal') as any;
+    const smiteMin = smite?.currentMin || 0;
+    const smiteMax = smite?.currentMax || 0;
+    const healMin = healSpell?.currentMin || 0;
+    const healMax = healSpell?.currentMax || 0;
+    const dmg = Math.max(1, Math.round((smiteMin + Math.random() * (smiteMax - smiteMin)) / 3));
+    const heal = Math.max(1, Math.round((healMin + Math.random() * (healMax - healMin)) / 2));
     const myName = this.charSvc.character().name || 'Jugador';
     const turn = this.charSvc.turnNumber();
     const now = Date.now();
@@ -717,7 +721,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: now,
       assigned: false,
     });
-    this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos y ' + heal + ' cura a todos los aliados — 2 eventos AOE al Master');
+    this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos (1/3 de Smite) y ' + heal + ' cura a todos los aliados (50% de Heal) — 2 eventos AOE al Master');
   }
 
   castValkyriesCall(ability: any) {
