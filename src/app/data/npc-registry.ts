@@ -191,7 +191,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     attacks: [
       { name: 'Aguijón', minDamage: 250, maxDamage: 250 },
       { name: 'Doble Aguijón', minDamage: 500, maxDamage: 500 },
-      { name: 'Triple Aguijón', minDamage: 750, maxDamage: 750, inflictsEffects: [{ type: 'debuff', name: 'Debuff de sanación', target: 'healing_outgoing', value: 100, duration: 2, debuffType: 'magic' }] },
+      { name: 'Triple Aguijón', minDamage: 750, maxDamage: 750, inflictsEffects: [{ type: 'debuff', name: 'Debuff de sanación', target: 'healing_received', value: 70, duration: 2, debuffType: 'magic' }] },
       { name: 'Aliento de fuego', minDamage: 300, maxDamage: 300, aoe: true, damageType: 'magical' },
     ],
   },
