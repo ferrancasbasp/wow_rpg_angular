@@ -916,7 +916,23 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Ascendance', target: 'ascendance', value: 1, duration },
       ],
     }));
-    this.charSvc.showToast('🔥 Ascendance activa · 3 turnos: +30% Spell Power, +5% crit y +25% danyo critico (Rayo, Cadena, Choque de Llamas y de Tierra)');
+    const bolt = this.charSvc.unlockedAbilities().find((a: any) => a.id === 'lightning_bolt');
+    let boltText = '';
+    if (bolt) {
+      const min = (bolt as any).currentMin || 0;
+      const max = (bolt as any).currentMax || 0;
+      let roll = min + Math.floor(Math.random() * (max - min + 1));
+      const critChance = parseFloat(this.charSvc.spellCrit()) + this.charSvc.talentRank('thundering_strikes') * 5 + 5;
+      const isCrit = Math.random() * 100 < critChance;
+      if (isCrit) {
+        const critMult = (1.5 + this.charSvc.talentRank('elemental_fury') * 0.05) * 1.25;
+        roll = Math.round(roll * critMult);
+      }
+      this.charSvc.turnDamage.update(d => d + roll);
+      this.charSvc.sendDamageEvent({ ...bolt, isDot: false, aoe: false }, roll, 1, 1);
+      boltText = ' · ⚡ Rayo gratuito: ' + roll + ' danyo' + (isCrit ? ' ¡CRITICO!' : '');
+    }
+    this.charSvc.showToast('🔥 Ascendance activa · 3 turnos: +30% Spell Power, +5% crit y +25% danyo critico (Rayo, Cadena, Choque de Llamas y de Tierra)' + boltText);
   }
 
   castBloodlust(ability: any) {
