@@ -760,7 +760,6 @@ export class CharacterService {
       }
       if (this.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(a.id)) {
         let hunterMult = 1 + this.talentRank('ranged_weapon_spec') * 0.02;
-        if (this.selectedCapstone() === 'lone_wolf') hunterMult *= 1.10;
         minVal = Math.round(minVal * hunterMult);
         maxVal = Math.round(maxVal * hunterMult);
       }
@@ -1852,7 +1851,7 @@ export class CharacterService {
     let total = notes.reduce((sum, n) => sum + 0.7 * Math.pow(1.25, n - 1), 0);
     const maxNotes = this.classConfig().comboConfig?.max || 7;
     if (this.selectedCapstone() === 'perfect_symphony' && notes.length >= maxNotes) {
-      total *= 1.15;
+      total *= 1.3;
     }
     return total;
   }
