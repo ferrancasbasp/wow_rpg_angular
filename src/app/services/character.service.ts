@@ -367,7 +367,7 @@ export class CharacterService {
   readonly spellCrit = computed<string>(() => {
     const fromInt = this.finalStats().intelecto / 60;
     const fromLevel = this.character().level * 0.02;
-    const fromTalent = this.talentRank('natural_perfection') * 2 + this.talentRank('preservation');
+    const fromTalent = this.talentRank('natural_perfection') * 2;
     const fromBuff = this.effectStatBonus('spellCrit');
     const fromMoonkin = this.hasEffect('moonkin') ? 6 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
@@ -564,7 +564,7 @@ export class CharacterService {
       const talentNotes: string[] = [];
 
       const elemMastery = this.talentRank('elemental_mastery');
-      if (elemMastery > 0) { value *= (1 + elemMastery * 0.02); talentNotes.push(`+${elemMastery * 2}% Maestría`); }
+      if (elemMastery > 0) { value *= (1 + elemMastery * 0.025); talentNotes.push(`+${elemMastery * 2.5}% Maestría`); }
 
       if (this.character().classKey === 'shaman') {
         if (this.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
@@ -646,7 +646,7 @@ export class CharacterService {
       }
       if (ability.id === 'hurricane') {
         const ih = this.talentRank('improved_hurricane');
-        if (ih > 0) { value *= (1 + ih * 0.20); talentNotes.push(`+${ih * 20}% Hurricane`); }
+        if (ih > 0) { value *= (1 + ih * 0.20); cost *= (1 - ih * 0.10); talentNotes.push(`+${ih * 20}% danyo · -${ih * 10}% coste Hurricane`); }
       }
       if (ability.id === 'rejuvenation') {
         const ir = this.talentRank('improved_rejuvenation');
@@ -655,6 +655,9 @@ export class CharacterService {
       if (['wrath', 'starfire'].includes(ability.id)) {
         const nr = this.talentRank('natures_remains');
         if (nr > 0) cost *= (1 - nr * 0.05);
+      }
+      if (['sunfall', 'starsurge'].includes(ability.id) && this.selectedCapstone() === 'nature_guardian') {
+        cost = 0;
       }
       if (ability.type === 'heal' && this.character().classKey === 'druid') {
         const lh = this.talentRank('lunar_healing');
@@ -754,7 +757,7 @@ export class CharacterService {
         maxVal = Math.round(maxVal * rinforzandoBonus);
       }
       if (a.category === 'shadow') {
-        const shadowBonus = (1 + this.talentRank('shadow_ally') * 0.03) * (1 + this.talentRank('renegade_the_light') * 0.10);
+        const shadowBonus = (1 + this.talentRank('shadow_ally') * 0.03) * (1 + this.talentRank('renegade_the_light') * 0.15);
         minVal = Math.round(minVal * shadowBonus);
         maxVal = Math.round(maxVal * shadowBonus);
       }
@@ -1280,7 +1283,7 @@ export class CharacterService {
       elemental_fury: `Daño crítico Rayo/Cadena/Choques: +${rank * 5}%`,
       totemic_mastery: `Con Tótem Fuego: +${rank * 5}% SP Rayo/Cadena/Choques · Con Tótem Agua: +${rank * 5}% SP curas`,
       tidal_waves: `Tras Chain Heal: siguiente Healing Wave +${rank * 10}%`,
-      elemental_mastery: `Daño todos los hechizos: +${rank * 2}%`,
+      elemental_mastery: `Daño todos los hechizos: +${rank * 2.5}%`,
       combat_snacks: `Final de turno: +${rank * 0.5}% vida · +${rank * 1.5}% maná`,
       improved_arcane_intellect: `Arcane Intellect: +${rank * 15}%`,
       improved_frost_armor: `Frost Armor: +${rank * 15}%`,
@@ -1329,11 +1332,11 @@ export class CharacterService {
       improved_fortitude: `PW: Fortitude: +${rank * 15}% Aguante`,
       improved_pain: `SW: Pain: +${rank * 10}% daño`,
       holyness: `Regen maná: +${rank * 10}%`,
-      preservation: `Armadura mágica: +${rank * 5} · Spell crit: +${rank}%`,
+      preservation: `Armadura mágica: +${rank * 5} · Curación de Heals: +${rank * 10}%`,
       improved_mind_blast: `Mind Blast: CD -1 y cast instantaneo${rank > 0 ? ' (activo)' : ''}`,
       improved_inner_fire: `Inner Fire eficacia: +${rank * 20}%`,
       improved_renew: `Renew: +${rank} turno${rank > 1 ? 's' : ''}`,
-      renegade_the_light: `Holy: coste +${rank * 15}% · Shadow: daño +${rank * 10}%`,
+      renegade_the_light: `Holy: coste +${rank * 15}% · Shadow: daño +${rank * 15}%`,
       improved_mark_of_the_wild: `Mark of the Wild: +${rank * 15}% efecto`,
       improved_wrath: `Daño Wrath: +${rank * 3}%`,
       lunar_healing: `Curación: ${rank * 10}% prob. Moon Shard · −${rank * 5}% coste`,
@@ -1341,12 +1344,12 @@ export class CharacterService {
       improved_rejuvenation: `Rejuvenation: +${rank * 7}% curación`,
       natures_remains: `Coste Wrath/Starfire: −${rank * 5}%`,
       germination: `Rejuvenation: +50% potencia en 2º aliado`,
-      first_of_the_wild: `Basic Attack: +${rank * 2}% vida máx · +${rank * 2}% maná máx`,
+      first_of_the_wild: `Basic Attack: +${rank * 1}% vida máx · +${rank * 1}% maná máx`,
       balance_of_nature: `Poder de hechizo: +${rank * 6}% Espíritu`,
       equinox: `Starsurge/Sunfall: +${rank * 10}% efecto por shard`,
-      improved_hurricane: `Hurricane: +${rank * 20}% daño`,
+      improved_hurricane: `Hurricane: +${rank * 20}% daño · -${rank * 10}% coste`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
-      stone_of_rhythms: `Fin turno: ${rank * 15}% gasta 1 Sun Shard → +5% maná`,
+      stone_of_rhythms: `Fin turno: ${rank * 15}% gasta 1 Sun Shard → +10% maná`,
       improved_staccato: `Staccato: +${rank * 5}% danyo, −${rank * 10}% mana`,
       quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
@@ -1940,21 +1943,30 @@ export class CharacterService {
     if (this.hasElementalOrbs()) {
       const frostOrbs = this.countElementalOrbs('frost');
       if (frostOrbs > 0) {
-        const pieceValue = Math.max(1, Math.round(this.maxHP() * 0.01));
+        const icyVeinsMult = this.hasEffect('icy_veins') ? 2 : 1;
+        const grant = Math.max(1, Math.round(this.maxHP() * 0.01 * frostOrbs * icyVeinsMult));
         this.character.update(c => {
           const effects = c.activeEffects || [];
-          const currentPieces = effects.filter(e => e.target === 'shield' && e.name === 'Orbes de Escarcha').length;
-          const room = Math.max(0, 3 - currentPieces);
-          if (room === 0) return { ...c };
-          const newPieces = Array.from({ length: Math.min(frostOrbs, room) }, () => ({
-            id: Date.now() + Math.random(),
-            type: 'buff' as const,
-            name: 'Orbes de Escarcha',
-            target: 'shield' as const,
-            value: pieceValue,
-            duration: 2,
-          }));
-          return { ...c, activeEffects: [...effects, ...newPieces] };
+          const existing = effects.find(e => e.target === 'shield' && e.name === 'Orbes de Escarcha');
+          if (existing) {
+            return {
+              ...c,
+              activeEffects: effects.map(e =>
+                e === existing ? { ...e, value: Math.max(e.value, grant), duration: 2 } : e
+              ),
+            };
+          }
+          return {
+            ...c,
+            activeEffects: [...effects, {
+              id: Date.now() + Math.random(),
+              type: 'buff' as const,
+              name: 'Orbes de Escarcha',
+              target: 'shield' as const,
+              value: grant,
+              duration: 2,
+            }],
+          };
         });
       }
     }

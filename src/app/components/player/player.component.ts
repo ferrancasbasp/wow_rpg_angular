@@ -1785,6 +1785,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.hasEffect('arcane_power')) {
       cost = Math.round((cost || 0) * 0.5);
     }
+    if (this.charSvc.character().classKey === 'druid' && this.charSvc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) {
+      cost = 0;
+    }
     if (this.charSvc.hasEffect('inner_focus')) {
       cost = 0;
     }
@@ -2053,13 +2056,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.character().classKey === 'druid') {
       const sorRank = this.charSvc.talentRank('stone_of_rhythms');
       if (sorRank > 0 && (this.charSvc.getSunShards() || 0) > 0 && Math.random() * 100 < sorRank * 15) {
-        const manaGain = Math.round(this.charSvc.maxMana() * 0.05);
+        const manaGain = Math.round(this.charSvc.maxMana() * 0.10);
         this.charSvc.character.update(c => ({
           ...c,
           currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGain),
           sunShards: (c.sunShards || 0) - 1,
         }));
-        this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (5%)');
+        this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (10%)');
       }
     }
 
@@ -2424,6 +2427,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.05;
+      if (this.charSvc.character().classKey === 'priest') {
+        healBonus *= 1 + this.charSvc.talentRank('preservation') * 0.10;
+      }
       let tidalWaveText = '';
       let spiritLinkText = '';
       const spiritLinkActive = this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('spirit_link');
@@ -2573,8 +2579,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         const fotwRank = this.charSvc.talentRank('first_of_the_wild');
         if (fotwRank > 0 && this.charSvc.character().classKey === 'druid') {
-          const hpGain = Math.round(this.charSvc.maxHP() * fotwRank * 0.02);
-          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.02);
+          const hpGain = Math.round(this.charSvc.maxHP() * fotwRank * 0.01);
+          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.01);
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,

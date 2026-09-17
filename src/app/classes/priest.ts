@@ -33,11 +33,11 @@ export const PRIEST: CharacterClass = {
     { id: 'improved_pain', name: 'Improved Pain', icon: '🩸', iconImg: 'img/abilities/priest/shadow_word_pain.jpg', description: 'Aumenta el daño de Shadow Word: Pain un 10% por punto.', maxRank: 3, tier: 2, requires: null },
     { id: 'devouring_plague', name: 'Devouring Plague', icon: '🦠', iconImg: 'img/talents/priest/devouring_plague.jpg', description: 'Desbloquea la habilidad Devouring Plague: un DoT de sombra con el 75% del daño de Shadow Word: Pain pero en solo 4 turnos.', maxRank: 1, tier: 2, requires: { id: 'improved_pain', points: 3 } },
     { id: 'holyness', name: 'Holyness', icon: '🌟', iconImg: 'img/talents/priest/holyness.jpg', description: 'Aumenta tu regeneración de maná un 10% por punto.', maxRank: 3, tier: 3, requires: null },
-    { id: 'preservation', name: 'Preservation', icon: '🛡️', iconImg: 'img/talents/priest/preservation.jpg', description: 'Aumenta tu armadura mágica en 5 y tu probabilidad de crítico con hechizos un 1% por punto.', maxRank: 3, tier: 3, requires: null },
+    { id: 'preservation', name: 'Preservation', icon: '🛡️', iconImg: 'img/talents/priest/preservation.jpg', description: 'Aumenta tu armadura mágica en 5 y la curación de tus hechizos de Heal un 10% por punto.', maxRank: 3, tier: 3, requires: null },
     { id: 'improved_mind_blast', name: 'Improved Mind Blast', icon: '💥', iconImg: 'img/abilities/priest/mind_blast.jpg', description: 'Requiere Shadow Ally al maximo. Mind Blast tiene CD -1 y su cast se vuelve instantaneo.', maxRank: 1, tier: 1, requires: { id: 'shadow_ally', points: 3 } },
     { id: 'improved_inner_fire', name: 'Improved Inner Fire', icon: '🔥', iconImg: 'img/abilities/priest/inner_fire.jpg', description: 'Aumenta la eficacia de Inner Fire un 20% por punto: mas Armor y Attack Power.', maxRank: 2, tier: 3, requires: null },
     { id: 'improved_renew', name: 'Improved Renew', icon: '🌿', iconImg: 'img/abilities/priest/renew.jpg', description: 'Aumenta la duración de Renew 1 turno por punto.', maxRank: 2, tier: 3, requires: null },
-    { id: 'renegade_the_light', name: 'Renegade the Light', icon: '🦇', iconImg: 'img/talents/priest/renegade_the_light.jpg', description: 'Abrazas la oscuridad: tus hechizos Sagrados cuestan un 15% más de maná por punto, pero tus hechizos de Sombra infligen un 10% más de daño por punto.', maxRank: 3, tier: 3, requires: null },
+    { id: 'renegade_the_light', name: 'Renegade the Light', icon: '🦇', iconImg: 'img/talents/priest/renegade_the_light.jpg', description: 'Abrazas la oscuridad: tus hechizos Sagrados cuestan un 15% más de maná por punto, pero tus hechizos de Sombra infligen un 15% más de daño por punto.', maxRank: 3, tier: 3, requires: null },
   ],
 
   capstones: [
