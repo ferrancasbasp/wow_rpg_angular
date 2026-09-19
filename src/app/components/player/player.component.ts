@@ -2428,12 +2428,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       noteText = ' · Notas +1 tono';
     }
     if (ability.id === 'sforzando') {
+      const removedNote = this.charSvc.removeHighestNote();
+      if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
       if (this.charSvc.talentRank('improved_sforzando') > 0) {
         this.charSvc.modulateNotes(1);
-        noteText = ' · Notas +1 tono (Improved Sforzando)';
-      } else {
-        const removedNote = this.charSvc.removeHighestNote();
-        if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
+        noteText += ' · Notas +1 tono (Improved Sforzando)';
       }
     }
     let noteContributionValue = 0;

@@ -306,9 +306,6 @@ export class CharacterService {
     if (this.character().classKey === 'hunter') {
       hp = Math.round(hp * (1 + this.talentRank('survivalist') * 0.03));
     }
-    if (this.character().classKey === 'bard') {
-      hp = Math.round(hp * (1 + this.talentRank('musical_knowledge') * 0.02));
-    }
     if (this.selectedCapstone() === 'hope_and_grace') {
       hp += 10 * this.character().level;
     }
@@ -330,9 +327,6 @@ export class CharacterService {
 
   readonly maxMana = computed<number>(() => {
     let mana = Math.round(this.classConfig().formulas.mana(this.finalStats(), this.character().level));
-    if (this.character().classKey === 'bard') {
-      mana = Math.round(mana * (1 + this.talentRank('musical_knowledge') * 0.02));
-    }
     return mana;
   });
 
@@ -387,7 +381,8 @@ export class CharacterService {
     const fromMoonkin = this.hasEffect('moonkin') ? 6 : 0;
     const fromDemonic = this.hasEffect('demonic_form') ? 25 : 0;
     const fromEclipse = (this.character().sunShards || 0) * 2.5;
-    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin + fromDemonic + fromEclipse).toFixed(2);
+    const fromMusical = this.talentRank('musical_knowledge') * 2;
+    return (5 + fromInt + fromLevel + fromTalent + fromBuff + fromMoonkin + fromDemonic + fromEclipse + fromMusical).toFixed(2);
   });
 
   readonly meleeCrit = computed<string>(() => {
@@ -398,7 +393,8 @@ export class CharacterService {
     const fromTalent = this.talentRank('cruelty') * 2 + this.talentRank('precision');
     const fromBuff = this.effectStatBonus('physCrit');
     const fromReckless = this.hasEffect('recklessness') ? 30 : 0;
-    return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff + fromReckless).toFixed(2);
+    const fromMusical = this.talentRank('musical_knowledge') * 2;
+    return (5 + fromAgi + fromLevel + stanceBonus + fromTalent + fromBuff + fromReckless + fromMusical).toFixed(2);
   });
 
   readonly attackPower = computed<number>(() => {
