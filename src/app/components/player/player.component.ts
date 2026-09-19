@@ -3373,6 +3373,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'frost_armor') {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_frost_armor') * 0.15));
       }
+      if (ability.id === 'vibrato') {
+        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('directore') * 0.15));
+      }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
       if (ability.id === 'slice_and_dice') {
@@ -3552,11 +3555,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
     }
     if (ability.inflictsEffects) {
-      const idRank = this.charSvc.talentRank('improved_diminuendo');
+      const idRank = this.charSvc.talentRank('directore');
       const scaledEffects = ability.inflictsEffects.map((eff: any) => ({
         ...eff,
         value: ability.id === 'diminuendo' && idRank > 0
-          ? Math.round((ability.currentBuffValue || eff.value) * (1 + idRank * 0.10))
+          ? Math.round((ability.currentBuffValue || eff.value) * (1 + idRank * 0.15))
           : (ability.currentBuffValue || eff.value),
       }));
       this.charSvc.sendDamageEvent({
