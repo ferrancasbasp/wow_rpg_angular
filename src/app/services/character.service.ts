@@ -1380,7 +1380,7 @@ export class CharacterService {
       improved_vivace: `Vivace: +${rank * 10}% curación`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
-      improved_diminuendo: `Diminuendo: +${rank * 10}% efectividad`,
+      directore: `Diminuendo y Vibrato: +${rank * 15}% efectividad`,
       rinforzando: `Scherzo/Sforzando: +${rank * 4}% danyo`,
       harmonioso: `Curas: −${rank * 5}% mana`,
     };
