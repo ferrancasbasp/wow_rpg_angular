@@ -194,6 +194,17 @@ export class CharacterService {
     return this.talentRank('odins_fly') > 0;
   }
 
+  expireValkyrieFlightIfNeeded() {
+    if (this.character().classKey !== 'valkyrie') return;
+    if (!this.valkyrieFlying()) return;
+    if (this.odinsWillActive()) return;
+    this.character.update(c => ({
+      ...c,
+      activeEffects: (c.activeEffects || []).filter((e: any) => e.target !== 'flying'),
+    }));
+    this.showToast("🪽 Odin's Will ha terminado: dejas de volar");
+  }
+
   valkyrieApplyFlight(duration: number): string {
     const ifnRank = this.talentRank('improved_fly_the_nest');
     let text = '';
@@ -508,6 +519,8 @@ export class CharacterService {
     return Math.max(0, Math.min(this.maxMana(), char.currentMana));
   });
 
+  readonly isDead = computed<boolean>(() => this.hpActual() <= 0);
+
   readonly hpPercent = computed<number>(() => {
     return Math.floor((this.hpActual() / this.maxHP()) * 100);
   });
@@ -656,7 +669,8 @@ export class CharacterService {
         const nr = this.talentRank('natures_remains');
         if (nr > 0) cost *= (1 - nr * 0.05);
       }
-      if (['sunfall', 'starsurge'].includes(ability.id) && this.selectedCapstone() === 'nature_guardian') {
+      const natureGuardianFree = ['sunfall', 'starsurge'].includes(ability.id) && this.selectedCapstone() === 'nature_guardian';
+      if (natureGuardianFree) {
         cost = 0;
       }
       if (ability.type === 'heal' && this.character().classKey === 'druid') {
@@ -672,6 +686,7 @@ export class CharacterService {
         ...ability,
         computedDamage: Math.round(value),
         computedCost: Math.round(cost),
+        castType: natureGuardianFree ? 'instant' as const : ability.castType,
         talentNote: talentNotes.join(' · ') || null,
       } as Ability;
     });
@@ -1688,7 +1703,7 @@ export class CharacterService {
     const isHot = !!ability.isHot;
     const hotDuration = ability.hotDuration || 3;
     let appliedHotTick = 0;
-    if (this.simMode() && isHot) {
+    if (this.simMode() && isHot && !this.isDead()) {
       appliedHotTick = Math.max(1, Math.round((healAmount || 0) / hotDuration));
       this.character.update(c => ({
         ...c,
@@ -1702,6 +1717,10 @@ export class CharacterService {
     }
     if (this.simMode() && healAmount > 0) {
       this.simCombat.recordHeal(healAmount);
+      if (this.isDead()) {
+        this.simCombat.pushLog('☠️ Estas muerto: la curacion no tiene efecto');
+        return;
+      }
       this.character.update(c => ({
         ...c,
         currentHP: Math.min(this.maxHP(), (c.currentHP ?? this.maxHP()) + healAmount),
@@ -1881,13 +1900,32 @@ export class CharacterService {
   }
 
   adjustHP(delta: number) {
+    if (delta > 0 && this.isDead()) {
+      this.showToast('☠️ Estas muerto: no puedes recibir curacion. Usa Full Rest para revivir.');
+      return;
+    }
     this.character.update(c => {
       const maxHP = this.maxHP();
       if (c.currentHP === null || c.currentHP === undefined) c.currentHP = maxHP;
       c.currentHP = Math.max(0, Math.min(maxHP, c.currentHP + delta));
       return { ...c };
     });
+    this.applyDeathIfDead();
     this.syncPlayerStatus();
+  }
+
+  applyDeathIfDead() {
+    if (this.hpActual() > 0) return;
+    let cleared = false;
+    this.character.update(c => {
+      if (!(c.activeEffects && c.activeEffects.length > 0)) return c;
+      cleared = true;
+      return { ...c, activeEffects: [] };
+    });
+    if (cleared) {
+      this.showToast('☠️ Has muerto! Se eliminan tus buffos y no puedes recibir curacion. Usa Full Rest para revivir.');
+      this.syncPlayerStatus();
+    }
   }
 
   nextTurn() {
@@ -1914,6 +1952,7 @@ export class CharacterService {
       }
       return { ...c };
     });
+    this.expireValkyrieFlightIfNeeded();
     this.turnNumber.update(n => n + 1);
     this.turnDamage.set(0);
     this.actionsUsed.set(0);

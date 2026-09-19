@@ -178,7 +178,7 @@ export class MasterComponent implements OnInit {
     const eventId = this.selectedEventId();
     if (eventId !== null) {
       const event = this.getEvent(eventId);
-      if (event && !event.assigned && (event.damageType === 'heal' || event.damageType === 'buff')) {
+      if (event && !event.assigned && (event.damageType === 'heal' || event.damageType === 'buff' || event.damageType === 'rebirth')) {
         return true;
       }
     }
@@ -1225,6 +1225,15 @@ export class MasterComponent implements OnInit {
         timestamp: Date.now(),
       });
       this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
+    } else if (event.damageType === 'rebirth') {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'revive',
+        abilityName: event.ability.replace(' (Revive)', ''),
+        amount: event.damage,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: revive con ${event.damage}% de su vida`);
     } else if (event.damageType === 'heal' && event.aoe) {
       const targets = this.knownPlayers();
       for (const t of targets) {

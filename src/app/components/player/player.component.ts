@@ -170,11 +170,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
 
         if (event.type === 'heal') {
-          const healMult = this.charSvc.healingReceivedMult();
-          const applied = healMult < 1 ? Math.max(0, Math.round((event.amount || 0) * healMult)) : (event.amount || 0);
-          this.charSvc.adjustHP(applied);
-          const reducedNote = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
-          this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + applied + ' HP' + reducedNote);
+          if (this.charSvc.isDead()) {
+            this.charSvc.showToast('☠️ Estas muerto: la curacion no tiene efecto. Usa Full Rest para revivir.');
+            this.incomingMasterMsg.set('☠️ ' + (event.abilityName || 'Master') + ': curacion ignorada, estas muerto');
+          } else {
+            const healMult = this.charSvc.healingReceivedMult();
+            const applied = healMult < 1 ? Math.max(0, Math.round((event.amount || 0) * healMult)) : (event.amount || 0);
+            this.charSvc.adjustHP(applied);
+            const reducedNote = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
+            this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + applied + ' HP' + reducedNote);
+          }
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
           if (this.charSvc.character().classKey === 'valkyrie') {
@@ -232,6 +237,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ],
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
+        } else if (event.type === 'revive') {
+          if (this.charSvc.hpActual() > 0) {
+            this.incomingMasterMsg.set('⚠️ ' + (event.abilityName || 'Master') + ': revive ignorado, no estas muerto');
+          } else {
+            const revivePct = event.amount || 25;
+            const reviveHP = Math.max(1, Math.round(this.charSvc.maxHP() * revivePct / 100));
+            this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
+            this.charSvc.syncPlayerStatus();
+            this.incomingMasterMsg.set('🌿 ' + (event.abilityName || 'Master') + ': revives con ' + reviveHP + ' HP');
+          }
         } else if (event.type === 'notice') {
           this.incomingMasterMsg.set('⚠️ ' + (event.message || 'Aviso del master'));
         } else if (event.type === 'hot') {
@@ -722,6 +737,28 @@ export class PlayerComponent implements OnInit, OnDestroy {
       assigned: false,
     });
     this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos (1/3 de Smite) y ' + heal + ' cura a todos los aliados (50% de Heal) — 2 eventos AOE al Master');
+  }
+
+  castRebirth(ability: any) {
+    if (this.charSvc.simMode()) {
+      this.charSvc.showToast('Rebirth no esta disponible en la simulacion');
+      return;
+    }
+    const pct = ability.currentMin || 25;
+    const myName = this.charSvc.character().name || 'Jugador';
+    this.sendDamagePayload({
+      player: myName,
+      ability: ability.name + ' (Revive)',
+      rank: ability.currentRank || 1,
+      damage: pct,
+      damageType: 'rebirth',
+      aoe: false,
+      effects: null,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': revivira a un aliado muerto con ' + pct + '% de su vida — asigna el objetivo en el Master');
   }
 
   castValkyriesCall(ability: any) {
@@ -1550,6 +1587,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             currentMana: Math.min(maxMana, (c.currentMana ?? maxMana) + eff.value),
           }));
         } else {
+          if (this.charSvc.isDead()) continue;
           const tickHeal = Math.round(eff.value * this.charSvc.healingReceivedMult());
           this.charSvc.character.update(c => ({
             ...c,
@@ -1575,6 +1613,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (messages.length > 0) {
       this.charSvc.showToast(messages.join(' · '));
     }
+    this.charSvc.applyDeathIfDead();
   }
 
   exitStealth() {
@@ -1645,6 +1684,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.hpLossAmount.set(0);
 
     if (actionType === 'heal') {
+      if (this.charSvc.isDead()) {
+        this.charSvc.showToast('☠️ Estas muerto: no puedes recibir curacion. Usa Full Rest para revivir.');
+        return;
+      }
       const maxHP = this.charSvc.maxHP();
       this.charSvc.character.update(c => ({
         ...c,
@@ -1778,6 +1821,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       } else {
         this.charSvc.showToast('-' + amount + ' ' + this.trSvc.t('life_lost') + rageText);
       }
+      this.charSvc.applyDeathIfDead();
       this.valkyrieDeathCheck();
     }
     this.charSvc.syncPlayerStatus();
@@ -3157,6 +3201,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castHolyNova(ability);
     } else if (ability.id === 'valkyries_call') {
       this.castValkyriesCall(ability);
+    } else if (ability.id === 'rebirth') {
+      this.castRebirth(ability);
     } else if (ability.id === 'dark_star') {
       this.castDarkStar(ability);
     } else if (ability.id === 'finale') {
@@ -3452,23 +3498,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const maxHP = this.charSvc.maxHP();
     const maxMana = this.charSvc.maxMana();
     const resourceMax = this.charSvc.resourceMax();
+    const wasDead = this.charSvc.isDead();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
       const pocket = this.charSvc.talentRank('pocket_shards');
       return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: pocket, currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
+    const revivePrefix = wasDead ? 'Full Rest: revives! ' : 'Full Rest: ';
     if (this.charSvc.resourceConfig().type === 'rage') {
       this.charSvc.character.update(c => ({ ...c, currentRage: 0 }));
-      this.charSvc.showToast('Full Rest: vida al maximo, ira reseteada, buffs -2 turnos');
+      this.charSvc.showToast(revivePrefix + 'vida al maximo, ira reseteada, buffs -2 turnos');
     } else if (this.charSvc.resourceConfig().type === 'energy') {
       this.charSvc.character.update(c => ({ ...c, currentEnergy: resourceMax }));
-      this.charSvc.showToast('Full Rest: vida y energia al maximo, buffs -2 turnos');
+      this.charSvc.showToast(revivePrefix + 'vida y energia al maximo, buffs -2 turnos');
     } else if (this.charSvc.resourceConfig().type === 'focus') {
       this.charSvc.character.update(c => ({ ...c, currentFocus: resourceMax }));
-      this.charSvc.showToast('Full Rest: vida y focus al maximo, buffs -2 turnos');
+      this.charSvc.showToast(revivePrefix + 'vida y focus al maximo, buffs -2 turnos');
     } else {
       this.charSvc.character.update(c => ({ ...c, currentMana: maxMana }));
-      this.charSvc.showToast('Full Rest: vida y mana al maximo, buffs -2 turnos');
+      this.charSvc.showToast(revivePrefix + 'vida y mana al maximo, buffs -2 turnos');
     }
     this.charSvc.turnNumber.set(1);
     this.charSvc.turnDamage.set(0);
