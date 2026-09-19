@@ -523,7 +523,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.clearNotes();
     let noteText = ' · ' + notes.length + ' notas consumidas (×' + contribution.toFixed(1) + ')';
     const maestroRank = this.charSvc.talentRank('maestro');
-    if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+    if (maestroRank > 0 && Math.random() * 100 < maestroRank * 35) {
       this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
       noteText += ' · ¡Maestro! +1 accion';
     }
@@ -1875,6 +1875,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.hasEffect('arcane_power')) {
       cost = Math.round((cost || 0) * 0.5);
     }
+    if (ability.id === 'vivace') {
+      cost = Math.round((cost || 0) * (1 - this.charSvc.talentRank('improved_vivace') * 0.10));
+    }
     if (this.charSvc.character().classKey === 'druid' && this.charSvc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) {
       cost = 0;
     }
@@ -2111,6 +2114,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (this.charSvc.character().classKey === 'valkyrie') {
       critChance += this.charSvc.talentRank('endurance') * 2;
+    }
+    if (this.charSvc.character().classKey === 'bard' && ['scherzo', 'sforzando'].includes(ability.id)) {
+      critChance += this.charSvc.talentRank('rinforzando') * 4;
     }
     if (this.charSvc.character().classKey === 'valkyrie') {
       critChance += this.charSvc.talentRank('hurtfull_lightning') * 2;
@@ -2437,7 +2443,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.clearNotes();
       noteText = ' · ' + notes.length + ' notas consumidas (×' + noteContributionValue.toFixed(1) + ')';
       const maestroRank = this.charSvc.talentRank('maestro');
-      if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+      if (maestroRank > 0 && Math.random() * 100 < maestroRank * 35) {
         this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
         noteText += ' · ¡Maestro! +1 accion';
       }
@@ -3535,7 +3541,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (notes.length > 0) {
         this.charSvc.clearNotes();
         const maestroRank = this.charSvc.talentRank('maestro');
-        if (maestroRank > 0 && Math.random() * 100 < maestroRank * 15) {
+        if (maestroRank > 0 && Math.random() * 100 < maestroRank * 35) {
           this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
           this.charSvc.showToast('¡Maestro! +1 accion devuelta');
         }
