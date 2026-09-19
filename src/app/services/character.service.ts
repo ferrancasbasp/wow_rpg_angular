@@ -403,6 +403,10 @@ export class CharacterService {
 
   readonly attackPower = computed<number>(() => {
     let total = this.classConfig().formulas.attackPower(this.finalStats());
+    const bailongoRank = this.talentRank('bailongo');
+    if (bailongoRank > 0) {
+      total += Math.round((this.finalStats() as any).intelecto * bailongoRank * 0.15);
+    }
     total += this.effectStatBonus('attackPower', true);
     const effects = this.character().activeEffects;
     if (effects) {
