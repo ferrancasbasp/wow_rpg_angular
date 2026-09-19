@@ -1020,6 +1020,7 @@ export class CharacterService {
     let cost = ability.costEnergy || 0;
     if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 5;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
+    if (ability.id === 'garrote') cost -= this.talentRank('improved_garrote') * 10;
     return Math.max(0, cost);
   }
 

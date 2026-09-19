@@ -51,7 +51,7 @@ describe('PlayerComponent — mage frost orbs absorb damage in sim', () => {
   it('full sim turn: shield granted then dummy hit reduces shield, not HP', () => {
     makeMage(12);
     svc.enterSim();
-    simCombat.reset({ attacks: [{ name: 'Golpe', minDamage: 100, maxDamage: 100 }] });
+    simCombat.reset({ attacks: [{ name: 'Golpe', minDamage: 500, maxDamage: 500 }] });
     svc.addElementalOrb('frost');
     svc.addElementalOrb('frost');
     svc.addElementalOrb('frost');
@@ -67,6 +67,6 @@ describe('PlayerComponent — mage frost orbs absorb damage in sim', () => {
     comp.endTurn();
     const hpLoss = maxHP - svc.hpActual();
     expect(hpLoss).toBeGreaterThan(0);
-    expect(hpLoss).toBeLessThanOrEqual(100 - shieldTotal);
+    expect(hpLoss).toBeLessThanOrEqual(500 - shieldTotal);
   });
 });
