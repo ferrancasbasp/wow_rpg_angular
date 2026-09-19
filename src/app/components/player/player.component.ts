@@ -83,7 +83,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
   abilityRolls = signal<Record<string, { roll: number; crit: boolean }>>({});
   incomingMasterMsg = signal('');
   valkFallen = signal(false);
-  valhallaUsed = signal(false);
 
   private playerEventUnsub: (() => void) | null = null;
 
@@ -244,8 +243,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
             const revivePct = event.amount || 25;
             const reviveHP = Math.max(1, Math.round(this.charSvc.maxHP() * revivePct / 100));
             this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
+            let buffText = '';
+            if (event.buffAp || event.buffSp) {
+              const dur = event.buffDuration || 2;
+              const nameBase = event.abilityName || 'Revive';
+              const buffs = (this.charSvc.character().activeEffects || [])
+                .filter((e: any) => e.name === nameBase + ' (AP)' || e.name === nameBase + ' (SP)');
+              this.charSvc.character.update(c => ({
+                ...c,
+                activeEffects: [
+                  ...(c.activeEffects || []).filter((e: any) => !buffs.includes(e)),
+                  ...(event.buffAp ? [{ id: Date.now() + Math.random(), type: 'buff' as const, name: nameBase + ' (AP)', target: 'attackPower', value: event.buffAp, duration: dur, isPercent: false }] : []),
+                  ...(event.buffSp ? [{ id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: nameBase + ' (SP)', target: 'spellPower', value: event.buffSp, duration: dur, isPercent: false }] : []),
+                ],
+              }));
+              buffText = ' y +' + event.buffAp + ' AP / +' + event.buffSp + ' SP (' + dur + ' turnos)';
+            }
+            if (this.charSvc.character().classKey === 'valkyrie') this.valkFallen.set(false);
             this.charSvc.syncPlayerStatus();
-            this.incomingMasterMsg.set('🌿 ' + (event.abilityName || 'Master') + ': revives con ' + reviveHP + ' HP');
+            this.incomingMasterMsg.set('🌿 ' + (event.abilityName || 'Master') + ': revives con ' + reviveHP + ' HP' + buffText);
           }
         } else if (event.type === 'notice') {
           this.incomingMasterMsg.set('⚠️ ' + (event.message || 'Aviso del master'));
@@ -737,6 +753,30 @@ export class PlayerComponent implements OnInit, OnDestroy {
       assigned: false,
     });
     this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos (1/3 de Smite) y ' + heal + ' cura a todos los aliados (50% de Heal) — 2 eventos AOE al Master');
+  }
+
+  castCallFromValhalla(ability: any) {
+    if (this.charSvc.simMode()) {
+      this.charSvc.showToast('Call from Valhalla no esta disponible en la simulacion');
+      return;
+    }
+    const myName = this.charSvc.character().name || 'Jugador';
+    this.sendDamagePayload({
+      player: myName,
+      ability: ability.name + ' (Revive)',
+      rank: ability.currentRank || 1,
+      damage: 100,
+      damageType: 'rebirth',
+      aoe: false,
+      effects: null,
+      buffAp: 50,
+      buffSp: 50,
+      buffDuration: 2,
+      turn: this.charSvc.turnNumber(),
+      timestamp: Date.now(),
+      assigned: false,
+    });
+    this.charSvc.showToast('⚔️ Call from Valhalla: revivira a un aliado muerto con toda su vida y +50 AP/SP (2 turnos) — asigna el objetivo en el Master');
   }
 
   castRebirth(ability: any) {
@@ -1665,18 +1705,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   valkyrieDeathCheck() {
     if (this.charSvc.character().classKey !== 'valkyrie') return;
     if (this.charSvc.hpActual() > 0) return;
-    if (this.charSvc.selectedCapstone() === 'call_from_valhalla' && !this.valhallaUsed()) {
-      const maxHP = this.charSvc.maxHP();
-      const reviveHP = Math.max(1, Math.round(maxHP * 0.5));
-      this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
-      this.valhallaUsed.set(true);
-      this.valkFallen.set(false);
-      this.charSvc.syncPlayerStatus();
-      this.charSvc.showToast('⚔️ Call from Valhalla: renaces con ' + reviveHP + ' de vida');
-    } else {
-      this.valkFallen.set(true);
-      this.charSvc.showToast('💀 Has caído en combate');
-    }
+    this.valkFallen.set(true);
+    this.charSvc.showToast('💀 Has caído en combate');
   }
 
   hpAction(amount: number, actionType: string) {
@@ -1861,8 +1891,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const resourceMax = this.charSvc.resourceMax();
     const manaActual = this.charSvc.manaActual();
     const cd = this.charSvc.getCooldown(ability.id);
+    const lastWillRage = isRage && this.charSvc.isLastWillActive();
 
-    if (resourceActual < cost) {
+    if (!lastWillRage && resourceActual < cost) {
       this.charSvc.showToast(this.resourceLabel() + ' ' + this.trSvc.t('insufficient_resource'));
       return;
     }
@@ -1945,7 +1976,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       const nowHP = this.charSvc.hpActual();
       if (nowHP >= this.charSvc.maxHP()) {
-        this.valhallaUsed.set(false);
         this.valkFallen.set(false);
       }
       this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName + ' + ' + mFlat + ')' + twinMendingText);
@@ -2017,10 +2047,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const clearcast = (isRage || isEnergy || isFocus) ? false : this.charSvc.checkClearcasting();
 
     if (isRage) {
-      this.charSvc.character.update(c => ({
-        ...c,
-        currentRage: Math.min(resourceMax, resourceActual - cost),
-      }));
+      if (lastWillRage) {
+        const hpCost = Math.max(1, Math.round(this.charSvc.maxHP() * cost / 200));
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentHP: Math.max(1, this.charSvc.hpActual() - hpCost),
+        }));
+        this.charSvc.syncPlayerStatus();
+      } else {
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentRage: Math.min(resourceMax, resourceActual - cost),
+        }));
+      }
     } else if (isEnergy) {
       this.charSvc.character.update(c => ({
         ...c,
@@ -3040,14 +3079,23 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.useAction(actionCost);
 
     if (isRage) {
-      if (resourceActual < cost) {
-        this.charSvc.showToast(this.trSvc.t('ira') + ' ' + this.trSvc.t('insufficient_resource'));
-        return;
+      if (this.charSvc.isLastWillActive()) {
+        const hpCost = Math.max(1, Math.round(this.charSvc.maxHP() * cost / 200));
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentHP: Math.max(1, this.charSvc.hpActual() - hpCost),
+        }));
+        this.charSvc.syncPlayerStatus();
+      } else {
+        if (resourceActual < cost) {
+          this.charSvc.showToast(this.trSvc.t('ira') + ' ' + this.trSvc.t('insufficient_resource'));
+          return;
+        }
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentRage: Math.min(resourceMax, resourceActual - cost),
+        }));
       }
-      this.charSvc.character.update(c => ({
-        ...c,
-        currentRage: Math.min(resourceMax, resourceActual - cost),
-      }));
     } else if (isEnergy) {
       if (resourceActual < cost) {
         this.charSvc.showToast(this.trSvc.t('energia') + ' ' + this.trSvc.t('insufficient_resource'));
@@ -3201,6 +3249,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castHolyNova(ability);
     } else if (ability.id === 'valkyries_call') {
       this.castValkyriesCall(ability);
+    } else if (ability.id === 'valk_last_will') {
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.target !== 'valk_last_will' && e.name !== 'Last Will (AP)'),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Last Will', target: 'valk_last_will', value: 1, duration: 3, isPercent: false },
+          { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Last Will (AP)', target: 'attackPower', value: 50, duration: 3, isPercent: false },
+        ],
+      }));
+      this.charSvc.showToast('📯 Last Will: durante 3 turnos gastas vida en vez de ira (10 de ira → 5% de vida) y +50 Attack Power');
+    } else if (ability.id === 'valk_call_from_valhalla') {
+      this.castCallFromValhalla(ability);
     } else if (ability.id === 'rebirth') {
       this.castRebirth(ability);
     } else if (ability.id === 'dark_star') {

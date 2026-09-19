@@ -91,6 +91,8 @@ interface DamageEvent {
   buffDuration?: number;
   isPercent?: boolean;
   symbol?: number | null;
+  buffAp?: number;
+  buffSp?: number;
 }
 
 @Component({
@@ -1231,6 +1233,9 @@ export class MasterComponent implements OnInit {
         type: 'revive',
         abilityName: event.ability.replace(' (Revive)', ''),
         amount: event.damage,
+        buffAp: event.buffAp,
+        buffSp: event.buffSp,
+        buffDuration: event.buffDuration,
         timestamp: Date.now(),
       });
       this.showToast(`${event.ability} → ${target}: revive con ${event.damage}% de su vida`);

@@ -186,6 +186,10 @@ export class CharacterService {
     return (this.character().activeEffects || []).some(e => e.target === 'valkyrie_charge_gain');
   }
 
+  isLastWillActive() {
+    return (this.character().activeEffects || []).some(e => e.target === 'valk_last_will');
+  }
+
   valkyrieFlying() {
     return (this.character().activeEffects || []).some(e => e.target === 'flying');
   }
