@@ -1951,7 +1951,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return;
       }
       const spent = this.charSvc.spendValkyriePool(poolActual);
-      const mFlat = ability.currentBuffValue || 60;
+      const tmRank = this.charSvc.talentRank('twin_mending');
+      const mFlat = Math.round((ability.currentBuffValue || 60) * (1 + tmRank * 0.15));
       const healAmount = spent + mFlat;
       this.charSvc.adjustHP(healAmount);
       this.charSvc.syncPlayerStatus();
@@ -1965,7 +1966,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
         });
       }
       const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-      const tmRank = this.charSvc.talentRank('twin_mending');
       let twinMendingText = '';
       if (tmRank > 0) {
         const tmHeal = Math.round(healAmount * 0.20 * tmRank);
