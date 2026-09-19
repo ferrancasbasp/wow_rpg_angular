@@ -3257,9 +3257,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.character.update(c => {
         const hasOdins = (c.activeEffects || []).some(e => e.target === 'valkyrie_charge_gain');
         const effects = [
-          ...(c.activeEffects || []).filter(e => e.target !== 'valk_last_will' && e.name !== 'Last Will (AP)'),
+          ...(c.activeEffects || []).filter(e => e.target !== 'valk_last_will' && e.name !== 'Last Will (Crit)'),
           { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Last Will', target: 'valk_last_will', value: 1, duration: 3, isPercent: false },
-          { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Last Will (AP)', target: 'attackPower', value: 50, duration: 3, isPercent: false },
+          { id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: 'Last Will (Crit)', target: 'physCrit', value: 60, duration: 3, isPercent: false },
         ];
         if (!hasOdins) {
           effects.push({ id: Date.now() + Math.random() + 0.002, type: 'buff' as const, name: "Odin's Will", target: 'valkyrie_charge_gain', value: odinsValue, duration: 3, isPercent: false });
@@ -3270,7 +3270,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         return { ...c, activeEffects: effects, currentRage: newRage };
       });
       this.charSvc.syncPlayerStatus();
-      this.charSvc.showToast('📯 Last Will: 3 turnos gastando vida en vez de ira (10 de ira → 5% de vida), +50 Attack Power, +20 ira y Odin\'s Will activo (R' + odinsRank + ', +50 AP)');
+      this.charSvc.showToast('📯 Last Will: 3 turnos gastando vida en vez de ira (10 de ira → 5% de vida), +60% probabilidad de critico, +20 ira y Odin\'s Will activo (R' + odinsRank + ')');
     } else if (ability.id === 'valk_call_from_valhalla') {
       this.castCallFromValhalla(ability);
     } else if (ability.id === 'rebirth') {
