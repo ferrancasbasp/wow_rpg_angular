@@ -2422,8 +2422,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       noteText = ' · Notas +1 tono';
     }
     if (ability.id === 'sforzando') {
-      const removedNote = this.charSvc.removeHighestNote();
-      if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
+      if (this.charSvc.talentRank('improved_sforzando') > 0) {
+        this.charSvc.modulateNotes(1);
+        noteText = ' · Notas +1 tono (Improved Sforzando)';
+      } else {
+        const removedNote = this.charSvc.removeHighestNote();
+        if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
+      }
     }
     let noteContributionValue = 0;
     if (ability.spendsNotes) {
@@ -3467,7 +3472,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.id === 'crescendo') {
         const icRank = this.charSvc.talentRank('improved_crescendo');
         if (icRank > 0) {
-          const selfBuffValue = Math.round(buffValue * icRank * 0.10);
+          const selfBuffValue = Math.round(buffValue * icRank * 0.20);
           this.charSvc.character.update(c => ({
             ...c,
             activeEffects: [
