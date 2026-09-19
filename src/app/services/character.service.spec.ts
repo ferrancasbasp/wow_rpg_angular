@@ -25,7 +25,7 @@ describe('CharacterService — mage frost orbs shield (sim)', () => {
     );
   }
 
-  it('grants a pooled shield of 1% maxHP per frost orb at end of turn', () => {
+  it('grants a pooled shield of 2% maxHP per frost orb at end of turn', () => {
     makeMage(12);
     svc.enterSim();
     svc.addElementalOrb('frost');
@@ -34,7 +34,7 @@ describe('CharacterService — mage frost orbs shield (sim)', () => {
     svc.nextTurn();
     const shield = frostShield();
     expect(shield).toBeTruthy();
-    expect(shield!.value).toBe(Math.max(1, Math.round(maxHP * 0.02)));
+    expect(shield!.value).toBe(Math.max(1, Math.round(maxHP * 0.04)));
   });
 
   it('frost shield ticks as a single pool refreshed while orbs are held', () => {
@@ -44,7 +44,7 @@ describe('CharacterService — mage frost orbs shield (sim)', () => {
     svc.addElementalOrb('frost');
     svc.addElementalOrb('frost');
     const maxHP = svc.maxHP();
-    const expected = Math.max(1, Math.round(maxHP * 0.03));
+    const expected = Math.max(1, Math.round(maxHP * 0.06));
     for (let t = 0; t < 6; t++) {
       svc.nextTurn();
       const shield = frostShield();
@@ -67,7 +67,7 @@ describe('CharacterService — mage frost orbs shield (sim)', () => {
     svc.nextTurn();
     const shield = frostShield();
     expect(shield).toBeTruthy();
-    expect(shield!.value).toBe(Math.max(1, Math.round(maxHP * 0.06)));
+    expect(shield!.value).toBe(Math.max(1, Math.round(maxHP * 0.12)));
   });
 
   it('shield expires when no frost orbs are held', () => {

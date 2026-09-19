@@ -1986,7 +1986,7 @@ export class CharacterService {
       const frostOrbs = this.countElementalOrbs('frost');
       if (frostOrbs > 0) {
         const icyVeinsMult = this.hasEffect('icy_veins') ? 2 : 1;
-        const grant = Math.max(1, Math.round(this.maxHP() * 0.01 * frostOrbs * icyVeinsMult));
+        const grant = Math.max(1, Math.round(this.maxHP() * 0.02 * frostOrbs * icyVeinsMult));
         this.character.update(c => {
           const effects = c.activeEffects || [];
           const existing = effects.find(e => e.target === 'shield' && e.name === 'Orbes de Escarcha');

@@ -30,14 +30,14 @@ describe('PlayerComponent — mage frost orbs absorb damage in sim', () => {
     svc.addElementalOrb('frost');
     svc.addElementalOrb('frost');
     const maxHP = svc.maxHP();
-    const perPiece = Math.max(1, Math.round(maxHP * 0.01));
+    const perPiece = Math.max(1, Math.round(maxHP * 0.02));
 
     const comp = TestBed.createComponent(PlayerComponent).componentInstance;
     svc.nextTurn();
 
     const piecesBefore = (svc.character().activeEffects || []).filter((e: any) => e.name === 'Orbes de Escarcha');
     expect(piecesBefore.length).toBe(1);
-    expect(piecesBefore[0].value).toBe(Math.max(1, Math.round(maxHP * 0.03)));
+    expect(piecesBefore[0].value).toBe(Math.max(1, Math.round(maxHP * 0.06)));
 
     const hit = perPiece - 1;
     comp.hpAction(hit, 'magical');
@@ -62,7 +62,7 @@ describe('PlayerComponent — mage frost orbs absorb damage in sim', () => {
     const shieldTotal = (svc.character().activeEffects || [])
       .filter((e: any) => e.name === 'Orbes de Escarcha')
       .reduce((a: number, p: any) => a + p.value, 0);
-    expect(shieldTotal).toBe(Math.max(1, Math.round(maxHP * 0.03)));
+    expect(shieldTotal).toBe(Math.max(1, Math.round(maxHP * 0.06)));
 
     comp.endTurn();
     const hpLoss = maxHP - svc.hpActual();
