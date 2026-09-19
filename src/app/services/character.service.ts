@@ -1035,7 +1035,8 @@ export class CharacterService {
   }
 
   getEffectiveManaCost(ability: any): number {
-    const base = ability.scaledCost || ability.computedCost || 0;
+    let base = ability.scaledCost || ability.computedCost || 0;
+    if (ability.id === 'vivace') base = Math.round(base * (1 - this.talentRank('improved_vivace') * 0.10));
     if (this.character().classKey === 'mage' && this.hasEffect('arcane_power')) {
       return Math.round(base * 0.5);
     }
@@ -1377,11 +1378,11 @@ export class CharacterService {
       quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
       improved_crescendo: `Crescendo self-buff: ${rank * 10}% del valor enviado`,
-      improved_vivace: `Vivace: +${rank * 10}% curación`,
+      improved_vivace: `Vivace: +${rank * 10}% curación · −${rank * 10}% mana`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
       directore: `Diminuendo y Vibrato: +${rank * 15}% efectividad`,
-      rinforzando: `Scherzo/Sforzando: +${rank * 4}% danyo`,
+      rinforzando: `Scherzo/Sforzando: +${rank * 4}% danyo y critico`,
       harmonioso: `Curas: −${rank * 5}% mana`,
     };
     return texts[talentId] || '';
