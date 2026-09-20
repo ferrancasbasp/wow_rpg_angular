@@ -17,7 +17,7 @@ export const PRIEST: CharacterClass = {
   baseStats: { fuerza: 12, agilidad: 15, intelecto: 22, aguante: 15, espiritu: 28 },
   startingLevel: 1,
   statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 1.6, aguante: 0.7, espiritu: 1.65 },
-  armor: 0,
+  armor: 4,
   magicResist: 8,
 
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },

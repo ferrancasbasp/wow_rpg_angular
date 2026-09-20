@@ -17,7 +17,7 @@ export const HUNTER: CharacterClass = {
   baseStats: { fuerza: 10, agilidad: 25, intelecto: 6, aguante: 19, espiritu: 12 },
   startingLevel: 1,
   statGrowth: { fuerza: 0.4, agilidad: 2.2, intelecto: 0.1, aguante: 1.3, espiritu: 0.3 },
-  armor: 5,
+  armor: 8,
   magicResist: 2,
 
   resource: { type: 'focus', label: 'Focus', color: '#aad372', max: 100, start: 'full', regen: 0 },

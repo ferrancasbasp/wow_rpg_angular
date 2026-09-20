@@ -390,7 +390,7 @@ export class CharacterService {
     const fromLevel = this.character().level * 0.02;
     const impStances = this.talentRank('improved_stances');
     const stanceBonus = this.inFuryStance() ? (5 + impStances * 2) : 0;
-    const fromTalent = this.talentRank('cruelty') * 2 + this.talentRank('precision');
+    const fromTalent = this.talentRank('cruelty') * 2 + this.talentRank('precision') * 2;
     const fromBuff = this.effectStatBonus('physCrit');
     const fromReckless = this.hasEffect('recklessness') ? 30 : 0;
     const fromMusical = this.talentRank('musical_knowledge') * 2;
@@ -433,7 +433,7 @@ export class CharacterService {
 
   readonly armorTotal = computed<number>(() => {
     let total = this.classConfig().armor || 0;
-    total += this.talentRank('anticipation') * 5;
+    total += this.talentRank('anticipation') * 8;
     if (this.inProtectionStance() && this.classConfig().stances) total += 5 + this.talentRank('improved_stances') * 4;
     const gear = this.character().equipment;
     if (gear) {
@@ -458,7 +458,7 @@ export class CharacterService {
     let total = this.classConfig().magicResist || 0;
     total += this.talentRank('magic_resistance') * 5;
     total += this.talentRank('preservation') * 5;
-    total += this.talentRank('anticipation') * 5;
+    total += this.talentRank('anticipation') * 8;
     if (this.selectedCapstone() === 'gift_of_the_wild') {
       total += this.character().level;
     }
@@ -766,7 +766,7 @@ export class CharacterService {
         maxVal = Math.round(maxVal * ebaBonus);
       }
       if (['sinister_strike', 'eviscerate'].includes(a.id)) {
-        const aggressionBonus = 1 + this.talentRank('aggression') * 0.02;
+        const aggressionBonus = 1 + this.talentRank('aggression') * 0.05;
         minVal = Math.round(minVal * aggressionBonus);
         maxVal = Math.round(maxVal * aggressionBonus);
       }
@@ -842,7 +842,7 @@ export class CharacterService {
         currentMin: minVal,
         currentMax: maxVal,
         currentDotValue: dotRange ? Math.round((dotRange.value || 0) * dotEffectMult) : (a.inflictsEffects ? Math.round((a.inflictsEffects[0].value || 0) * dotEffectMult) : 0),
-        currentDotDuration: dotRange ? dotRange.duration : (a.inflictsEffects ? a.inflictsEffects[0].duration : 0),
+        currentDotDuration: dotRange ? dotRange.duration + (a.id === 'rend' ? this.talentRank('improved_rend') : 0) : (a.inflictsEffects ? a.inflictsEffects[0].duration : 0),
         hotTick, hotDuration, hotTotal, dotTick, dotDuration, dotTotal,
         scaledCost: Math.round((a as any).computedCost * (1 + (rank - 1) * 0.15)),
         effectiveRageCost: this.getEffectiveRageCost(a),
@@ -863,7 +863,7 @@ export class CharacterService {
       if (isRage) cost = buffRank ? (buffRank.costRage ?? a.costRage ?? 0) : (a.costRage || 0);
       else if (isEnergy) {
         cost = buffRank ? (buffRank.costEnergy ?? a.costEnergy ?? 0) : (a.costEnergy || 0);
-        if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 5);
+        if (a.spendsCombo) cost = Math.max(0, cost - this.talentRank('ruthlessness') * 4);
       }
       else if (isFocus) cost = buffRank ? (buffRank.costFocus ?? a.costFocus ?? 0) : (a.costFocus || 0);
       else cost = Math.round(((buffRank ? buffRank.costPct : a.costPct) || 0) * this.baseMana());
@@ -1012,7 +1012,6 @@ export class CharacterService {
   getEffectiveRageCost(ability: any): number {
     let cost = ability.costRage || 0;
     if (ability.id === 'heroic_strike') cost -= this.talentRank('improved_heroic_strike');
-    if (ability.id === 'rend') cost -= this.talentRank('improved_rend');
     if (ability.id === 'shout') cost -= this.talentRank('improved_battle_shout') * 2;
     if (ability.id === 'shield_bash') cost -= this.talentRank('warded');
     return Math.max(0, cost);
@@ -1020,7 +1019,7 @@ export class CharacterService {
 
   getEffectiveEnergyCost(ability: any): number {
     let cost = ability.costEnergy || 0;
-    if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 5;
+    if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 4;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
     if (ability.id === 'garrote') cost -= this.talentRank('improved_garrote') * 10;
     return Math.max(0, cost);
@@ -1319,9 +1318,9 @@ export class CharacterService {
       arcane_torrent: `Arcane Missiles/Explosión: daño y coste +${rank * 15}%`,
       clearcasting: `Prob. hechizo gratuito: ${rank * 2.5}%`,
       improved_heroic_strike: `Heroic Strike: −${rank} ira coste · +${rank * 5}% daño`,
-      improved_rend: `Rend: +${rank * 35}% daño · −${rank} ira coste`,
+      improved_rend: `Rend: +${rank * 35}% daño · +${rank} turno duración`,
       improved_taunt: `Taunt sin GCD`,
-      anticipation: `Armadura física: +${rank * 5}, Armadura mágica: +${rank * 5}`,
+      anticipation: `Armadura física: +${rank * 8}, Armadura mágica: +${rank * 8}`,
       improved_bloodrage: `Blood Rage: +${rank * 5} ira/turno · coste vida −${rank * 7.5}% (R2: sin daño)`,
       improved_charge: `Charge: +${rank * 3} ira · +${rank * 15}% Heroic Strike de daño`,
       cruelty: `Crítico físico: +${rank * 2}%`,
@@ -1332,18 +1331,18 @@ export class CharacterService {
       deep_wounds: `Críticos: DoT ${rank * 10}% del daño crítico (3 turnos)`,
       battle_flow: `Al cambiar de postura: beneficio previo ${rank} turno${rank > 1 ? 's' : ''} · sin doble postura`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
-      vitality: `Regen energía: +${(rank * (50 / 3)).toFixed(1)}%`,
+      vitality: `Regen energía: +${(rank * (50 / 4)).toFixed(1)}%`,
       energetic_basic_attack: `Basic Attack: +${rank * 3}% daño, +${rank * 2} energía (+${rank * 4} si crit)`,
-      ruthlessness: `Coste finishers: −${rank * 5} energía`,
+      ruthlessness: `Coste finishers: −${rank * 4} energía`,
       finishing_touch: `Tras finisher: +1 combo · +15 energía`,
-      lethality: `Daño crítico: +${rank * 3}%`,
+      lethality: `Daño crítico: +${rank * 5}%`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
       improved_slice_and_dice: `Slice and Dice: +${rank * 1} turnos duración`,
       opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 5}%`,
-      precision: `Crítico físico: +${rank}%`,
+      precision: `Crítico físico: +${rank * 2}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
       initiative: `Combo extra: ${rank * 10}% prob`,
-      aggression: `Daño Sinister Strike/Eviscerate: +${rank * 2}%`,
+      aggression: `Daño Sinister Strike/Eviscerate: +${rank * 5}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 5}%`,
       illumination: `Healing crit: +${rank * 2}%`,
@@ -1968,7 +1967,7 @@ export class CharacterService {
     this.turnDamage.set(0);
     this.actionsUsed.set(0);
     if (this.resourceConfig().type === 'energy') {
-      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 3)));
+      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 4)));
       this.character.update(c => {
         c.currentEnergy = Math.min(this.resourceMax(), (c.currentEnergy || 0) + regen);
         return { ...c };

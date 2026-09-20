@@ -17,7 +17,7 @@ export const VALKYRIE: CharacterClass = {
   baseStats: { fuerza: 24, agilidad: 12, intelecto: 6, aguante: 26, espiritu: 8 },
   startingLevel: 1,
   statGrowth: { fuerza: 1.8, agilidad: 0.5, intelecto: 0.2, aguante: 1.8, espiritu: 0.4 },
-  armor: 12,
+  armor: 14,
   magicResist: 4,
 
   resource: { type: 'rage', label: 'Ira', color: '#c0392b', max: 100, start: '0' },

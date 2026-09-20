@@ -17,7 +17,7 @@ export const BARD: CharacterClass = {
   baseStats: { fuerza: 5, agilidad: 20, intelecto: 20, aguante: 12, espiritu: 10 },
   startingLevel: 1,
   statGrowth: { fuerza: 0.2, agilidad: 1.4, intelecto: 1.4, aguante: 0.7, espiritu: 0.4 },
-  armor: 3,
+  armor: 4,
   magicResist: 4,
 
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },

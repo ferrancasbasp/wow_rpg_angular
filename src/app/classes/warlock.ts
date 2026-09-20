@@ -17,7 +17,7 @@ export const WARLOCK: CharacterClass = {
   baseStats: { fuerza: 10, agilidad: 10, intelecto: 16, aguante: 14, espiritu: 12 },
   startingLevel: 1,
   statGrowth: { intelecto: 2.0, aguante: 1.8, espiritu: 0.8, fuerza: 0.3, agilidad: 0.3 },
-  armor: 5,
+  armor: 8,
   magicResist: 3,
 
   resource: { type: 'mana', label: 'Mana', color: '#9b59b6', max: null, start: 'full' },
