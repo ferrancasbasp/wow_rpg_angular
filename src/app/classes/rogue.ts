@@ -46,7 +46,7 @@ export const ROGUE: CharacterClass = {
   ],
 
   capstones: [
-    { id: 'shadow_dance', name: 'Shadow Dance', icon: '🩶', iconImg: 'img/capstones/rogue/shadowdance.jpg', description: 'Durante 3 turnos puedes utilizar habilidades que requieren Stealth aunque no estés en Stealth y ganas 20 de energía máxima. CD 5.' },
+    { id: 'shadow_dance', name: 'Shadow Dance', icon: '🩶', iconImg: 'img/capstones/rogue/shadowdance.jpg', description: 'Pasiva de capstone: +20 de energía máxima mientras tengas esta capstone. Activa: durante 3 turnos puedes utilizar habilidades que requieren Stealth aunque no estés en Stealth. CD 5.' },
     { id: 'blade_flurry', name: 'Blade Flurry', icon: '🌪️', iconImg: 'img/capstones/rogue/bladefurry.jpg', description: 'Entras en un frenesí de ataques durante 3 turnos. Tus ataques y habilidades de daño directo impactan también a otro enemigo cercano y regeneras 10 de energía extra por turno. Cuesta 20 de energía. CD 6.' },
     { id: 'poison_mastery', name: 'Poison Mastery', icon: '☠️', iconImg: 'img/capstones/rogue/poison_mastery.jpg', description: 'Durante 3 turnos potencia tu veneno activo: Veneno Mortal x2, Veneno Vampírico x3 o Wound (tus ataques además reducen un 25% el daño del enemigo). Potencia el valor del veneno activo, no su duración (Misologist aparte). CD 6.' },
   ],
