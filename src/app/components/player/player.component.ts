@@ -884,7 +884,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration },
       ],
     }));
-    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth (' + duration + ' turnos)');
+    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth, +20 energía máxima (' + duration + ' turnos)');
   }
 
   castBladeFlurry(ability: any) {
@@ -896,7 +896,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Blade Flurry', target: 'blade_flurry', value: 0, duration },
       ],
     }));
-    this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo (' + duration + ' turnos)');
+    this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo, +10 energía extra por turno (' + duration + ' turnos)');
   }
 
   castPoisonMastery(ability: any) {
@@ -1514,7 +1514,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (resType === 'rage') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
     } else if (resType === 'energy') {
-      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 4)));
+      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 4))) + (this.charSvc.hasEffect('blade_flurry') ? 10 : 0);
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
     } else if (resType === 'focus') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · Focus: sin regen');
@@ -3392,6 +3392,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }
       if (ability.id === 'valk_speed_of_light') {
         sndDuration += this.charSvc.talentRank('perseverance');
+      }
+      const misoRank = this.charSvc.talentRank('misologist');
+      if (misoRank > 0 && ['poisonDamage', 'leechPoison', 'woundPoison'].includes(ability.currentBuffStat)) {
+        sndDuration += misoRank;
+        if (ability.currentBuffStat !== 'woundPoison') {
+          buffValue = Math.round(buffValue * (1 + misoRank * 0.10));
+        }
       }
       if (ability.id === 'valk_odins_will') {
         sndDuration = this.charSvc.odinsDuration();

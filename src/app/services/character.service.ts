@@ -541,7 +541,7 @@ export class CharacterService {
   readonly resourceMax = computed<number>(() => {
     const rc = this.resourceConfig();
     if (rc.type === 'rage') return rc.max || 100;
-    if (rc.type === 'energy') return rc.max || 100;
+    if (rc.type === 'energy') return (rc.max || 100) + (this.hasEffect('shadow_dance') ? 20 : 0);
     if (rc.type === 'focus') return rc.max || 100;
     return this.maxMana();
   });
@@ -1342,6 +1342,7 @@ export class CharacterService {
       precision: `Crítico físico: +${rank * 2}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
       initiative: `Combo extra: ${rank * 10}% prob`,
+      misologist: `Venenos propios: +${rank} turno · Mortal/Vampírico +${rank * 10}% efectividad`,
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 5}%`,
       improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
       healing_focus: `Curación: +${rank * 5}%`,
@@ -1967,7 +1968,7 @@ export class CharacterService {
     this.turnDamage.set(0);
     this.actionsUsed.set(0);
     if (this.resourceConfig().type === 'energy') {
-      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 4)));
+      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 4))) + (this.hasEffect('blade_flurry') ? 10 : 0);
       this.character.update(c => {
         c.currentEnergy = Math.min(this.resourceMax(), (c.currentEnergy || 0) + regen);
         return { ...c };
