@@ -1514,7 +1514,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (resType === 'rage') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
     } else if (resType === 'energy') {
-      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 3)));
+      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 4)));
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
     } else if (resType === 'focus') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · Focus: sin regen');
@@ -2103,6 +2103,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 2;
     }
+    if (ability.id === 'backstab' && this.charSvc.character().classKey === 'rogue') {
+      critChance += this.charSvc.talentRank('improved_backstab') * 10;
+    }
     if (ability.id === 'fire_blast' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('improved_fire_blast') * 10;
     }
@@ -2191,7 +2194,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         critMult = critMult * 1.25;
       }
       if (this.charSvc.character().classKey === 'rogue') {
-        critMult += this.charSvc.talentRank('lethality') * 0.03;
+        critMult += this.charSvc.talentRank('lethality') * 0.05;
       }
       roll = Math.round(roll * critMult);
     }
@@ -2783,8 +2786,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const eff = sendAbility.inflictsEffects && sendAbility.inflictsEffects[0];
         if (eff) {
           const rendDot = (ability as any).currentDotValue || eff.value || 8;
-          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: rendDot }] };
-          rendText = ' · 🩸 sangrado ' + rendDot + '/t (' + eff.duration + 't)';
+          const rendDur = (eff.duration || 5) + this.charSvc.talentRank('improved_rend');
+          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: rendDot, duration: rendDur }] };
+          rendText = ' · 🩸 sangrado ' + rendDot + '/t (' + rendDur + 't)';
         }
       }
       let sunderText = '';

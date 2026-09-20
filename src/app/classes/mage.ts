@@ -37,7 +37,7 @@ export const MAGE: CharacterClass = {
   baseStats: { fuerza: 3, agilidad: 3, intelecto: 20, aguante: 14, espiritu: 18 },
   startingLevel: 1,
   statGrowth: { fuerza: 0.1, agilidad: 0.1, intelecto: 2.0, aguante: 0.7, espiritu: 1.1 },
-  armor: 0,
+  armor: 4,
   magicResist: 5,
 
   resource: { type: 'mana', label: 'Maná', color: '#3498db', max: null, start: 'full' },

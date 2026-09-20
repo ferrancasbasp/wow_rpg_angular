@@ -17,15 +17,15 @@ export const WARRIOR: CharacterClass = {
   baseStats: { fuerza: 25, agilidad: 12, intelecto: 5, aguante: 22, espiritu: 8 },
   startingLevel: 1,
   statGrowth: { fuerza: 2.0, agilidad: 0.5, intelecto: 0.1, aguante: 1.5, espiritu: 0.3 },
-  armor: 8,
+  armor: 14,
   magicResist: 2,
 
   resource: { type: 'rage', label: 'Ira', color: '#c0392b', max: 100, start: '0' },
 
   talents: [
     { id: 'improved_heroic_strike', name: 'Improved Heroic Strike', icon: '⚔️', iconImg: 'img/abilities/rogue/ambush.jpg', description: 'Reduce el coste de ira de Heroic Strike en 1 por punto y aumenta su daño un 5% por punto.', maxRank: 3, tier: 1, requires: null },
-    { id: 'improved_rend', name: 'Improved Rend', icon: '🩸', iconImg: 'img/abilities/warrior/rend.jpg', description: 'Aumenta el daño de Rend un 35% por punto y reduce su coste de ira en 1 por punto.', maxRank: 2, tier: 1, requires: null },
-    { id: 'anticipation', name: 'Anticipation', icon: '🛡️', iconImg: 'img/talents/warrior/anticipation.jpg', description: 'Aumenta tu armadura física y mágica en 5 por punto.', maxRank: 3, tier: 1, requires: null },
+    { id: 'improved_rend', name: 'Improved Rend', icon: '🩸', iconImg: 'img/abilities/warrior/rend.jpg', description: 'Aumenta el daño de Rend un 35% y su duración 1 turno por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'anticipation', name: 'Anticipation', icon: '🛡️', iconImg: 'img/talents/warrior/anticipation.jpg', description: 'Aumenta tu armadura física y mágica en 8 por punto.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_taunt', name: 'Improved Taunt', icon: '🗯️', iconImg: 'img/abilities/warrior/taunt.jpg', description: 'Taunt ya no consume cooldown global (GCD).', maxRank: 1, tier: 1, requires: { id: 'anticipation', points: 3 } },
     { id: 'endless_rage', name: 'Endless Rage', icon: '🔋', iconImg: 'img/talents/warrior/endless_rage.jpg', description: 'Reduce la ira que pierdes al final del turno en 1 por punto (base 3). Con 3 puntos no pierdes nada.', maxRank: 3, tier: 1, requires: null },
     { id: 'improved_bloodrage', name: 'Improved Bloodrage', icon: '🩸', iconImg: 'img/abilities/warrior/bloodrage.jpg', description: 'Aumenta la ira por turno de Blood Rage en 5 por punto y reduce su coste de vida un 7,5% por punto (base 15%): a rango 2 el Blood Rage ya no te hace daño.', maxRank: 2, tier: 2, requires: null },
