@@ -3379,7 +3379,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('improved_frost_armor') * 0.15));
       }
       if (ability.id === 'vibrato') {
-        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('directore') * 0.15));
+        buffValue = Math.round(buffValue * (1 + this.charSvc.talentRank('directore') * 0.20));
       }
       const effectType = ability.buff.isHot ? 'hot' : 'buff';
       let sndDuration = ability.currentBuffDuration;
@@ -3504,8 +3504,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     if (ability.restoresManaPct && !ability.healthCostPct) {
-      this.charSvc.restoreManaPct(ability.restoresManaPct);
-      this.charSvc.showToast(ability.name + ': +' + Math.round(ability.restoresManaPct * 100) + '% mana restaurado');
+      const restoredMana = this.charSvc.restoreManaPct(ability.restoresManaPct);
+      this.charSvc.showToast(ability.name + ': +' + restoredMana + ' mana restaurado');
       if (ability.id === 'fermata') {
         const ifRank = this.charSvc.talentRank('improved_fermata');
         if (ifRank > 0) {
@@ -3525,7 +3525,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
               },
             ],
           }));
-          this.charSvc.showToast('Improved Fermata: +' + armorGain + ' armadura (4t)');
+          const manaHeal = Math.round(restoredMana * 0.10 * ifRank);
+          if (manaHeal > 0) this.charSvc.adjustHP(manaHeal);
+          this.charSvc.showToast('Improved Fermata: +' + armorGain + ' armadura (4t)' + (manaHeal > 0 ? ' · +' + manaHeal + ' vida (30% del mana al maximo)' : ''));
         }
       }
     }
