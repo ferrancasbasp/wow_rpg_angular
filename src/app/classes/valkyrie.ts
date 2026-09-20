@@ -10,7 +10,7 @@ export const VALKYRIE: CharacterClass = {
     hp: (s, lvl) => 40 + s.aguante * 11 + lvl * 7,
     mana: () => 0,
     spellPower: () => 0,
-    attackPower: (s) => s.fuerza * 2 - 20,
+    attackPower: (s) => s.fuerza * 2,
     manaRegen: () => 0,
   },
 
