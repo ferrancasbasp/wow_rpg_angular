@@ -352,6 +352,9 @@ export class CharacterService {
     if (this.selectedCapstone() === 'hope_and_grace') {
       sp += Math.round(this.finalStats().espiritu * 0.20);
     }
+    if (this.selectedCapstone() === 'spirit_link_totem') {
+      sp += Math.round(this.finalStats().espiritu * 0.15);
+    }
     sp += this.effectStatBonus('spellPower');
     const effects = this.character().activeEffects;
     if (effects) {

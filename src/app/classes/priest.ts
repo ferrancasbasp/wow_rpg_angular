@@ -9,7 +9,7 @@ export const PRIEST: CharacterClass = {
   formulas: {
     hp: (s, lvl) => 30 + s.aguante * 8 + lvl * 4,
     mana: (s, lvl) => 50 + s.intelecto * 15 + lvl * 5,
-    spellPower: (s) => Math.round(s.intelecto * 0.3),
+    spellPower: (s) => Math.round(s.intelecto * 0.35 + s.espiritu * 0.05),
     attackPower: (s) => s.fuerza * 2,
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 15),
   },

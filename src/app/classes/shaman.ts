@@ -9,7 +9,7 @@ export const SHAMAN: CharacterClass = {
   formulas: {
     hp: (s, lvl) => 40 + s.aguante * 10 + lvl * 5,
     mana: (s, lvl) => 30 + s.intelecto * 15 + lvl * 5,
-    spellPower: (s) => Math.round(s.intelecto * 0.3),
+    spellPower: (s) => Math.round(s.intelecto * 0.35 + s.espiritu * 0.05),
     attackPower: (s) => s.fuerza * 2,
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 15),
   },
@@ -45,7 +45,7 @@ export const SHAMAN: CharacterClass = {
   capstones: [
     { id: 'ascendance', name: 'Ascendance', icon: '🔥', iconImg: 'img/capstones/shaman/ascendance.jpg', description: 'Te transformas en un poderoso elemental durante 3 turnos: +30% Spell Power, +5% probabilidad de crítico y +25% daño crítico en Descarga de Rayo, Cadena de Rayos, Choque de Llamas y Choque de Tierra. Al activarse, lanza automáticamente una Descarga de Rayo gratuita (sin coste de maná ni cargas de Maelstorm).' },
     { id: 'bloodlust', name: 'Bloodlust', icon: '🩸', iconImg: 'img/capstones/shaman/bloodlust.jpg', description: 'Inspira a toda la party durante 3 turnos, aumentando su Attack Power y Spell Power en 20%. Al activar Bloodlust obtienes inmediatamente 2 Cargas de Maelstorm. Sin GCD.' },
-    { id: 'spirit_link_totem', name: 'Tótem de Vínculo Espiritual', icon: '🕸️', iconImg: 'img/capstones/shaman/spirit_link_totem.jpg', description: 'Invoca un Tótem de Vínculo Espiritual durante 3 turnos. Ola de Sanación replica un 30% de su curación al resto de la party; Cadena de Sanación cura un 20% más. No cuenta como Tótem de Fuego o Agua y puede coexistir con ellos.' },
+    { id: 'spirit_link_totem', name: 'Tótem de Vínculo Espiritual', icon: '🕸️', iconImg: 'img/capstones/shaman/spirit_link_totem.jpg', description: 'Pasiva: tu Espíritu aporta +0.15 de Poder de Hechizo por punto. Activa: invoca un Tótem de Vínculo Espiritual durante 3 turnos. Ola de Sanación replica un 30% de su curación al resto de la party; Cadena de Sanación cura un 20% más. No cuenta como Tótem de Fuego o Agua y puede coexistir con ellos.' },
   ],
 
   abilities: [
@@ -64,6 +64,6 @@ export const SHAMAN: CharacterClass = {
     { id: 'mana_spring_totem', name: 'Tótem Manantial de Maná', icon: '💠', iconImg: 'img/abilities/shaman/mana_spring_totem.jpg', school: 'Naturaleza', type: 'utility', requiredLevel: 18, castType: 'instant', cooldown: 0, costPct: 0.04, totem: 'water', totemType: 'mana_spring', totemTurns: 4, damageRanges: [{ rank: 1, level: 18, min: 18, max: 18 }, { rank: 2, level: 24, min: 30, max: 30 }], description: 'Invoca un tótem de agua que restaura maná al Shaman cada turno durante 4 turnos. Solo puedes tener un Tótem de Agua activo.', category: 'restoration' },
     { id: 'ascendance', name: 'Ascendance', icon: '🔥', iconImg: 'img/capstones/shaman/ascendance.jpg', school: 'Fuego', type: 'utility', requiredLevel: 1, costPct: 0, castType: 'instant', cooldown: 6, noGcd: true, description: 'Te transformas en un poderoso elemental durante 3 turnos: +30% Spell Power, +5% crítico y +25% daño crítico en Descarga de Rayo, Cadena de Rayos, Choque de Llamas y Choque de Tierra. Lanza automáticamente una Descarga de Rayo gratuita al activarse. CD 6.', buff: null, capstoneGate: 'ascendance' },
     { id: 'bloodlust', name: 'Bloodlust', icon: '🩸', iconImg: 'img/capstones/shaman/bloodlust.jpg', school: 'Naturaleza', type: 'utility', requiredLevel: 1, costPct: 0, castType: 'instant', cooldown: 6, noGcd: true, description: 'Inspira a toda la party durante 3 turnos: +20% Attack Power y Spell Power. Al activarlo obtienes 2 Cargas de Maelstorm. Sin GCD. CD 6.', buff: { stat: 'bloodlust', value: 20, duration: 3, applySelf: false, isPercent: false }, capstoneGate: 'bloodlust', partyBuff: true },
-    { id: 'spirit_link_totem', name: 'Tótem de Vínculo Espiritual', icon: '🕸️', iconImg: 'img/capstones/shaman/spirit_link_totem.jpg', school: 'Naturaleza', type: 'utility', requiredLevel: 1, costPct: 0, castType: 'instant', cooldown: 6, description: 'Invoca un Tótem de Vínculo Espiritual durante 3 turnos. Ola de Sanación replica un 30% de su curación al resto de la party; Cadena de Sanación cura un 20% más. No cuenta como Tótem de Fuego/Agua. CD 6.', buff: null, capstoneGate: 'spirit_link_totem' },
+    { id: 'spirit_link_totem', name: 'Tótem de Vínculo Espiritual', icon: '🕸️', iconImg: 'img/capstones/shaman/spirit_link_totem.jpg', school: 'Naturaleza', type: 'utility', requiredLevel: 1, costPct: 0, castType: 'instant', cooldown: 6, description: 'Pasiva: tu Espíritu aporta +0.15 de Poder de Hechizo por punto. Activa: invoca un Tótem de Vínculo Espiritual durante 3 turnos. Ola de Sanación replica un 30% de su curación al resto de la party; Cadena de Sanación cura un 20% más. No cuenta como Tótem de Fuego/Agua. CD 6.', buff: null, capstoneGate: 'spirit_link_totem' },
   ],
 };
