@@ -85,3 +85,30 @@ describe('CharacterService — mage frost orbs shield (sim)', () => {
     expect(frostShield()).toBeUndefined();
   });
 });
+
+describe('CharacterService — rogue energy talents (sim)', () => {
+  let svc: CharacterService;
+  let registry: ClassRegistryService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    svc = TestBed.inject(CharacterService);
+    registry = TestBed.inject(ClassRegistryService);
+  });
+
+  function makeRogue() {
+    const c = createDefaultCharacter('rogue', registry.getAll());
+    svc.character.set(c);
+  }
+
+  it('Shadow Dance raises max energy to +20 while active', () => {
+    makeRogue();
+    svc.enterSim();
+    const base = svc.resourceMax();
+    svc.character.update(c => ({
+      ...c,
+      activeEffects: [...(c.activeEffects || []), { id: 1, type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration: 3 }],
+    }));
+    expect(svc.resourceMax()).toBe(base + 20);
+  });
+});
