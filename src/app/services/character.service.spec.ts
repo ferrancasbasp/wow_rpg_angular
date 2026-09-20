@@ -101,14 +101,11 @@ describe('CharacterService — rogue energy talents (sim)', () => {
     svc.character.set(c);
   }
 
-  it('Shadow Dance raises max energy to +20 while active', () => {
+  it('Shadow Dance capstone grants +20 max energy passively', () => {
     makeRogue();
     svc.enterSim();
     const base = svc.resourceMax();
-    svc.character.update(c => ({
-      ...c,
-      activeEffects: [...(c.activeEffects || []), { id: 1, type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration: 3 }],
-    }));
+    svc.character.update(c => ({ ...c, capstone: 'shadow_dance' }));
     expect(svc.resourceMax()).toBe(base + 20);
   });
 });

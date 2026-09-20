@@ -884,7 +884,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration },
       ],
     }));
-    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth, +20 energía máxima (' + duration + ' turnos)');
+    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth (' + duration + ' turnos)');
   }
 
   castBladeFlurry(ability: any) {

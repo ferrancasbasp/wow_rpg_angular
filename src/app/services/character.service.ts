@@ -541,7 +541,7 @@ export class CharacterService {
   readonly resourceMax = computed<number>(() => {
     const rc = this.resourceConfig();
     if (rc.type === 'rage') return rc.max || 100;
-    if (rc.type === 'energy') return (rc.max || 100) + (this.hasEffect('shadow_dance') ? 20 : 0);
+    if (rc.type === 'energy') return (rc.max || 100) + (this.selectedCapstone() === 'shadow_dance' ? 20 : 0);
     if (rc.type === 'focus') return rc.max || 100;
     return this.maxMana();
   });
