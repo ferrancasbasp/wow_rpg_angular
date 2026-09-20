@@ -1379,7 +1379,7 @@ export class CharacterService {
       improved_vivace: `Vivace: +${rank * 10}% curación · −${rank * 10}% mana`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${rank * 15}% prob. devolver 1 accion`,
-      directore: `Diminuendo y Vibrato: +${rank * 15}% efectividad`,
+      directore: `Diminuendo y Vibrato: +${rank * 20}% efectividad`,
       rinforzando: `Scherzo/Sforzando: +${rank * 4}% danyo y critico`,
       harmonioso: `Curas: −${rank * 5}% mana`,
     };
@@ -1886,12 +1886,15 @@ export class CharacterService {
     return total;
   }
 
-  restoreManaPct(pct: number) {
+  restoreManaPct(pct: number): number {
+    let restored = 0;
     this.character.update(c => {
       const maxMana = this.resourceMax();
       const restore = Math.round(maxMana * pct);
+      restored = Math.max(0, Math.min(restore, maxMana - (c.currentMana ?? maxMana)));
       return { ...c, currentMana: Math.min(maxMana, (c.currentMana ?? maxMana) + restore) };
     });
+    return restored;
   }
 
   // ==================== HP/XP ====================
