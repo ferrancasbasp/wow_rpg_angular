@@ -793,6 +793,8 @@ export class CharacterService {
       const dotRange = a.dotRanges?.find(dr => dr.rank === rank);
       let rendDotMult = 1;
       if (a.id === 'rend') rendDotMult = 1 + this.talentRank('improved_rend') * 0.35;
+      const garroteDotMult = a.id === 'garrote' ? (1 + this.talentRank('improved_garrote') * 0.20) : 1;
+      const dotEffectMult = rendDotMult * garroteDotMult;
       let hotTick = 0, hotDuration = 0, hotTotal = 0;
       if (a.isHot) {
         const baseDuration = a.hotDuration || 1;
@@ -839,7 +841,7 @@ export class CharacterService {
         currentRank: rank,
         currentMin: minVal,
         currentMax: maxVal,
-        currentDotValue: dotRange ? Math.round((dotRange.value || 0) * rendDotMult) : (a.inflictsEffects ? Math.round((a.inflictsEffects[0].value || 0) * rendDotMult) : 0),
+        currentDotValue: dotRange ? Math.round((dotRange.value || 0) * dotEffectMult) : (a.inflictsEffects ? Math.round((a.inflictsEffects[0].value || 0) * dotEffectMult) : 0),
         currentDotDuration: dotRange ? dotRange.duration : (a.inflictsEffects ? a.inflictsEffects[0].duration : 0),
         hotTick, hotDuration, hotTotal, dotTick, dotDuration, dotTotal,
         scaledCost: Math.round((a as any).computedCost * (1 + (rank - 1) * 0.15)),
