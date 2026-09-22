@@ -1260,6 +1260,7 @@ export class MasterComponent implements OnInit {
         });
       }
       this.showToast(`${event.ability} → todos (${targets.length}): +${event.buffValue} ${event.buffStat}`);
+      this.sendLog.update(log => [`todos (${targets.length}): +${event.buffValue} ${event.buffStat} (${event.ability.replace(' (Buff)', '')})`, ...log].slice(0, 8));
       this.markEventAssigned(event);
       this.selectedEventId.set(null);
       return;
@@ -1275,6 +1276,7 @@ export class MasterComponent implements OnInit {
         timestamp: Date.now(),
       });
       this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
+      this.sendLog.update(log => [`${target}: +${event.buffValue} ${event.buffStat} (${event.ability.replace(' (Buff)', '')})`, ...log].slice(0, 8));
     } else if (event.damageType === 'rebirth') {
       this.firebase.pushData('playerEvents', {
         target,
@@ -1288,6 +1290,7 @@ export class MasterComponent implements OnInit {
         timestamp: Date.now(),
       });
       this.showToast(`${event.ability} → ${target}: revive con ${event.damage} HP`);
+      this.sendLog.update(log => [`${target}: +${event.damage} HP (${event.ability.replace(' (Revive)', '')})`, ...log].slice(0, 8));
     } else if (event.damageType === 'heal' && event.aoe) {
       const targets = this.knownPlayers();
       for (const t of targets) {
@@ -1300,6 +1303,7 @@ export class MasterComponent implements OnInit {
         });
       }
       this.showToast(`${event.ability} → todos (${targets.length}): +${event.damage} HP`);
+      this.sendLog.update(log => [`todos (${targets.length}): +${event.damage} HP (${event.ability.replace(' (Cura)', '')})`, ...log].slice(0, 8));
       this.markEventAssigned(event);
       this.selectedEventId.set(null);
       return;
@@ -1315,6 +1319,7 @@ export class MasterComponent implements OnInit {
           timestamp: Date.now(),
         });
         this.showToast(`${event.ability} → ${target}: ${event.hotTick}/t · ${event.hotDuration}t`);
+        this.sendLog.update(log => [`${target}: ${event.hotTick}/t · ${event.hotDuration}t (${event.ability.replace(' (Cura)', '')})`, ...log].slice(0, 8));
       } else if (event.isShield) {
         this.firebase.pushData('playerEvents', {
           target,
@@ -1324,6 +1329,7 @@ export class MasterComponent implements OnInit {
           timestamp: Date.now(),
         });
         this.showToast(`${event.ability} → ${target}: 🛡️ ${event.damage} absorcion`);
+        this.sendLog.update(log => [`${target}: 🛡️ ${event.damage} absorcion (${event.ability.replace(' (Cura)', '')})`, ...log].slice(0, 8));
       } else {
         this.firebase.pushData('playerEvents', {
           target,
@@ -1333,6 +1339,7 @@ export class MasterComponent implements OnInit {
           timestamp: Date.now(),
         });
         this.showToast(`${event.ability} → ${target}: +${event.damage} HP`);
+        this.sendLog.update(log => [`${target}: +${event.damage} HP (${event.ability.replace(' (Cura)', '')})`, ...log].slice(0, 8));
       }
     }
 
