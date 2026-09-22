@@ -1326,7 +1326,7 @@ export class MasterComponent implements OnInit {
         buffDuration: event.buffDuration,
         timestamp: Date.now(),
       });
-      this.showToast(`${event.ability} → ${target}: revive con ${event.damage}% de su vida`);
+      this.showToast(`${event.ability} → ${target}: revive con ${event.damage} HP`);
     } else if (event.damageType === 'heal' && event.aoe) {
       const targets = this.knownPlayers();
       for (const t of targets) {

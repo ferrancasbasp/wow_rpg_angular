@@ -240,8 +240,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           if (this.charSvc.hpActual() > 0) {
             this.incomingMasterMsg.set('⚠️ ' + (event.abilityName || 'Master') + ': revive ignorado, no estas muerto');
           } else {
-            const revivePct = event.amount || 25;
-            const reviveHP = Math.max(1, Math.round(this.charSvc.maxHP() * revivePct / 100));
+            const reviveHP = Math.max(1, event.amount || 200);
             this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
             let buffText = '';
             if (event.buffAp || event.buffSp) {
@@ -773,7 +772,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       player: myName,
       ability: ability.name + ' (Revive)',
       rank: ability.currentRank || 1,
-      damage: 100,
+      damage: this.charSvc.maxHP(),
       damageType: 'rebirth',
       aoe: false,
       effects: null,
@@ -784,7 +783,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: Date.now(),
       assigned: false,
     });
-    this.charSvc.showToast('⚔️ Call from Valhalla: revivira a un aliado muerto con toda su vida y +50 AP/SP (2 turnos) — asigna el objetivo en el Master');
+    this.charSvc.showToast('⚔️ Call from Valhalla: revivira a un aliado muerto con ' + this.charSvc.maxHP() + ' HP y +50 AP/SP (2 turnos) — asigna el objetivo en el Master');
   }
 
   castRebirth(ability: any) {
@@ -792,13 +791,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast('Rebirth no esta disponible en la simulacion');
       return;
     }
-    const pct = ability.currentMin || 25;
+    const flatHp = ability.currentMin || 200;
     const myName = this.charSvc.character().name || 'Jugador';
     this.sendDamagePayload({
       player: myName,
       ability: ability.name + ' (Revive)',
       rank: ability.currentRank || 1,
-      damage: pct,
+      damage: flatHp,
       damageType: 'rebirth',
       aoe: false,
       effects: null,
@@ -806,7 +805,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: Date.now(),
       assigned: false,
     });
-    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': revivira a un aliado muerto con ' + pct + '% de su vida — asigna el objetivo en el Master');
+    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': revivira a un aliado muerto con ' + flatHp + ' HP — asigna el objetivo en el Master');
   }
 
   castValkyriesCall(ability: any) {
