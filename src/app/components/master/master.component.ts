@@ -1343,9 +1343,10 @@ export class MasterComponent implements OnInit {
     } else if (event.damageType === 'rebirth') {
       this.firebase.pushData('playerEvents', {
         target,
-        type: 'revive',
+        type: 'heal',
         abilityName: event.ability.replace(' (Revive)', ''),
         amount: event.damage,
+        ignoreDeath: true,
         buffAp: event.buffAp,
         buffSp: event.buffSp,
         buffDuration: event.buffDuration,
