@@ -1688,6 +1688,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   addPlayerEffect(eff: any): boolean {
+    if (this.charSvc.isDead()) return false;
     if (this.charSvc.hasEffect('shield_wall') && this.isCrowdControl(eff)) {
       this.charSvc.showToast('🛡️ Shield Wall: inmune a ' + (eff.name || 'control de masas'));
       return false;
