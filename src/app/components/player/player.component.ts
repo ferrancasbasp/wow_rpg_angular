@@ -3456,6 +3456,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('🎯 Inner Focus: durante 3 turnos tu próximo hechizo no cuesta maná y tiene +25% de crítico');
         return;
       }
+      if (ability.partyBuff) {
+        this.charSvc.sendBuffEvent(ability, buffValue);
+      }
       const sndText = ability.id === 'slice_and_dice' ? ' · +1 accion/turno · ' + sndComboSpent + ' combo gastados' : '';
       const odinsFlyText = odinsFlyGrant
         ? ' · 🕊️ Fly the Nest gratuito' + this.charSvc.valkyrieApplyFlight(sndDuration)
