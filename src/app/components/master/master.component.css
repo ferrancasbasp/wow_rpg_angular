@@ -417,10 +417,22 @@
       border: 1px solid var(--gold-dark);
       border-radius: 4px;
       padding: 8px 10px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .party-card:hover {
+      border-color: var(--gold);
+    }
+
+    .party-card.active {
+      border-color: var(--gold);
+      border-width: 2px;
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.35);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(212, 175, 55, 0.03));
     }
 
     .party-card.party-targeting {
-      cursor: pointer;
       animation: pulse-glow 1.5s ease-in-out infinite;
       border-width: 2px;
     }
@@ -946,12 +958,6 @@
       margin: -4px 0 4px 0;
     }
 
-    .player-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
     .player-chip {
       background: var(--bg-input);
       border: 1px solid var(--gold-dark);
@@ -974,24 +980,6 @@
       color: var(--bg-dark);
       border-color: var(--gold);
       font-weight: 600;
-    }
-
-    .player-chips.targeting {
-      gap: 6px;
-    }
-
-    .player-chip.targeting-chip {
-      animation: pulse-glow 1.5s ease-in-out infinite;
-      border-width: 2px;
-      padding: 5px 14px;
-      font-size: 13px;
-    }
-
-    .player-chip.targeting-chip:hover {
-      background: linear-gradient(135deg, #2a6a2a, #4a9a4a);
-      color: #fff;
-      border-color: #4a9a4a;
-      transform: scale(1.05);
     }
 
     .all-chip {
