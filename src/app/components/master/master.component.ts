@@ -232,6 +232,9 @@ export class MasterComponent implements OnInit {
           this.applySingleDamage(autoTarget, event);
         } else {
           this.pendingEvents.update((events) => [...events, event]);
+          if (event.damageType === 'rebirth' || ((event.damageType === 'heal' || event.damageType === 'buff') && !event.aoe)) {
+            this.selectedEventId.set(event.id);
+          }
           if (event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe && !this.aliveMonsterBySymbol(event.symbol)) {
             const symName = symbolIconOf(event.symbol) || 'marcador';
             this.showToast(`🎯 ${event.player}: target ${symName} ya no existe — asignar manualmente`);
