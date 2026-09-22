@@ -1238,9 +1238,10 @@ export class MasterComponent implements OnInit {
     console.log('[MASTER] revivir a', name, 'con', amount, 'HP');
     this.firebase.pushData('playerEvents', {
       target: name,
-      type: 'revive',
+      type: 'heal',
       abilityName: 'Raise',
       amount,
+      ignoreDeath: true,
       timestamp: Date.now(),
     });
     this.sendLog.update(log => [`${name}: rez +${amount} HP`, ...log].slice(0, 8));

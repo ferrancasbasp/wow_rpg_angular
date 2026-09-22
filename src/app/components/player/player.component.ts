@@ -169,7 +169,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
 
         if (event.type === 'heal') {
-          if (this.charSvc.isDead()) {
+          if (this.charSvc.isDead() && event.ignoreDeath) {
+            const reviveHP = Math.max(1, event.amount || 200);
+            this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
+            if (this.charSvc.character().classKey === 'valkyrie') this.valkFallen.set(false);
+            this.charSvc.syncPlayerStatus();
+            this.incomingMasterMsg.set('🌿 ' + (event.abilityName || 'Master') + ': revives con ' + reviveHP + ' HP');
+          } else if (this.charSvc.isDead()) {
             this.charSvc.showToast('☠️ Estas muerto: la curacion no tiene efecto. Usa Full Rest para revivir.');
             this.incomingMasterMsg.set('☠️ ' + (event.abilityName || 'Master') + ': curacion ignorada, estas muerto');
           } else {
