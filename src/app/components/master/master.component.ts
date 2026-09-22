@@ -119,6 +119,7 @@ export class MasterComponent implements OnInit {
   firebaseConnected = signal(false);
   monsterIdCounter = signal(1);
   selectedNpc = signal('');
+  encounterDifficulty = signal<'relaxed' | 'standard' | 'challenging'>('standard');
   sendTargetName = signal('');
   sendAll = signal(false);
   sendAmount = signal<number | null>(null);
@@ -860,6 +861,11 @@ export class MasterComponent implements OnInit {
     if (!key) {
       return;
     }
+    if (key === 'clock_encounter') {
+      this.selectedNpc.set('');
+      this.addClockEncounter();
+      return;
+    }
     const npc = NPC_REGISTRY[key];
     if (!npc) {
       return;
@@ -892,6 +898,85 @@ export class MasterComponent implements OnInit {
     this.selectedNpc.set('');
     this.saveMonsters();
     this.showToast(npc.name + ' ' + this.trSvc.t('npc_added_msg'));
+  }
+
+  addClockEncounter() {
+    const difficulty = this.encounterDifficulty();
+    const config = {
+      relaxed: { hp: 0.8, armor: 0.8, res: 0.8, dmg: 0.8 },
+      standard: { hp: 1, armor: 1, res: 1, dmg: 1 },
+      challenging: { hp: 1, armor: 1, res: 1, dmg: 1 },
+    }[difficulty];
+    this.buildClockMonster('clock_head_boss', config, difficulty);
+    this.buildClockMonster('clock_hand_left', config, difficulty);
+    this.buildClockMonster('clock_hand_right', config, difficulty);
+    const add = NPC_REGISTRY['clock_add'];
+    if (add) {
+      const addCount = difficulty === 'challenging' ? 2 : 1;
+      for (let i = 0; i < addCount; i++) {
+        const id = this.monsterIdCounter();
+        this.monsterIdCounter.set(id + 1);
+        this.monsters.update((monsters) => [
+          ...monsters,
+          { ...this.buildMonster(id, add, add.hp, add.armor, add.magicResist ?? null, 1, difficulty, false), symbol: nextFreeSymbol(monsters) },
+        ]);
+      }
+    }
+    this.saveMonsters();
+    this.showToast('Encuentro: Cabeza del Reloj (' + difficulty + ') añadido');
+  }
+
+  buildClockMonster(npcKey: string, config: { hp: number; armor: number; res: number; dmg: number }, difficulty: string) {
+    const npc = NPC_REGISTRY[npcKey];
+    if (!npc) {
+      return;
+    }
+    const id = this.monsterIdCounter();
+    this.monsterIdCounter.set(id + 1);
+    const { hp, armor, magicResist, dmgMult, isElite } = {
+      hp: Math.round(npc.hp * config.hp),
+      armor: Math.round(npc.armor * config.armor),
+      magicResist: npc.magicResist === null || npc.magicResist === undefined ? null : Math.round(npc.magicResist * config.res),
+      dmgMult: config.dmg,
+      isElite: npc.isElite || false,
+    };
+    this.monsters.update((monsters) => [
+      ...monsters,
+      { ...this.buildMonster(id, npc, hp, armor, magicResist, dmgMult, difficulty, isElite), symbol: nextFreeSymbol(monsters) },
+    ]);
+  }
+
+  buildMonster(
+    id: number,
+    npc: Npc,
+    hp: number,
+    armor: number,
+    magicResist: number | null,
+    dmgMult: number,
+    difficulty: string,
+    isElite: boolean,
+  ): Monster {
+    return {
+      id,
+      name: '[' + difficulty + '] ' + npc.name,
+      icon: null,
+      imageUrl: npc.imageUrl || null,
+      level: npc.level,
+      maxHP: hp,
+      currentHP: hp,
+      armor,
+      isElite,
+      magicResist,
+      attacks: npc.attacks.map((a) => ({
+        name: a.name,
+        min: Math.round(a.minDamage * dmgMult),
+        max: Math.round(a.maxDamage * dmgMult),
+        inflictsEffects: a.inflictsEffects || undefined,
+        isHeal: a.isHeal || undefined,
+        aoe: a.aoe || undefined,
+        damageType: a.damageType || undefined,
+      })),
+    };
   }
 
   removeMonster(id: number) {
