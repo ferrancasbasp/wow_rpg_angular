@@ -123,6 +123,7 @@ export class MasterComponent implements OnInit {
   sendTargetName = signal('');
   sendAll = signal(false);
   sendAmount = signal<number | null>(null);
+  reviveAmount = signal<number>(200);
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
   knownPlayers = signal<string[]>([]);
@@ -1229,6 +1230,21 @@ export class MasterComponent implements OnInit {
     this.showToast(`DoT ${dmg}/t · ${dur}t → ${label}`);
     this.dotAmount.set(null);
     this.dotDuration.set(null);
+  }
+
+  revivePlayer(name: string) {
+    const amount = this.reviveAmount();
+    if (!amount || amount <= 0) { this.showToast('Inroduce la vida del rez'); return; }
+    console.log('[MASTER] revivir a', name, 'con', amount, 'HP');
+    this.firebase.pushData('playerEvents', {
+      target: name,
+      type: 'revive',
+      abilityName: 'Raise',
+      amount,
+      timestamp: Date.now(),
+    });
+    this.sendLog.update(log => [`${name}: rez +${amount} HP`, ...log].slice(0, 8));
+    this.showToast(`🌿 Rez → ${name}: +${amount} HP`);
   }
 
   quickSendDirect(type: 'heal' | 'damage') {
