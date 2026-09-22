@@ -436,6 +436,43 @@
       gap: 6px;
     }
 
+    .party-rez {
+      border: 1px solid #4a9a4a;
+      background: rgba(20, 80, 20, 0.55);
+      color: #a5e6a5;
+      font-size: 11px;
+      line-height: 1;
+      padding: 2px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .party-rez:hover {
+      background: rgba(40, 140, 40, 0.85);
+      color: #fff;
+    }
+
+    .revive-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .revive-input {
+      width: 64px;
+      background: var(--bg-input);
+      border: 1px solid var(--gold-dark);
+      color: var(--text);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .revive-label {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
     .party-del {
       border: 1px solid var(--gold-dark);
       background: rgba(0, 0, 0, 0.55);

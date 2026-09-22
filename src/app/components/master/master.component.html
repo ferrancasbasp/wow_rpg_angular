@@ -306,6 +306,10 @@
           @if (partyMembers().length > 0) {
             <div class="party-section">
               <div class="party-title">👥 {{ trSvc.t('party') }}</div>
+                    <div class="revive-controls">
+                      <input class="revive-input" type="number" min="1" [value]="reviveAmount()" (input)="reviveAmount.set(+$any($event.target).value || 200)" title="Vida del rez" />
+                      <span class="revive-label">HP rez</span>
+                    </div>
               <div class="party-list">
                 @for (p of partyMembers(); track p.name) {
                   <div class="party-card" [class.party-targeting]="isPlayerTargeting()" (click)="onPlayerChipClick(p.name)">
@@ -315,6 +319,7 @@
                         @if (p.level) {
                           <span class="party-level">Nv. {{ p.level }}</span>
                         }
+                        <button class="party-rez" title="Revivir" (click)="revivePlayer(p.name); $event.stopPropagation()">🌿</button>
                         <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name); $event.stopPropagation()">✕</button>
                       </span>
                     </div>
