@@ -13,21 +13,45 @@
             <button class="clear-btn small" (click)="clearPlayers()">{{ trSvc.t("clear") }}</button>
           }
         </div>
-        <div class="panel-body">          @if (knownPlayers().length > 0) {
-            <div class="player-chips" [class.targeting]="isPlayerTargeting()">
-              @for (name of knownPlayers(); track name) {
-                <button
-                  class="player-chip"
-                  [class.targeting-chip]="isPlayerTargeting()"
-                  [class.active]="sendTargetName() === name && !sendAll()"
-                  (click)="onPlayerChipClick(name)"
-                >{{ name }}</button>
+        <div class="panel-body">          @if (partyMembers().length > 0) {
+            <div class="party-list">
+              @for (p of partyMembers(); track p.name) {
+                <div
+                  class="party-card"
+                  [class.party-targeting]="isPlayerTargeting()"
+                  [class.active]="sendTargetName() === p.name && !sendAll()"
+                  (click)="onPlayerChipClick(p.name)"
+                >
+                  <div class="party-header">
+                    <span class="party-name">{{ p.name }}</span>
+                    <span class="party-header-right">
+                      @if (p.level) {
+                        <span class="party-level">Nv. {{ p.level }}</span>
+                      }
+                      <button class="party-rez" title="Revivir" (click)="revivePlayer(p.name); $event.stopPropagation()">🌿</button>
+                      <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name); $event.stopPropagation()">✕</button>
+                    </span>
+                  </div>
+                  <div class="party-hp-bar">
+                    <div
+                      class="party-hp-fill"
+                      [class.low]="partyHPPercent(p) > 25 && partyHPPercent(p) <= 50"
+                      [class.critical]="partyHPPercent(p) <= 25"
+                      [style.width]="partyHPPercent(p) + '%'"
+                    ></div>
+                    <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
+                  </div>
+                </div>
               }
               <button
                 class="player-chip all-chip"
                 [class.active]="sendAll()"
                 (click)="sendAll.set(!sendAll())"
               >All</button>
+              <div class="revive-controls">
+                <input class="revive-input" type="number" min="1" [value]="reviveAmount()" (input)="reviveAmount.set(+$any($event.target).value || 200)" title="Vida del rez" />
+                <span class="revive-label">HP rez</span>
+              </div>
             </div>
           } @else {
             <div class="damage-empty" style="margin-bottom: 8px;">{{ trSvc.t('players_appear') }}</div>
@@ -262,41 +286,6 @@
             </div>
           } @else {
             <div class="damage-empty">{{ trSvc.t('no_monsters') }}</div>
-          }
-
-          @if (partyMembers().length > 0) {
-            <div class="party-section">
-              <div class="party-title">👥 {{ trSvc.t('party') }}</div>
-                    <div class="revive-controls">
-                      <input class="revive-input" type="number" min="1" [value]="reviveAmount()" (input)="reviveAmount.set(+$any($event.target).value || 200)" title="Vida del rez" />
-                      <span class="revive-label">HP rez</span>
-                    </div>
-              <div class="party-list">
-                @for (p of partyMembers(); track p.name) {
-                  <div class="party-card" [class.party-targeting]="isPlayerTargeting()" (click)="onPlayerChipClick(p.name)">
-                    <div class="party-header">
-                      <span class="party-name">{{ p.name }}</span>
-                      <span class="party-header-right">
-                        @if (p.level) {
-                          <span class="party-level">Nv. {{ p.level }}</span>
-                        }
-                        <button class="party-rez" title="Revivir" (click)="revivePlayer(p.name); $event.stopPropagation()">🌿</button>
-                        <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name); $event.stopPropagation()">✕</button>
-                      </span>
-                    </div>
-                    <div class="party-hp-bar">
-                      <div
-                        class="party-hp-fill"
-                        [class.low]="partyHPPercent(p) > 25 && partyHPPercent(p) <= 50"
-                        [class.critical]="partyHPPercent(p) <= 25"
-                        [style.width]="partyHPPercent(p) + '%'"
-                      ></div>
-                      <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
           }
 
           @if (savedCharacters().length > 0) {
