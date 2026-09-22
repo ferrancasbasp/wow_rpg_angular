@@ -258,33 +258,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
             ],
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
-        } else if (event.type === 'revive') {
-          console.log('[PLAYER-REVIVE] recibido', event, 'hpActual=', this.charSvc.hpActual(), 'muerto=', this.charSvc.isDead());
-          if (this.charSvc.hpActual() > 0) {
-            this.incomingMasterMsg.set('⚠️ ' + (event.abilityName || 'Master') + ': revive ignorado, no estas muerto');
-          } else {
-            const reviveHP = Math.max(1, event.amount || 200);
-            this.charSvc.character.update(c => ({ ...c, currentHP: reviveHP }));
-            let buffText = '';
-            if (event.buffAp || event.buffSp) {
-              const dur = event.buffDuration || 2;
-              const nameBase = event.abilityName || 'Revive';
-              const buffs = (this.charSvc.character().activeEffects || [])
-                .filter((e: any) => e.name === nameBase + ' (AP)' || e.name === nameBase + ' (SP)');
-              this.charSvc.character.update(c => ({
-                ...c,
-                activeEffects: [
-                  ...(c.activeEffects || []).filter((e: any) => !buffs.includes(e)),
-                  ...(event.buffAp ? [{ id: Date.now() + Math.random(), type: 'buff' as const, name: nameBase + ' (AP)', target: 'attackPower', value: event.buffAp, duration: dur, isPercent: false }] : []),
-                  ...(event.buffSp ? [{ id: Date.now() + Math.random() + 0.001, type: 'buff' as const, name: nameBase + ' (SP)', target: 'spellPower', value: event.buffSp, duration: dur, isPercent: false }] : []),
-                ],
-              }));
-              buffText = ' y +' + event.buffAp + ' AP / +' + event.buffSp + ' SP (' + dur + ' turnos)';
-            }
-            if (this.charSvc.character().classKey === 'valkyrie') this.valkFallen.set(false);
-            this.charSvc.syncPlayerStatus();
-            this.incomingMasterMsg.set('🌿 ' + (event.abilityName || 'Master') + ': revives con ' + reviveHP + ' HP' + buffText);
-          }
         } else if (event.type === 'notice') {
           this.incomingMasterMsg.set('⚠️ ' + (event.message || 'Aviso del master'));
         } else if (event.type === 'hot') {

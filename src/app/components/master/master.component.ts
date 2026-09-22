@@ -122,17 +122,13 @@ export class MasterComponent implements OnInit {
   encounterDifficulty = signal<'relaxed' | 'standard' | 'challenging'>('standard');
   sendTargetName = signal('');
   sendAll = signal(false);
-  sendAmount = signal<number | null>(null);
   reviveAmount = signal<number>(200);
   sendLog = signal<string[]>([]);
   playerTargetName = signal('');
   knownPlayers = signal<string[]>([]);
   partyMembers = signal<PartyMember[]>([]);
   savedCharacters = signal<{ key: string; name: string; classKey: string; level: number; savedAt: number }[]>([]);
-  dotAmount = signal<number | null>(null);
-  dotDuration = signal<number | null>(null);
   xpAmount = signal<number | null>(null);
-  selectedDebuffType = signal<string>('none');
   DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
   pendingMonsterHeal = signal<{ amount: number; sourceName: string; sourceId: number } | null>(null);
@@ -1181,10 +1177,6 @@ export class MasterComponent implements OnInit {
     this.addPresetNpc();
   }
 
-  onDebuffTypeChange(event: Event) {
-    this.selectedDebuffType.set((event.target as HTMLSelectElement).value);
-  }
-
   onDmgInput(monsterId: number, value: number | null) {
     this.dmgInput.update((d) => ({ ...d, [monsterId]: value }));
   }
@@ -1193,43 +1185,6 @@ export class MasterComponent implements OnInit {
     if (this.sendAll()) return [...this.knownPlayers()];
     const t = this.sendTargetName().trim();
     return t ? [t] : [];
-  }
-
-  quickSendDebuff(name: string, targetStat: string, value: number, duration: number) {
-    const targets = this.getSendTargets();
-    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
-    for (const target of targets) {
-      this.firebase.pushData('playerEvents', {
-        target,
-        type: 'buff',
-        effect: { type: 'debuff', name, target: targetStat, value, duration, debuffType: this.selectedDebuffType() },
-        timestamp: Date.now(),
-      });
-    }
-    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
-    this.sendLog.update(log => [`${label}: ${name} (${duration}t)`, ...log].slice(0, 8));
-    this.showToast(`${name} → ${label}`);
-  }
-
-  quickSendDot() {
-    const targets = this.getSendTargets();
-    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
-    const dmg = this.dotAmount();
-    const dur = this.dotDuration() || 3;
-    if (!dmg || dmg <= 0) { this.showToast('Introduce danno/turno'); return; }
-    for (const target of targets) {
-      this.firebase.pushData('playerEvents', {
-        target,
-        type: 'buff',
-        effect: { type: 'dot', name: 'DoT del Master', target: 'hp', value: dmg, duration: dur, debuffType: this.selectedDebuffType() },
-        timestamp: Date.now(),
-      });
-    }
-    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
-    this.sendLog.update(log => [`${label}: DoT ${dmg}/t · ${dur}t`, ...log].slice(0, 8));
-    this.showToast(`DoT ${dmg}/t · ${dur}t → ${label}`);
-    this.dotAmount.set(null);
-    this.dotDuration.set(null);
   }
 
   revivePlayer(name: string) {
@@ -1246,26 +1201,6 @@ export class MasterComponent implements OnInit {
     });
     this.sendLog.update(log => [`${name}: rez +${amount} HP`, ...log].slice(0, 8));
     this.showToast(`🌿 Rez → ${name}: +${amount} HP`);
-  }
-
-  quickSendDirect(type: 'heal' | 'damage') {
-    const targets = this.getSendTargets();
-    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
-    const amount = this.sendAmount();
-    if (!amount || amount <= 0) { this.showToast('Introduce una cantidad'); return; }
-    for (const target of targets) {
-      this.firebase.pushData('playerEvents', {
-        target,
-        type,
-        amount,
-        timestamp: Date.now(),
-      });
-    }
-    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
-    const hpLabel = type === 'heal' ? '+' + amount : '-' + amount;
-    this.sendLog.update(log => [`${label}: ${hpLabel} HP`, ...log].slice(0, 8));
-    this.showToast(`${hpLabel} HP → ${label}`);
-    this.sendAmount.set(null);
   }
 
   sendXP() {

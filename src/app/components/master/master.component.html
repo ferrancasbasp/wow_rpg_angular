@@ -36,45 +36,6 @@
           @if (!isPlayerTargeting() && (sendTargetName() || sendAll())) {
             <div class="quick-effects">
               <div class="quick-effect-group">
-                <span class="quick-label">{{ trSvc.t('debuffs') }}</span>
-                <div class="quick-btns">
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Stun', 'stunned', 0, 2)">Stun</button>
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Silence', 'silenced', 0, 3)">Silence</button>
-                  <button class="quick-btn debuff-btn" (click)="quickSendDebuff('Slow', 'slowed', 0, 4)">Slow</button>
-                </div>
-                <div class="debuff-type-row">
-                  <span class="debuff-type-label">{{ trSvc.t('type') }}</span>
-                  <select class="debuff-type-select" [value]="selectedDebuffType()" (change)="onDebuffTypeChange($event)">
-                    <option value="none">{{ trSvc.t('no_type') }}</option>
-                    <option value="disease">{{ trSvc.t('disease') }}</option>
-                    <option value="poison">{{ trSvc.t('poison_type') }}</option>
-                    <option value="magic">{{ trSvc.t('magic_type') }}</option>
-                    <option value="curse">{{ trSvc.t('curse_type') }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="quick-two-col">
-                <div class="quick-effect-group">
-                  <span class="quick-label">DoT</span>
-                  <div class="quick-btns">
-                    <input type="number" class="dot-input" placeholder="Danno/turno" min="1"
-                      [value]="dotAmount() || ''" (input)="dotAmount.set($any($event.target).valueAsNumber || null)" />
-                    <input type="number" class="dot-input small" placeholder="Turnos" min="1"
-                      [value]="dotDuration() || ''" (input)="dotDuration.set($any($event.target).valueAsNumber || null)" />
-                    <button class="quick-btn dot-btn" (click)="quickSendDot()">DoT</button>
-                  </div>
-                </div>
-                <div class="quick-effect-group">
-                  <span class="quick-label">{{ trSvc.t('direct') }}</span>
-                  <div class="quick-btns">
-                    <input type="number" class="dot-input" placeholder="Cantidad" min="1"
-                      [value]="sendAmount() || ''" (input)="sendAmount.set($any($event.target).valueAsNumber || null)" />
-                    <button class="quick-btn heal-btn" (click)="quickSendDirect('heal')">{{ trSvc.t('heal_btn') }}</button>
-                    <button class="quick-btn dmg-btn" (click)="quickSendDirect('damage')">{{ trSvc.t('damage_btn') }}</button>
-                  </div>
-                </div>
-              </div>
-              <div class="quick-effect-group">
                 <span class="quick-label">XP / Nivel</span>
                 <div class="quick-btns">
                   <input type="number" class="dot-input" placeholder="XP" min="1"
