@@ -1045,26 +1045,12 @@
       padding-top: 10px;
     }
 
-    .quick-two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
     .quick-effect-group {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-
-    .debuff-type-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
-    .debuff-type-label { font-size: 11px; color: var(--text-dim); }
-    .debuff-type-select {
-      background: var(--bg-input); border: 1px solid var(--gold-dark); border-radius: 4px;
-      color: var(--text); font-size: 11px; padding: 2px 6px; cursor: pointer;
-    }
-    .debuff-type-select:focus { border-color: var(--gold); }
 
     .quick-label {
       font-family: 'Cinzel', serif;
@@ -1094,18 +1080,6 @@
       color: #fff;
     }
 
-    .debuff-btn { background: linear-gradient(135deg, #8a2a2a, #c45151); }
-    .debuff-btn:hover { background: linear-gradient(135deg, #a33a3a, #d46060); }
-
-    .dot-btn { background: linear-gradient(135deg, #6a2a6a, #9a4a9a); }
-    .dot-btn:hover { background: linear-gradient(135deg, #7a3a7a, #aa5aaa); }
-
-    .heal-btn { background: linear-gradient(135deg, #2a6a2a, #4a9a4a); }
-    .heal-btn:hover { background: linear-gradient(135deg, #3a7a3a, #5aaa5a); }
-
-    .dmg-btn { background: linear-gradient(135deg, #6a3a1a, #c47a3a); }
-    .dmg-btn:hover { background: linear-gradient(135deg, #7a4a2a, #d48a4a); }
-
     .xp-btn { background: linear-gradient(135deg, #6a2a8a, #9a4aba); }
     .xp-btn:hover { background: linear-gradient(135deg, #7a3a9a, #aa5aca); }
 
@@ -1121,7 +1095,6 @@
       outline: none;
     }
 
-    .dot-input.small { width: 60px; }
     .dot-input:focus { border-color: var(--gold); }
 
     .assign-player-btn {
