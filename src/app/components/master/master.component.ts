@@ -233,7 +233,11 @@ export class MasterComponent implements OnInit {
         } else {
           this.pendingEvents.update((events) => [...events, event]);
           if (event.damageType === 'rebirth' || ((event.damageType === 'heal' || event.damageType === 'buff') && !event.aoe)) {
-            this.selectedEventId.set(event.id);
+            const currentId = this.selectedEventId();
+            const currentEvent = currentId !== null ? this.getEvent(currentId) : null;
+            if (currentId === null || !currentEvent || currentEvent.assigned) {
+              this.selectedEventId.set(event.id);
+            }
           }
           if (event.symbol !== null && event.symbol !== undefined && !isHealOrBuff && !event.aoe && !this.aliveMonsterBySymbol(event.symbol)) {
             const symName = symbolIconOf(event.symbol) || 'marcador';
@@ -357,6 +361,10 @@ export class MasterComponent implements OnInit {
     }
     const event = this.getEvent(eventId);
     if (!event || event.assigned) {
+      return;
+    }
+    if (event.damageType === 'heal' || event.damageType === 'buff' || event.damageType === 'rebirth') {
+      this.showToast(event.ability + ': asigna el objetivo a un JUGADOR, no a un enemigo');
       return;
     }
     if (event.aoe) {
