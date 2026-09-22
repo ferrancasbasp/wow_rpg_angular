@@ -113,6 +113,42 @@ export class CharacterService {
 
   addTurnDamage(amount: number) {
     this.turnDamage.update(n => n + amount);
+    this.persistTurnState();
+  }
+
+  persistTurnState() {
+    if (this.simMode()) return;
+    try {
+      localStorage.setItem('wow_turn_state', JSON.stringify({
+        _name: (this.character().name || '').trim(),
+        turn: this.turnNumber(),
+        turnDamage: this.turnDamage(),
+        actionsUsed: this.actionsUsed(),
+        stamp: Date.now(),
+      }));
+    } catch {
+    }
+  }
+
+  restoreTurnState() {
+    try {
+      const raw = localStorage.getItem('wow_turn_state');
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap || typeof snap.turn !== 'number') return;
+      if (snap._name && snap._name !== (this.character().name || '').trim()) {
+        localStorage.removeItem('wow_turn_state');
+        return;
+      }
+      if (this.turnNumber() > snap.turn) {
+        localStorage.removeItem('wow_turn_state');
+        return;
+      }
+      this.turnNumber.set(snap.turn);
+      this.turnDamage.set(snap.turnDamage || 0);
+      this.actionsUsed.set(snap.actionsUsed || 0);
+    } catch {
+    }
   }
 
   maxActions = computed<number>(() => {
@@ -129,6 +165,7 @@ export class CharacterService {
 
   useAction(cost: number) {
     this.actionsUsed.update(n => n + cost);
+    this.persistTurnState();
   }
   readonly warriorStance = signal<string>('battle');
   readonly warriorWeaponMode = signal<string>('twohanded');
@@ -1526,6 +1563,7 @@ export class CharacterService {
     if (!parsed.musicalNotes) parsed.musicalNotes = [];
     this.character.set(parsed);
     this.applyKnownAvatar();
+    this.restoreTurnState();
     return true;
   }
 
@@ -1970,6 +2008,7 @@ export class CharacterService {
     this.turnNumber.update(n => n + 1);
     this.turnDamage.set(0);
     this.actionsUsed.set(0);
+    this.persistTurnState();
     if (this.resourceConfig().type === 'energy') {
       const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 4))) + (this.hasEffect('blade_flurry') ? 10 : 0);
       this.character.update(c => {
