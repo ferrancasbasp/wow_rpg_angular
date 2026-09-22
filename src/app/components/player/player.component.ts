@@ -718,7 +718,17 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const healMin = healSpell?.currentMin || 0;
     const healMax = healSpell?.currentMax || 0;
     const dmg = Math.max(1, Math.round((smiteMin + Math.random() * (smiteMax - smiteMin)) / 3));
-    const heal = Math.max(1, Math.round((healMin + Math.random() * (healMax - healMin)) / 2));
+    let heal = Math.max(1, Math.round((healMin + Math.random() * (healMax - healMin)) / 2));
+    const hfRank = this.charSvc.talentRank('healing_focus');
+    if (hfRank > 0) heal = Math.round(heal * (1 + hfRank * 0.05));
+    const presRank = this.charSvc.talentRank('preservation');
+    if (presRank > 0) heal = Math.round(heal * (1 + presRank * 0.10));
+    let novaCrit = false;
+    const novaCritChance = parseFloat(this.charSvc.spellCrit()) + this.charSvc.talentRank('illumination') * 2;
+    if (Math.random() * 100 < novaCritChance) {
+      novaCrit = true;
+      heal = Math.round(heal * 1.5);
+    }
     const myName = this.charSvc.character().name || 'Jugador';
     const turn = this.charSvc.turnNumber();
     const now = Date.now();
@@ -750,7 +760,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: now,
       assigned: false,
     });
-    this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos (1/3 de Smite) y ' + heal + ' cura a todos los aliados (50% de Heal) — 2 eventos AOE al Master');
+    this.charSvc.showToast(ability.name + ': ' + dmg + ' dano a todos los enemigos (1/3 de Smite) y ' + heal + ' cura a todos los aliados (50% de Heal)' + (novaCrit ? ' ¡CRITICO!' : '') + ' — 2 eventos AOE al Master');
   }
 
   castCallFromValhalla(ability: any) {
