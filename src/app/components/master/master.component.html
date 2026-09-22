@@ -136,11 +136,24 @@
 
           <div class="npc-preset-row">
             <select
+              [value]="encounterDifficulty()"
+              (change)="encounterDifficulty.set($any($event.target).value)"
+              class="add-monster-input npc-difficulty-select"
+              title="Dificultad del encuentro (aplica al añadir el jefe en grupo)"
+            >
+              <option value="relaxed">Dificultad: Relajado</option>
+              <option value="standard">Dificultad: Estándar</option>
+              <option value="challenging">Dificultad: Desafiante</option>
+            </select>
+            <select
               [value]="selectedNpc()"
               (change)="onNpcSelect($event)"
               class="add-monster-input"
             >
               <option value="">+ Añadir pregenerado...</option>
+              <optgroup label="Encuentros">
+                <option value="clock_encounter">Cabeza del Reloj — Encuentro (jefe + manos + adds)</option>
+              </optgroup>
               @for (zone of npcZones(); track zone) {
                 <optgroup [label]="zone">
                   @for (entry of npcByZone()[zone]; track entry.key) {
