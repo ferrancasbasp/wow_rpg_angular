@@ -237,6 +237,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }));
           this.incomingMasterMsg.set('🛡️ ' + (event.abilityName || 'Master') + ': ' + event.amount + ' absorcion');
         } else if (event.type === 'revive') {
+          console.log('[PLAYER-REVIVE] recibido', event, 'hpActual=', this.charSvc.hpActual(), 'muerto=', this.charSvc.isDead());
           if (this.charSvc.hpActual() > 0) {
             this.incomingMasterMsg.set('⚠️ ' + (event.abilityName || 'Master') + ': revive ignorado, no estas muerto');
           } else {
@@ -1414,7 +1415,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   onEndTurnClick() {
     const remaining = this.charSvc.maxActions() - this.charSvc.actionsUsed();
-    if (remaining > 0 && this.charSvc.turnDamage() > 0) {
+    if (remaining > 0) {
       this.pendingEndTurn.set(true);
       return;
     }
@@ -3631,6 +3632,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.turnNumber.set(1);
     this.charSvc.turnDamage.set(0);
     this.charSvc.actionsUsed.set(0);
+    this.charSvc.persistTurnState();
     this.charSvc.petRest();
     if (this.charSvc.character().classKey === 'bard') {
       const ability = this.charSvc.classConfig().abilities.find(a => a.id === 'rested_inspiration');
