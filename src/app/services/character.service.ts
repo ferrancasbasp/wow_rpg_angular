@@ -1378,7 +1378,7 @@ export class CharacterService {
       improved_staccato: `Staccato: +${rank * 5}% danyo, −${rank * 10}% mana`,
       quick_fingers: `Esquiva: +${rank * 2}%`,
       resonance: `Curación: +${rank * 5}%`,
-      improved_crescendo: `Crescendo self-buff: ${rank * 10}% del valor enviado`,
+      improved_crescendo: `Crescendo self-buff: ${rank * 20}% del valor enviado`,
       improved_vivace: `Vivace: +${rank * 10}% curación · −${rank * 10}% mana`,
       improved_fermata: `Fermata: +${rank * 14} armadura tras lanzar`,
       maestro: `Remates: ${Math.min(100, rank * 35)}% prob. devolver 1 accion`,

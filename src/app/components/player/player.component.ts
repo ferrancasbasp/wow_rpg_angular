@@ -393,10 +393,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const minD = Math.round(dr.min + sp * ratio);
     const maxD = Math.round(dr.max + sp * ratio);
     let dmg = minD + Math.floor(Math.random() * (maxD - minD + 1));
-    const dsRank = this.charSvc.talentRank('destruction_specialization');
-    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit()) + dsRank * 5) {
+    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
       let critMult = 1.5;
-      if (dsRank > 0) critMult = 1.5 + dsRank * 0.10;
       if (this.charSvc.hasEffect('demonic_form')) critMult = critMult * 1.25;
       dmg = Math.round(dmg * critMult);
     }
@@ -1508,6 +1506,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     this.processTotems(oldTurn);
 
+    if (this.charSvc.character().classKey === 'druid') {
+      const sorRank = this.charSvc.talentRank('stone_of_rhythms');
+      if (sorRank > 0 && (this.charSvc.getSunShards() || 0) > 0 && Math.random() * 100 < sorRank * 15) {
+        const manaGain = Math.round(this.charSvc.maxMana() * 0.10);
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGain),
+          sunShards: (c.sunShards || 0) - 1,
+        }));
+        this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (10%)');
+      }
+    }
+
     this.charSvc.nextTurn();
     this.charSvc.syncPlayerStatus();
     const resType = this.charSvc.resourceConfig().type;
@@ -2099,6 +2110,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const wardedRank = this.charSvc.talentRank('warded');
       if (wardedRank > 0) roll = Math.round(roll * (1 + wardedRank * 0.10));
     }
+    if (ability.id === 'cone_of_cold' && this.charSvc.character().classKey === 'mage') {
+      const iccRank = this.charSvc.talentRank('improved_cone_of_cold');
+      if (iccRank > 0) roll = Math.round(roll * (1 + iccRank * 0.15));
+    }
     let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
     if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
       critChance += this.charSvc.talentRank('magic_resistance') * 2;
@@ -2161,19 +2176,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (this.charSvc.hasEffect('recklessness')) {
         critMult = critMult * 1.20;
       }
-    if (this.charSvc.character().classKey === 'druid') {
-      const sorRank = this.charSvc.talentRank('stone_of_rhythms');
-      if (sorRank > 0 && (this.charSvc.getSunShards() || 0) > 0 && Math.random() * 100 < sorRank * 15) {
-        const manaGain = Math.round(this.charSvc.maxMana() * 0.10);
-        this.charSvc.character.update(c => ({
-          ...c,
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGain),
-          sunShards: (c.sunShards || 0) - 1,
-        }));
-        this.charSvc.showToast('🎶 Stone of Rhythms: −1 Sun Shard · +' + manaGain + ' maná (10%)');
-      }
-    }
-
     if (this.charSvc.hasEffect('arcane_power')) {
         critMult = critMult * 1.25;
       }
@@ -2578,7 +2580,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const hgRank = this.charSvc.talentRank('healing_grace');
         if (hgRank > 0) {
           healBonus *= (1 + hgRank * 0.10);
-          if (Math.random() * 100 < hgRank * 15) {
+          if (Math.random() * 100 < hgRank * 20) {
             const hgMax = this.charSvc.getMaelstromMax();
             this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(hgMax, (c.comboPoints || 0) + 1) }));
             healGraceText = ' · +1 Maelstorm';
@@ -2824,7 +2826,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.addSpearCharge(gained);
           valkChargeText = ' · ⚔️ Lanza +' + gained;
         } else if (ability.id === 'shield_bash') {
-          const gained = Math.round(roll * 0.80 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult());
+          const gained = Math.round(roll * 1.0 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult());
           this.charSvc.addShieldCharge(gained);
           const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
           const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
@@ -3538,7 +3540,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }));
           const manaHeal = Math.round(restoredMana * 0.10 * ifRank);
           if (manaHeal > 0) this.charSvc.adjustHP(manaHeal);
-          this.charSvc.showToast('Improved Fermata: +' + armorGain + ' armadura (4t)' + (manaHeal > 0 ? ' · +' + manaHeal + ' vida (30% del mana al maximo)' : ''));
+          this.charSvc.showToast('Improved Fermata: +' + armorGain + ' armadura (4t)' + (manaHeal > 0 ? ' · +' + manaHeal + ' vida (10%/punto del mana restaurado)' : ''));
         }
       }
     }
@@ -3577,7 +3579,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const scaledEffects = ability.inflictsEffects.map((eff: any) => ({
         ...eff,
         value: ability.id === 'diminuendo' && idRank > 0
-          ? Math.round((ability.currentBuffValue || eff.value) * (1 + idRank * 0.15))
+          ? Math.round((ability.currentBuffValue || eff.value) * (1 + idRank * 0.20))
           : (ability.currentBuffValue || eff.value),
       }));
       this.charSvc.sendDamageEvent({
@@ -3599,7 +3601,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const wasDead = this.charSvc.isDead();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      const pocket = this.charSvc.talentRank('pocket_shards');
+      const pocket = this.charSvc.talentRank('pocket_shards') > 0 ? 1 : 0;
       return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: pocket, currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
     const revivePrefix = wasDead ? 'Full Rest: revives! ' : 'Full Rest: ';
