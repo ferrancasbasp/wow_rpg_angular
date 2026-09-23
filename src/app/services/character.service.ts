@@ -796,7 +796,7 @@ export class CharacterService {
         maxVal = Math.round(maxVal * ihsBonus);
       }
       if (['backstab', 'garrote', 'ambush'].includes(a.id)) {
-        const oppBonus = 1 + this.talentRank('opportunity') * 0.06;
+        const oppBonus = 1 + this.talentRank('opportunity') * 0.03;
         minVal = Math.round(minVal * oppBonus);
         maxVal = Math.round(maxVal * oppBonus);
       }
@@ -1052,12 +1052,13 @@ export class CharacterService {
     let cost = ability.costEnergy || 0;
     if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 4;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
+    if (ability.id === 'sinister_strike') cost -= this.talentRank('initiative') * 3;
     return Math.max(0, cost);
   }
 
   deathlinessRefund(cost: number): number {
     if (this.talentRank('deathliness') <= 0 || cost <= 0) return 0;
-    return Math.floor(cost * 0.2 + Math.random() * (cost * 0.5 - cost * 0.2));
+    return Math.floor(cost * 0.2 + Math.random() * (cost * 0.4 - cost * 0.2));
   }
 
   evasionEnergyGain(rank: number): number {
@@ -1160,7 +1161,7 @@ export class CharacterService {
     if (!effects) return 0;
     for (const eff of effects) {
       if (eff.type === 'buff' && eff.target === 'poisonDamage') {
-        return eff.value * (this.hasEffect('poison_mastery') ? 2 : 1);
+        return eff.value * (this.hasEffect('poison_mastery') ? 1.5 : 1);
       }
     }
     return 0;
@@ -1171,7 +1172,7 @@ export class CharacterService {
     if (!effects) return 0;
     for (const eff of effects) {
       if (eff.type === 'buff' && eff.target === 'leechPoison') {
-        return eff.value * (this.hasEffect('poison_mastery') ? 3 : 1);
+        return eff.value * (this.hasEffect('poison_mastery') ? 1.5 : 1);
       }
     }
     return 0;
@@ -1371,20 +1372,20 @@ export class CharacterService {
       deep_wounds: `Críticos: DoT ${rank * 10}% del daño crítico (3 turnos)`,
       battle_flow: `Al cambiar de postura: beneficio previo ${rank} turno${rank > 1 ? 's' : ''} · sin doble postura`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
-      vitality: `Regen energía: +${(rank * (50 / 4)).toFixed(1)}%`,
+      vitality: `Regen energía: +${rank * 10}%`,
       improved_energetic_attacks: `Basic Attack: +${rank}% crítico, energía pasiva +${rank * 50}% (2→${2 + rank * 1} base, 4→${4 + rank * 2} crit)`,
       ruthlessness: `Coste finishers: −${rank * 4} energía`,
       finishing_touch: `Tras finisher: +1 combo · +15 energía`,
       lethality: `Daño crítico: +${rank * 5}%`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
       improved_slice_and_dice: `Slice and Dice: +${rank * 1} turnos duración`,
-      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 6}%`,
+      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 3}%`,
       precision: `Crítico físico: +${rank * 2}%`,
       endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''} · Esquivar: +5-10 energía`,
-      initiative: `Combo extra: ${rank * 10}% prob`,
-      misologist: `Venenos propios: +${rank} turno · Mortal/Vampírico +${rank * 10}% efectividad`,
+      initiative: `Combo extra: ${rank * 12}% prob · Coste Sinister Strike: −${rank * 3} energía`,
+      misologist: `Venenos propios: +${rank} turno · Mortal/Vampírico +${rank * 1}% efectividad`,
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 5}%`,
-      deathliness: `Garrote/Ambush: devuelve 20-50% del coste de energía`,
+      deathliness: `Garrote/Ambush: devuelve 20-40% del coste de energía`,
       healing_focus: `Curación: +${rank * 5}%`,
       illumination: `Healing crit: +${rank * 2}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,
@@ -2010,7 +2011,7 @@ export class CharacterService {
     this.actionsUsed.set(0);
     this.persistTurnState();
     if (this.resourceConfig().type === 'energy') {
-      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * (0.5 / 4))) + (this.hasEffect('blade_flurry') ? 10 : 0);
+      const regen = Math.round((this.resourceConfig().regen || 20) * (1 + this.talentRank('vitality') * 0.1)) + (this.hasEffect('blade_flurry') ? 10 : 0);
       this.character.update(c => {
         c.currentEnergy = Math.min(this.resourceMax(), (c.currentEnergy || 0) + regen);
         return { ...c };
