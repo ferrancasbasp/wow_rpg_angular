@@ -2984,7 +2984,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' ? 1 : 2);
+    const poisonMasteryInstant = ['poison_weapon', 'leeching_poison', 'wound_poison'].includes(ability.id) && this.charSvc.selectedCapstone() === 'poison_mastery';
+    const actionCost = ability.noGcd ? 0 : (ability.castType === 'instant' || poisonMasteryInstant ? 1 : 2);
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
