@@ -796,14 +796,9 @@ export class CharacterService {
         maxVal = Math.round(maxVal * ihsBonus);
       }
       if (['backstab', 'garrote', 'ambush'].includes(a.id)) {
-        const oppBonus = 1 + this.talentRank('opportunity') * 0.05;
+        const oppBonus = 1 + this.talentRank('opportunity') * 0.06;
         minVal = Math.round(minVal * oppBonus);
         maxVal = Math.round(maxVal * oppBonus);
-      }
-      if (a.id === 'basic_attack' && this.character().classKey === 'rogue') {
-        const ebaBonus = 1 + this.talentRank('energetic_basic_attack') * 0.03;
-        minVal = Math.round(minVal * ebaBonus);
-        maxVal = Math.round(maxVal * ebaBonus);
       }
       if (['sinister_strike', 'eviscerate'].includes(a.id)) {
         const aggressionBonus = 1 + this.talentRank('aggression') * 0.05;
@@ -833,8 +828,7 @@ export class CharacterService {
       const dotRange = a.dotRanges?.find(dr => dr.rank === rank);
       let rendDotMult = 1;
       if (a.id === 'rend') rendDotMult = 1 + this.talentRank('improved_rend') * 0.35;
-      const garroteDotMult = a.id === 'garrote' ? (1 + this.talentRank('improved_garrote') * 0.20) : 1;
-      const dotEffectMult = rendDotMult * garroteDotMult;
+      const dotEffectMult = rendDotMult;
       let hotTick = 0, hotDuration = 0, hotTotal = 0;
       if (a.isHot) {
         const baseDuration = a.hotDuration || 1;
@@ -853,9 +847,6 @@ export class CharacterService {
         dotTotal = minVal;
         if (a.id === 'shadow_word_pain' || a.id === 'devouring_plague') {
           dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_pain') * 0.10));
-        }
-        if (a.id === 'garrote') {
-          dotTotal = Math.round(dotTotal * (1 + this.talentRank('improved_garrote') * 0.20));
         }
         if (a.id === 'flame_shock' && this.character().classKey === 'shaman') {
           const eruptRank = this.talentRank('erupting_lava');
@@ -1061,8 +1052,17 @@ export class CharacterService {
     let cost = ability.costEnergy || 0;
     if (ability.spendsCombo) cost -= this.talentRank('ruthlessness') * 4;
     if (ability.id === 'backstab') cost -= this.talentRank('improved_backstab') * 3;
-    if (ability.id === 'garrote') cost -= this.talentRank('improved_garrote') * 10;
     return Math.max(0, cost);
+  }
+
+  deathlinessRefund(cost: number): number {
+    if (this.talentRank('deathliness') <= 0 || cost <= 0) return 0;
+    return Math.floor(cost * 0.2 + Math.random() * (cost * 0.5 - cost * 0.2));
+  }
+
+  evasionEnergyGain(rank: number): number {
+    if (rank <= 0) return 0;
+    return 5 + Math.floor(Math.random() * 6);
   }
 
   getEffectiveFocusCost(ability: any): number {
@@ -1372,19 +1372,19 @@ export class CharacterService {
       battle_flow: `Al cambiar de postura: beneficio previo ${rank} turno${rank > 1 ? 's' : ''} · sin doble postura`,
       unyielding_strikes: `Basic Attack: ${rank * 4}% prob. acción gratis · +${rank}% crítico`,
       vitality: `Regen energía: +${(rank * (50 / 4)).toFixed(1)}%`,
-      energetic_basic_attack: `Basic Attack: +${rank * 3}% daño, +${rank * 2} energía (+${rank * 4} si crit)`,
+      improved_energetic_attacks: `Basic Attack: +${rank}% crítico, energía pasiva +${rank * 50}% (2→${2 + rank * 1} base, 4→${4 + rank * 2} crit)`,
       ruthlessness: `Coste finishers: −${rank * 4} energía`,
       finishing_touch: `Tras finisher: +1 combo · +15 energía`,
       lethality: `Daño crítico: +${rank * 5}%`,
       improved_backstab: `Coste Backstab: −${rank * 3} energía`,
       improved_slice_and_dice: `Slice and Dice: +${rank * 1} turnos duración`,
-      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 5}%`,
+      opportunity: `Daño Backstab/Garrote/Ambush: +${rank * 6}%`,
       precision: `Crítico físico: +${rank * 2}%`,
-      endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''}`,
+      endurance: `CD Evasión/Sprint: −${rank} turno${rank > 1 ? 's' : ''} · Esquivar: +5-10 energía`,
       initiative: `Combo extra: ${rank * 10}% prob`,
       misologist: `Venenos propios: +${rank} turno · Mortal/Vampírico +${rank * 10}% efectividad`,
       aggression: `Daño Sinister Strike/Eviscerate: +${rank * 5}%`,
-      improved_garrote: `Garrote: +${rank * 20}% daño bleed + silencio`,
+      deathliness: `Garrote/Ambush: devuelve 20-50% del coste de energía`,
       healing_focus: `Curación: +${rank * 5}%`,
       illumination: `Healing crit: +${rank * 2}%`,
       shadow_ally: `Daño sombra: +${rank * 3}%`,

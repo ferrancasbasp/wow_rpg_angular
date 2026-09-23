@@ -132,6 +132,7 @@ export class MasterComponent implements OnInit {
   DEBUFF_TYPES = DEBUFF_TYPES;
   pendingMonsterAttack = signal<{ roll: number; damageType: string; sourceName: string; inflictsEffects: NpcAttackEffect[] | null } | null>(null);
   pendingMonsterHeal = signal<{ amount: number; sourceName: string; sourceId: number } | null>(null);
+  pendingRebirth = signal<{ eventId: string; amount: number; abilityName: string; player: string; buffAp?: number; buffSp?: number; buffDuration?: number } | null>(null);
   damageLog = signal<PlayerDmgLog[]>([]);
   totalDamageDealt = computed(() => this.damageLog().reduce((s, p) => s + p.direct + p.dot, 0));
   maxPlayerDamage = computed(() => Math.max(1, ...this.damageLog().map(p => p.direct + p.dot)));
@@ -178,11 +179,11 @@ export class MasterComponent implements OnInit {
     const eventId = this.selectedEventId();
     if (eventId !== null) {
       const event = this.getEvent(eventId);
-      if (event && !event.assigned && (event.damageType === 'heal' || event.damageType === 'buff' || event.damageType === 'rebirth')) {
+      if (event && !event.assigned && (event.damageType === 'heal' || event.damageType === 'buff')) {
         return true;
       }
     }
-    return this.pendingMonsterAttack() !== null;
+    return this.pendingMonsterAttack() !== null || this.pendingRebirth() !== null;
   });
 
   targetingLabel = computed(() => {
@@ -192,6 +193,8 @@ export class MasterComponent implements OnInit {
     if (atk) return `${atk.sourceName}: ${atk.roll} danno ${atk.damageType === 'physical' ? 'fisico' : 'magico'}`;
     const heal = this.pendingMonsterHeal();
     if (heal) return `Click a un monstruo: +${heal.amount} (${heal.sourceName})`;
+    const rebirth = this.pendingRebirth();
+    if (rebirth) return `🌿 ${rebirth.abilityName} — elige a un jugador caído`;
     return '';
   });
 
@@ -227,9 +230,21 @@ export class MasterComponent implements OnInit {
           : null;
         if (autoTarget) {
           this.applySingleDamage(autoTarget, event);
+        } else if (event.damageType === 'rebirth') {
+          this.pendingRebirth.set({
+            eventId: event.id,
+            amount: event.damage || 200,
+            abilityName: (event.ability || 'Rebirth').replace(' (Revive)', ''),
+            player: event.player || 'Druida',
+            buffAp: event.buffAp,
+            buffSp: event.buffSp,
+            buffDuration: event.buffDuration,
+          });
+          this.selectedEventId.set(null);
+          this.showToast(`🌿 ${event.player || 'Druida'} ha lanzado Rebirth — elige a un jugador caído`);
         } else {
           this.pendingEvents.update((events) => [...events, event]);
-          if (event.damageType === 'rebirth' || ((event.damageType === 'heal' || event.damageType === 'buff') && !event.aoe)) {
+          if ((event.damageType === 'heal' || event.damageType === 'buff') && !event.aoe) {
             const currentId = this.selectedEventId();
             const currentEvent = currentId !== null ? this.getEvent(currentId) : null;
             if (currentId === null || !currentEvent || currentEvent.assigned) {
@@ -259,6 +274,9 @@ export class MasterComponent implements OnInit {
         );
         if (this.selectedEventId() === event.id) {
           this.selectedEventId.set(null);
+        }
+        if (this.pendingRebirth()?.eventId === event.id) {
+          this.pendingRebirth.set(null);
         }
       }
     });
@@ -360,7 +378,7 @@ export class MasterComponent implements OnInit {
     if (!event || event.assigned) {
       return;
     }
-    if (event.damageType === 'heal' || event.damageType === 'buff' || event.damageType === 'rebirth') {
+    if (event.damageType === 'heal' || event.damageType === 'buff') {
       this.showToast(event.ability + ': asigna el objetivo a un JUGADOR, no a un enemigo');
       return;
     }
@@ -1129,6 +1147,27 @@ export class MasterComponent implements OnInit {
   }
 
   onPlayerChipClick(name: string) {
+    const rebirth = this.pendingRebirth();
+    if (rebirth) {
+      this.firebase.pushData('playerEvents', {
+        target: name,
+        type: 'heal',
+        abilityName: rebirth.abilityName,
+        amount: rebirth.amount,
+        ignoreDeath: true,
+        buffAp: rebirth.buffAp,
+        buffSp: rebirth.buffSp,
+        buffDuration: rebirth.buffDuration,
+        timestamp: Date.now(),
+      });
+      this.firebase.setData('damageEvents/' + rebirth.eventId, { assigned: true });
+      this.pendingRebirth.set(null);
+      this.selectedEventId.set(null);
+      const buffText = (rebirth.buffAp || rebirth.buffSp) ? ` +${rebirth.buffAp} AP / +${rebirth.buffSp} SP (${rebirth.buffDuration || 2}t)` : '';
+      this.sendLog.update(log => [`${name}: +${rebirth.amount} HP (${rebirth.abilityName})${buffText}`, ...log].slice(0, 8));
+      this.showToast(`🌿 ${rebirth.abilityName} → ${name}: +${rebirth.amount} HP${buffText}`);
+      return;
+    }
     if (this.isPlayerTargeting()) {
       const event = this.selectedEvent();
       if (event) {
@@ -1277,20 +1316,6 @@ export class MasterComponent implements OnInit {
       });
       this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
       this.sendLog.update(log => [`${target}: +${event.buffValue} ${event.buffStat} (${event.ability.replace(' (Buff)', '')})`, ...log].slice(0, 8));
-    } else if (event.damageType === 'rebirth') {
-      this.firebase.pushData('playerEvents', {
-        target,
-        type: 'heal',
-        abilityName: event.ability.replace(' (Revive)', ''),
-        amount: event.damage,
-        ignoreDeath: true,
-        buffAp: event.buffAp,
-        buffSp: event.buffSp,
-        buffDuration: event.buffDuration,
-        timestamp: Date.now(),
-      });
-      this.showToast(`${event.ability} → ${target}: revive con ${event.damage} HP`);
-      this.sendLog.update(log => [`${target}: +${event.damage} HP (${event.ability.replace(' (Revive)', '')})`, ...log].slice(0, 8));
     } else if (event.damageType === 'heal' && event.aoe) {
       const targets = this.knownPlayers();
       for (const t of targets) {

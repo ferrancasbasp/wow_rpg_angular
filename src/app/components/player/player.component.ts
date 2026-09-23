@@ -1767,18 +1767,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (actionType === 'physical') {
       const evadeChance = this.charSvc.evasion();
       if (Math.random() * 100 < evadeChance) {
-        let rageText = '';
-        if (this.charSvc.resourceConfig().type === 'rage') {
-          const rageGain = this.hitRageGain();
-          const resourceMax = this.charSvc.resourceMax();
-          const resourceActual = this.charSvc.resourceActual();
-          this.charSvc.character.update(c => ({
-            ...c,
-            currentRage: Math.min(resourceMax, resourceActual + rageGain),
-          }));
-          rageText = ' · +' + rageGain + ' ira';
+        let energyText = '';
+        if (this.charSvc.resourceConfig().type === 'energy') {
+          const energyGain = this.charSvc.evasionEnergyGain(this.charSvc.talentRank('endurance'));
+          if (energyGain > 0) {
+            const resourceMax = this.charSvc.resourceMax();
+            this.charSvc.character.update(c => ({
+              ...c,
+              currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + energyGain),
+            }));
+            energyText = ' · +' + energyGain + ' energía';
+          }
         }
-        this.charSvc.showToast(this.trSvc.t('evaded') + rageText);
+        this.charSvc.showToast(this.trSvc.t('evaded') + energyText);
         return;
       }
     }
@@ -2085,6 +2086,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
         ...c,
         currentEnergy: Math.max(0, resourceActual - cost),
       }));
+      let deathlinessText = '';
+      if ((ability.id === 'garrote' || ability.id === 'ambush') && this.charSvc.talentRank('deathliness') > 0) {
+        const refund = this.charSvc.deathlinessRefund(cost);
+        if (refund > 0) {
+          this.charSvc.character.update(c => ({
+            ...c,
+            currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + refund),
+          }));
+          deathlinessText = ' · 💀 +' + refund + ' energía (Deathliness)';
+        }
+      }
+      if (deathlinessText) this.charSvc.showToast(ability.name + deathlinessText);
     } else if (isFocus) {
       this.charSvc.character.update(c => {
         const effects = ability.id === 'aimed_shot'
@@ -2135,6 +2148,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'warrior') {
       critChance += this.charSvc.talentRank('unyielding_strikes') * 1;
+    }
+    if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'rogue') {
+      critChance += this.charSvc.talentRank('improved_energetic_attacks') * 1;
     }
     if (this.charSvc.character().classKey === 'valkyrie') {
       critChance += this.charSvc.talentRank('endurance') * 2;
@@ -2524,27 +2540,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.turnDamage.update(d => d + direct);
         this.charSvc.sendDamageEvent({ ...ability, isDot: false }, direct, 1, 1);
       }
-      const impGarrote = this.charSvc.talentRank('improved_garrote');
-      if (ability.id === 'garrote' && impGarrote > 0) {
-        this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + displayedTotal + ' total) + Silencio' + evText + ' — ' + this.trSvc.t('apply_to_enemy')
-        );
-        this.charSvc.sendDamageEvent(ability, 0, 1, 1);
-        this.charSvc.sendDamageEvent({
-          ...ability,
-          id: ability.id + '_silence',
-          name: ability.name + ' (Silencio)',
-          isDot: false,
-          inflictsEffects: [{ type: 'debuff', name: 'Silencio', target: 'silenced', value: 0, duration: 2, debuffType: 'magic' }],
-        }, 0, 1, 1);
-      } else {
-        this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
-          ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + comboText + sunShardText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
-        );
-        this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
-      }
+      this.charSvc.showToast(
+        ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
+        ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + comboText + sunShardText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
+      );
+      this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
     } else if (ability.type === 'heal' && !ability.isHot) {
       let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.05;
       if (this.charSvc.character().classKey === 'priest') {
@@ -2687,9 +2687,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       }
       if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
-        const ebaRank = this.charSvc.talentRank('energetic_basic_attack');
-        if (ebaRank > 0 && isEnergy) {
-          const energyGen = isCrit ? ebaRank * 4 : ebaRank * 2;
+        if (isEnergy && this.charSvc.hasPassive('energetic_basic_attack')) {
+          const baseGen = isCrit ? 4 : 2;
+          const ieaRank = this.charSvc.talentRank('improved_energetic_attacks');
+          const energyGen = Math.floor(baseGen * (1 + ieaRank * 0.5));
           const resourceMax = this.charSvc.resourceMax();
           this.charSvc.character.update(c => ({
             ...c,
