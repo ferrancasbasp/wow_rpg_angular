@@ -918,9 +918,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (hasWound) {
       effectText = 'Wound: tus ataques además reducen un 25% el daño del enemigo';
     } else if (hasMortal) {
-      effectText = 'Veneno Mortal x2';
+      effectText = 'Veneno Mortal x1.5';
     } else if (hasVamp) {
-      effectText = 'Veneno Vampírico x3';
+      effectText = 'Veneno Vampírico x1.5';
     } else {
       effectText = 'envenena antes tus armas para potenciar el veneno';
     }
@@ -1530,7 +1530,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (resType === 'rage') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn);
     } else if (resType === 'energy') {
-      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * (0.5 / 4))) + (this.charSvc.hasEffect('blade_flurry') ? 10 : 0);
+      const regen = Math.round((this.charSvc.resourceConfig().regen || 20) * (1 + this.charSvc.talentRank('vitality') * 0.1)) + (this.charSvc.hasEffect('blade_flurry') ? 10 : 0);
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · +' + regen + ' ' + this.trSvc.t('energy_regen'));
     } else if (resType === 'focus') {
       this.charSvc.showToast(this.trSvc.t('end_turn') + ' ' + oldTurn + ' · Focus: sin regen');
@@ -2386,7 +2386,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (Math.random() * 100 < comboChance) {
         let comboGen = ability.generatesCombo;
         if (ability.id === 'sinister_strike') {
-          const initChance = this.charSvc.talentRank('initiative') * 10;
+          const initChance = this.charSvc.talentRank('initiative') * 12;
           if (Math.random() * 100 < initChance) comboGen += 1;
         }
         const comboMax = this.charSvc.getMaelstromMax();
@@ -2665,7 +2665,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     } else {
       const poisonDmg = this.charSvc.getPoisonDamage();
       if (poisonDmg > 0 && ability.damageType === 'physical') {
-        roll += poisonDmg;
+        roll += Math.round(poisonDmg);
       }
       let imbueText = '';
       let chainText = '';
@@ -3407,7 +3407,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (misoRank > 0 && ['poisonDamage', 'leechPoison', 'woundPoison'].includes(ability.currentBuffStat)) {
         sndDuration += misoRank;
         if (ability.currentBuffStat !== 'woundPoison') {
-          buffValue = Math.round(buffValue * (1 + misoRank * 0.10));
+          buffValue = Math.round(buffValue * (1 + misoRank * 0.01));
         }
       }
       if (ability.id === 'valk_odins_will') {
