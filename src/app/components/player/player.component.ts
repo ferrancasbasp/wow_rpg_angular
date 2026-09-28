@@ -2317,6 +2317,31 @@ export class PlayerComponent implements OnInit, OnDestroy {
       boostText += ' · +' + inspiration.value + ' daño (Da Capo)';
     }
 
+    const natureBoost = this.charSvc.character().activeEffects?.find(e => e.target === 'nature_boost');
+    let natureBoostText = '';
+    if (natureBoost && ability.type === 'damage' && ability.school === 'Naturaleza') {
+      roll = Math.round(roll * (1 + natureBoost.value / 100));
+      natureBoostText = ' · ⛈️ +' + natureBoost.value + '% Naturaleza';
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: (c.activeEffects || []).filter(e => e !== natureBoost),
+      }));
+    }
+
+    let stormStrikeBuffText = '';
+    if (ability.id === 'storm_strike' && this.charSvc.character().classKey === 'shaman') {
+      const natureBuffValue = ability.currentBuffValue || 20;
+      const natureBuffDur = ability.buff?.duration || 2;
+      this.charSvc.character.update(c => ({
+        ...c,
+        activeEffects: [
+          ...(c.activeEffects || []).filter(e => e.name !== 'Storm Strike'),
+          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Storm Strike', target: 'nature_boost', value: natureBuffValue, duration: natureBuffDur, isPercent: true },
+        ],
+      }));
+      stormStrikeBuffText = ' · ⛈️ siguiente hechizo de Naturaleza +' + natureBuffValue + '%';
+    }
+
     if (isRage && ability.generatesRage) {
       const baseGen = this.charSvc.getEffectiveRageGen(ability);
       const rageGen = isCrit ? baseGen * 2 : baseGen;
@@ -2672,7 +2697,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (ability.chain) {
         chainText = ' · ⛓️ envía ' + (ability.bounces || 1) + ' impacto(s) extra (rebote)';
       }
-      if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
+      if ((ability.id === 'basic_attack' || ability.id === 'storm_strike') && this.charSvc.character().classKey === 'shaman') {
         const shImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
         if (shImbue) {
           if (shImbue.name === 'Arma Lengua de Fuego') {
@@ -2878,7 +2903,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkSpendText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkSpendText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2895,7 +2920,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits);
       }
-      if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'shaman') {
+      if ((ability.id === 'basic_attack' || ability.id === 'storm_strike') && this.charSvc.character().classKey === 'shaman') {
         const wfImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue' && e.name === 'Arma Viento Furioso');
         const wfChance = wfImbue ? (wfImbue.value || 20) + this.charSvc.talentRank('improved_weapon_imbues') * 5 : 0;
         if (wfImbue && Math.random() * 100 < wfChance) {

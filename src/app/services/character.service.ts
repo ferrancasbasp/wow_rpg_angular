@@ -35,6 +35,14 @@ const KNOWN_CHARACTER_AVATARS: Record<string, CharacterAvatarPaths> = {
     horizontal: 'img/chars/Henkerjaer-Horizontal.jpg',
     vertical: 'img/chars/Henkerjaer-Vertical.jpg',
   },
+  ANEURIN: {
+    horizontal: 'img/chars/Aneurin-Horizontal.jpg',
+    vertical: 'img/chars/Aneurin-Vertical.jpg',
+  },
+  DARZ: {
+    horizontal: 'img/chars/Darz-Horizontal.jpg',
+    vertical: 'img/chars/Darz-Vertical.jpg',
+  },
   RAGNAR: {
     horizontal: 'img/chars/Ragnar-Horizontal.jpg',
     vertical: 'img/chars/Ragnar-Vertical.jpg',
@@ -752,7 +760,7 @@ export class CharacterService {
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
       } else if (a.usesWeaponDamage) {
-        const base = weaponDmg + apBonus;
+        const base = weaponDmg + apBonus + (a.baseDamage || 0);
         minVal = Math.round(base * 0.50);
         maxVal = Math.round(base * 1.50);
         if (a.id === 'basic_attack' && this.character().classKey === 'priest') {
