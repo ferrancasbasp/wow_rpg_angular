@@ -25,7 +25,7 @@ export const WARLOCK: CharacterClass = {
   comboConfig: { label: 'Soul Shards', icon: '🔮', max: 5 },
 
   talents: [
-    { id: 'pocket_shards', name: 'Pocket Shards', icon: '🔮', iconImg: 'img/talents/warlock/pocket_shards.jpg', description: 'Tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1 por punto.', maxRank: 2, tier: 1, requires: null },
+    { id: 'pocket_shards', name: 'Pocket Shards', icon: '🔮', iconImg: 'img/talents/warlock/pocket_shards.jpg', description: 'Por punto: tras un descanso mantienes 1 Soul Shard y aumentas tu maximo de Soul Shards en 1.', maxRank: 2, tier: 1, requires: null },
     { id: 'improved_drain_life', name: 'Improved Drain Life', icon: '🩸', iconImg: 'img/abilities/warlock/Spell_Shadow_LifeDrain02.jpg', description: 'Aumenta la vida que cura Drain Life un 10% por punto. Solo afecta a la curacion, no al dano.', maxRank: 3, tier: 1, requires: null },
     { id: 'demonic_embrace', name: 'Improved Fel Armor', icon: '😈', iconImg: 'img/abilities/warlock/Spell_Shadow_FelArmour.jpg', description: 'Mientras Fel Armor este activo, tu vida maxima aumenta un 10% por punto.', maxRank: 2, tier: 1, requires: null },
     { id: 'destruction_specialization', name: 'Destruction Specialization', icon: '💥', iconImg: 'img/talents/warlock/destruction_specialization.jpg', description: 'Aumenta el dano de los golpes criticos de Chaos Bolt y Rain of Fire un 10% por punto, y su probabilidad de critico un 5% por punto.', maxRank: 3, tier: 1, requires: null },
