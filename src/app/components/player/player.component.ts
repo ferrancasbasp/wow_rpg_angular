@@ -1251,7 +1251,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
       } else if (ability.id === 'imp_blood_bolt') {
         const grimoireRank = this.charSvc.talentRank('grimoire_of_command');
-        if (grimoireRank === 0 && ability.currentBuffValue) {
+        const sacrificePct = 10 * grimoireRank;
+        const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
+        // Si el sacrificio mata al Imp, no llega a dar el buff
+        const impDies = sacrifice > 0 && sacrifice >= this.charSvc.petHP();
+        const toastParts: string[] = [];
+        if (!impDies && ability.currentBuffValue) {
           this.charSvc.character.update(c => ({
             ...c,
             activeEffects: [...(c.activeEffects || []), {
@@ -1265,10 +1270,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
             }],
           }));
           this.charSvc.sendBuffEvent(ability);
-          this.charSvc.showToast(ability.name + ' R' + (ability.currentRank || 1) + ': +' + ability.currentBuffValue + ' Aguante al grupo — enviado al Master');
-        } else {
-          const sacrificePct = 15 * grimoireRank;
-          const sacrifice = Math.round(this.charSvc.petMaxHP() * sacrificePct / 100);
+          toastParts.push('+' + ability.currentBuffValue + ' Aguante al grupo');
+        }
+        if (sacrifice > 0) {
           this.sendDamagePayload({
             player: this.charSvc.character().name || 'Jugador',
             ability: ability.name,
@@ -1282,8 +1286,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
             assigned: false,
           });
           this.charSvc.petTakeDamage(sacrifice);
-          this.charSvc.showToast(ability.name + ': el Imp pierde ' + sacrifice + ' vida (' + sacrificePct + '%) — AOE enviado al Master');
+          toastParts.push('el Imp pierde ' + sacrifice + ' vida (' + sacrificePct + '%)' + (impDies ? ' y desaparece' : '') + ' · AOE');
         }
+        this.charSvc.showToast(ability.name + ' R' + (ability.currentRank || 1) + ': ' + toastParts.join(' · ') + ' — enviado al Master');
       } else if (ability.currentBuffValue) {
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ' — ' + ability.currentBuffStat +
