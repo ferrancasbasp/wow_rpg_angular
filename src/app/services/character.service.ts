@@ -866,6 +866,11 @@ export class CharacterService {
             dotDuration += eruptRank;
           }
         }
+        // Backdraft: +15% solo al dano directo de Immolate (dotTotal ya se ha fijado arriba)
+        if (a.id === 'immolate' && this.talentRank('backdraft') > 0) {
+          minVal = Math.round(minVal * 1.15);
+          maxVal = Math.round(maxVal * 1.15);
+        }
         if (a.id === 'sunfire') {
           const isf = this.talentRank('improved_sunfire');
           if (isf > 0) {
