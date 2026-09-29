@@ -221,4 +221,12 @@ export const NPC_REGISTRY: Record<string, Npc> = {
       { name: 'Devolver al jefe', minDamage: 3000, maxDamage: 3000, isHeal: true },
     ],
   },
+  murloc_razorfin: {
+    id: 'murloc_razorfin', name: 'Murloc Forcazulejo', level: 6, hp: 170, armor: 14, magicResist: 10, zone: 'Elwynn Forest',
+    imageUrl: 'img/enemies/Murloc-6.jpeg',
+    attacks: [
+      { name: 'Miraña', minDamage: 22, maxDamage: 36, inflictsEffects: [{ type: 'dot', name: 'Sangrado', target: 'hp', value: 7, duration: 3, debuffType: 'disease' }] },
+      { name: 'Golpe de Lanza', minDamage: 18, maxDamage: 30 },
+    ],
+  },
 };
