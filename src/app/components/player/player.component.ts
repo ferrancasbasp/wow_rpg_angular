@@ -3637,7 +3637,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const wasDead = this.charSvc.isDead();
     this.charSvc.character.update(c => {
       const effects = (c.activeEffects || []).map(e => ({ ...e, duration: e.duration - 2 })).filter(e => e.duration > 0);
-      const pocket = this.charSvc.talentRank('pocket_shards') > 0 ? 1 : 0;
+      const pocket = this.charSvc.talentRank('pocket_shards');
       return { ...c, currentHP: maxHP, comboPoints: 0, musicalNotes: [], soulShards: pocket, currentCooldowns: {}, activeEffects: effects, infernalTurnsLeft: 0, fireTotem: null, waterTotem: null };
     });
     const revivePrefix = wasDead ? 'Full Rest: revives! ' : 'Full Rest: ';
