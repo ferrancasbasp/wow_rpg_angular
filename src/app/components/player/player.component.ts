@@ -801,7 +801,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       timestamp: Date.now(),
       assigned: false,
     });
-    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': revivira a un aliado muerto con ' + flatHp + ' HP — asigna el objetivo en el Master');
+    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': avisado al Master (' + flatHp + ' HP) — debe revivirte con el botón 🌿');
   }
 
   castValkyriesCall(ability: any) {
