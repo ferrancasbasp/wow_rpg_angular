@@ -294,8 +294,9 @@
     .talent-modal-tree::-webkit-scrollbar-thumb:hover { background: var(--gold-light); }
     .talent-modal-tree { scrollbar-width: thin; scrollbar-color: var(--gold) var(--bg-input); }
     .talent-info-panel {
-      flex: 0 1 auto; align-self: flex-start; position: relative;
-      min-width: 220px; max-width: 340px; padding: 16px;
+      flex: 0 1 auto; align-self: flex-start; position: sticky; top: 0;
+      min-width: 220px; max-width: 340px; max-height: calc(90vh - 140px);
+      overflow-y: auto; padding: 16px;
       background: var(--bg-input); border: 1px solid rgba(138,115,68,0.2);
       border-radius: var(--radius);
       display: flex; flex-direction: column;
@@ -1431,5 +1432,5 @@
       .equip-portrait-img { max-height: 60vh; }
       .talent-modal-layout { flex-direction: column; }
       .talent-modal-tree { max-height: 45vh; }
-      .talent-info-panel { max-width: none; width: 100%; }
+      .talent-info-panel { max-width: none; width: 100%; position: static; max-height: none; }
     }
