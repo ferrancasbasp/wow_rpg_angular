@@ -353,9 +353,9 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.08,
       castType: 'instant',
       cooldown: 0,
-      description: 'Armadura demoniaca que aumenta tu poder de hechizo y armadura.',
-      buff: { stat: 'spellPower', duration: 30, applySelf: true, isPercent: true },
-      buffRanks: [{ rank: 1, level: 10, value: 10, costPct: 0.08 }, { rank: 2, level: 18, value: 15, costPct: 0.08 }, { rank: 3, level: 24, value: 20, costPct: 0.08 }],
+      description: 'Armadura demoniaca que otorga +10/20/30 Poder de Hechizo (flat).',
+      buff: { stat: 'spellPower', duration: 30, applySelf: true },
+      buffRanks: [{ rank: 1, level: 10, value: 10, costPct: 0.08 }, { rank: 2, level: 18, value: 20, costPct: 0.08 }, { rank: 3, level: 24, value: 30, costPct: 0.08 }],
     },
     // Blood Pact: comentado, seguira siendo util mas adelante.
     // {
