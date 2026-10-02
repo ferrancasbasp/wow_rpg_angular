@@ -392,7 +392,7 @@ export class CharacterService {
     let sp = this.baseSpellPower();
     const balanceOfNature = this.talentRank('balance_of_nature');
     if (balanceOfNature > 0) {
-      sp += Math.round(this.finalStats().espiritu * 0.06 * balanceOfNature);
+      sp += Math.round(this.finalStats().espiritu * 0.07 * balanceOfNature);
     }
     if (this.selectedCapstone() === 'hope_and_grace') {
       sp += Math.round(this.finalStats().espiritu * 0.20);
@@ -1421,8 +1421,8 @@ export class CharacterService {
       natures_remains: `Coste Wrath/Starfire: −${rank * 5}%`,
       germination: `Rejuvenation: +50% potencia en 2º aliado`,
       first_of_the_wild: `Basic Attack: +${rank * 1}% vida máx · +${rank * 1}% maná máx`,
-      balance_of_nature: `Poder de hechizo: +${rank * 6}% Espíritu`,
-      equinox: `Starsurge/Sunfall: +${rank * 10}% efecto por shard`,
+      balance_of_nature: `Poder de hechizo: +${rank * 7}% Espíritu`,
+      equinox: `Starsurge/Sunfall: +${rank * 15}% efecto por shard`,
       improved_hurricane: `Hurricane: +${rank * 20}% daño · -${rank * 10}% coste`,
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
       stone_of_rhythms: `Fin turno: ${rank * 15}% gasta 1 Sun Shard → +10% maná`,
