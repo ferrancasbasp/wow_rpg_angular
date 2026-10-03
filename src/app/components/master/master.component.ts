@@ -1307,6 +1307,22 @@ export class MasterComponent implements OnInit {
       });
       this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
       this.sendLog.update(log => [`${target}: +${event.buffValue} ${event.buffStat} (${event.ability.replace(' (Buff)', '')})`, ...log].slice(0, 8));
+    } else if (event.damageType === 'mana' && event.aoe) {
+      const targets = this.knownPlayers();
+      for (const t of targets) {
+        this.firebase.pushData('playerEvents', {
+          target: t,
+          type: 'mana',
+          abilityName: event.ability.replace(' (Grupal)', ''),
+          amount: event.damage,
+          timestamp: Date.now(),
+        });
+      }
+      this.showToast(`${event.ability} → todos (${targets.length}): +${event.damage} maná`);
+      this.sendLog.update(log => [`todos (${targets.length}): +${event.damage} maná (${event.ability.replace(' (Grupal)', '')})`, ...log].slice(0, 8));
+      this.markEventAssigned(event);
+      this.selectedEventId.set(null);
+      return;
     } else if (event.damageType === 'heal' && event.aoe) {
       const targets = this.knownPlayers();
       for (const t of targets) {

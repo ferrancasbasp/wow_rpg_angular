@@ -356,7 +356,9 @@
                         ? (event.isHot ? '🩹' : (event.isShield ? '🛡️' : '💚'))
                         : event.damageType === 'buff'
                           ? '🌟'
-                          : '✨'
+                          : event.damageType === 'mana'
+                            ? '💠'
+                            : '✨'
                   }}</span>
                   <div class="damage-event-info">
                     <div class="damage-event-player">{{ event.player }}</div>
@@ -368,10 +370,12 @@
                         [class.physical]="event.damageType === 'physical'"
                         [class.heal-tag]="event.damageType === 'heal'"
                         [class.buff-tag]="event.damageType === 'buff'"
+                        [class.mana-tag]="event.damageType === 'mana'"
                         >{{
                           event.damageType === 'physical' ? 'Fís' :
                           event.damageType === 'heal' ? (event.isHot ? 'HoT' : (event.isShield ? '🛡' : 'Cura')) :
-                          event.damageType === 'buff' ? 'Buff' : 'Mág'
+                          event.damageType === 'buff' ? 'Buff' :
+                          event.damageType === 'mana' ? 'Maná' : 'Mág'
                         }}</span>
                       @if (event.aoe) {
                         <span class="damage-type-tag aoe">AOE</span>
