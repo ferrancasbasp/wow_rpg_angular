@@ -47,7 +47,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     imageUrl: 'img/enemies/Wolf-4.jpeg',
     attacks: [
       { name: 'Bite', minDamage: 12, maxDamage: 20 },
-      { name: 'Howl', minDamage: 6, maxDamage: 10, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 3, duration: 3, debuffType: 'none' }] },
+      { name: 'Howl', minDamage: 6, maxDamage: 10, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 9, duration: 3, debuffType: 'magic' }] },
     ],
   },
   wolf_alpha: {
@@ -55,7 +55,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     imageUrl: 'img/enemies/Wolf-9.jpeg',
     attacks: [
       { name: 'Savage Bite', minDamage: 24, maxDamage: 38, inflictsEffects: [{ type: 'dot', name: 'Sangrado', target: 'hp', value: 6, duration: 3, debuffType: 'disease' }] },
-      { name: 'Howl', minDamage: 10, maxDamage: 16, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 5, duration: 3, debuffType: 'none' }] },
+      { name: 'Howl', minDamage: 10, maxDamage: 16, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 15, duration: 3, debuffType: 'magic' }] },
     ],
   },
   great_goretusk: {
@@ -72,7 +72,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     imageUrl: 'img/enemies/Gnoll-Healer-16.jpeg',
     attacks: [
       { name: 'Healing Wave', minDamage: 150, maxDamage: 220, isHeal: true },
-      { name: 'Lightning Bolt', minDamage: 55, maxDamage: 75, inflictsEffects: [{ type: 'debuff', name: 'Chispa', target: 'spellPower', value: 10, duration: 4, debuffType: 'magic' }] },
+      { name: 'Lightning Bolt', minDamage: 55, maxDamage: 75, inflictsEffects: [{ type: 'debuff', name: 'Chispa', target: 'spellPower', value: 20, duration: 4, debuffType: 'magic' }] },
       { name: 'Staff Smash', minDamage: 30, maxDamage: 45 },
     ],
   },
@@ -99,7 +99,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     imageUrl: 'img/enemies/Wolf-17.jpeg',
     attacks: [
       { name: 'Savage Bite', minDamage: 38, maxDamage: 58, inflictsEffects: [{ type: 'dot', name: 'Sangrado', target: 'hp', value: 12, duration: 4, debuffType: 'disease' }] },
-      { name: 'Furious Howl', minDamage: 22, maxDamage: 34, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 8, duration: 3, debuffType: 'none' }] },
+      { name: 'Furious Howl', minDamage: 22, maxDamage: 34, inflictsEffects: [{ type: 'debuff', name: 'Aullido', target: 'attackPower', value: 24, duration: 3, debuffType: 'magic' }] },
     ],
   },
   elite_defias_pirate_gun: {
@@ -117,7 +117,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     attacks: [
       { name: 'Fireball', minDamage: 62, maxDamage: 88, inflictsEffects: [{ type: 'dot', name: 'Quemadura', target: 'hp', value: 14, duration: 3, debuffType: 'magic' }] },
       { name: 'Frostbolt', minDamage: 32, maxDamage: 48, inflictsEffects: [{ type: 'status', name: 'Ralentizado', target: 'slowed', value: 0, duration: 2, debuffType: 'magic' }] },
-      { name: 'Hex', minDamage: 40, maxDamage: 60, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'spellPower', value: 15, duration: 4, debuffType: 'curse' }] },
+      { name: 'Hex', minDamage: 40, maxDamage: 60, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'spellPower', value: 30, duration: 4, debuffType: 'curse' }] },
     ],
   },
   elite_defias_pirate_sword: {
@@ -173,7 +173,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     attacks: [
       { name: 'Bola de Oscuridad', minDamage: 58, maxDamage: 84 },
       { name: 'Vampirizar', minDamage: 26, maxDamage: 40, inflictsEffects: [{ type: 'dot', name: 'Drenado', target: 'hp', value: 9, duration: 3, debuffType: 'magic' }] },
-      { name: 'Maldición de Sombra', minDamage: 30, maxDamage: 46, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'attackPower', value: 6, duration: 3, debuffType: 'magic' }] },
+      { name: 'Maldición de Sombra', minDamage: 30, maxDamage: 46, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'attackPower', value: 18, duration: 3, debuffType: 'curse' }] },
     ],
   },
   elite_rock_elemental_garzuk: {
