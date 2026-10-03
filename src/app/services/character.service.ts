@@ -2235,11 +2235,23 @@ export class CharacterService {
     });
     const playerName = (this.character().name || '').trim();
     if (playerName) {
-      const petName = playerName + ' — ' + pet.name;
-      try {
-        this.firebase.setData('players/' + petName, { name: petName, timestamp: Date.now(), isPet: true });
-      } catch (e) {
-        console.error('Firebase register pet error:', e);
+      const petsToRegister = [this.character().activePet, this.character().companionPet].filter(
+        (p): p is ActivePet => !!p
+      );
+      for (const ap of petsToRegister) {
+        const petDef = this.classConfig().pets?.find(p => p.id === ap.petId);
+        if (!petDef) continue;
+        const petName = playerName + ' — ' + petDef.name;
+        try {
+          this.firebase.setData('players/' + petName, {
+            name: petName, timestamp: Date.now(), isPet: true,
+            owner: playerName,
+            hp: ap.currentHP,
+            maxHp: ap.petId === 'voidwalker' ? Math.round(this.maxHP() * petDef.hpPct * this.petTalentBoost()) : Math.round(this.maxHP() * petDef.hpPct),
+          });
+        } catch (e) {
+          console.error('Firebase register pet error:', e);
+        }
       }
     }
     this.showToast(`${pet.icon} ${pet.name} invocado!`);
