@@ -116,7 +116,7 @@ export const NPC_REGISTRY: Record<string, Npc> = {
     imageUrl: 'img/enemies/Elite-Defias-Pirate-mage-17.jpeg', isElite: true,
     attacks: [
       { name: 'Fireball', minDamage: 62, maxDamage: 88, inflictsEffects: [{ type: 'dot', name: 'Quemadura', target: 'hp', value: 14, duration: 3, debuffType: 'magic' }] },
-      { name: 'Frostbolt', minDamage: 32, maxDamage: 48, inflictsEffects: [{ type: 'status', name: 'Ralentizado', target: 'slowed', value: 0, duration: 2, debuffType: 'magic' }] },
+      { name: 'Cone of Cold', minDamage: 32, maxDamage: 48, aoe: true, damageType: 'magical', inflictsEffects: [{ type: 'status', name: 'Ralentizado', target: 'slowed', value: 0, duration: 2, debuffType: 'magic' }] },
       { name: 'Hex', minDamage: 40, maxDamage: 60, inflictsEffects: [{ type: 'debuff', name: 'Maldición', target: 'spellPower', value: 30, duration: 4, debuffType: 'curse' }] },
     ],
   },
