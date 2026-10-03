@@ -1103,7 +1103,7 @@ export class CharacterService {
   getEffectiveComboChance(ability: any): number {
     let chance = ability.generatesComboChance ?? 100;
     if (ability.id === 'basic_attack' && this.character().classKey === 'shaman') {
-      chance += this.talentRank('elemental_assault') * 10;
+      chance += this.talentRank('elemental_assault') * 6;
     }
     return chance;
   }
@@ -1348,7 +1348,7 @@ export class CharacterService {
       improved_weapon_imbues: `Windfury: +${rank * 5}% proc · Flametongue: +${rank * 10}% daño fuego`,
       ancestral_knowledge: `Intelecto +${rank * 10}%/nivel · Fuerza −${rank * 10}%/nivel`,
       healing_grace: `Healing Wave/Chain Heal: +${rank * 10}% · ${rank * 15}% prob. +1 Maelstorm`,
-      elemental_assault: `Basic Attack Maelstorm: +${rank * 10}%`,
+      elemental_assault: `Basic Attack Maelstorm: +${rank * 6}%`,
       improved_totems: `Daño/Cura/Maná de tótems: +${rank * 10}%`,
       static_shock: `Earth Shock: ${rank * 25}% prob. +1 Maelstorm extra`,
       tidal_focus: `Coste Healing Wave/Chain Heal: −${rank * 15}%`,
@@ -1698,6 +1698,32 @@ export class CharacterService {
       });
     } catch (e) {
       console.error('Firebase register player error:', e);
+    }
+  }
+
+  syncPetStatus() {
+    if (this.simMode()) return;
+    const playerName = (this.character().name || '').trim();
+    if (!playerName) return;
+    const c = this.character();
+    const slots = [c.activePet, c.companionPet].filter((p): p is ActivePet => !!p);
+    for (const ap of slots) {
+      const petDef = this.classConfig().pets?.find(p => p.id === ap.petId);
+      if (!petDef) continue;
+      const petName = playerName + ' — ' + petDef.name;
+      const maxHp = ap.petId === 'voidwalker'
+        ? Math.round(this.maxHP() * petDef.hpPct * this.petTalentBoost())
+        : Math.round(this.maxHP() * petDef.hpPct);
+      try {
+        this.firebase.setData('players/' + petName, {
+          name: petName, timestamp: Date.now(), isPet: true,
+          owner: playerName,
+          hp: ap.currentHP,
+          maxHp,
+        });
+      } catch (e) {
+        console.error('Firebase sync pet error:', e);
+      }
     }
   }
 
@@ -2329,11 +2355,17 @@ export class CharacterService {
     return { damage, name: pet.attackName, school: pet.attackSchool, manaCost, focusGain };
   }
 
-  petTakeDamage(amount: number) {
+  petTakeDamage(amount: number, targetPetName?: string) {
     const thickSkin = (this.character().activeEffects || []).find(e => e.type === 'buff' && e.name === 'Thick Skin');
     if (thickSkin && thickSkin.value) amount = Math.max(0, amount - thickSkin.value);
     this.character.update(c => {
-      if (!c.activePet) {
+      const normalizedTarget = (targetPetName || '').toLowerCase();
+      const targetKey = normalizedTarget
+        ? (c.activePet && this.petNameFor(c.activePet) === normalizedTarget ? 'active' : (c.companionPet && this.petNameFor(c.companionPet) === normalizedTarget ? 'companion' : null))
+        : (c.activePet ? 'active' : (c.companionPet ? 'companion' : null));
+      if (!targetKey) return c;
+
+      if (targetKey === 'companion') {
         if (!c.companionPet) return c;
         const newHP = Math.max(0, c.companionPet.currentHP - amount);
         if (newHP <= 0) {
@@ -2352,6 +2384,8 @@ export class CharacterService {
         }
         return { ...c, companionPet: { ...c.companionPet, currentHP: newHP } };
       }
+
+      if (!c.activePet) return c;
       const newHP = Math.max(0, c.activePet.currentHP - amount);
       if (newHP <= 0) {
         const playerName = (c.name || '').trim();
@@ -2372,6 +2406,14 @@ export class CharacterService {
         activePet: { ...c.activePet, currentHP: newHP },
       };
     });
+    this.syncPetStatus();
+  }
+
+  private petNameFor(slot: ActivePet): string {
+    const pet = this.petDefFor(slot);
+    if (!pet) return '';
+    const playerName = (this.character().name || '').trim();
+    return (playerName ? playerName + ' — ' + pet.name : pet.name).toLowerCase();
   }
 
   petRest() {
