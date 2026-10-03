@@ -3664,6 +3664,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.actionsUsed.set(0);
     this.charSvc.persistTurnState();
     this.charSvc.petRest();
+    this.charSvc.syncPlayerStatus();
     if (this.charSvc.character().classKey === 'bard') {
       const ability = this.charSvc.classConfig().abilities.find(a => a.id === 'rested_inspiration');
       const level = this.charSvc.character().level;
