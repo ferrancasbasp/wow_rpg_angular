@@ -432,17 +432,20 @@ export class CombatComponent implements OnInit {
         this.players.set([]);
         return;
       }
-      const list: CombatPlayer[] = Object.values(data).map((val: any) => {
-        const av = this.charSvc.resolveAvatarFor(val?.name || '', val?.imageHorizontal || '', val?.imageVertical || '');
-        return {
-          name: val?.name || '',
-          hp: val?.hp ?? 0,
-          maxHp: val?.maxHp ?? 0,
-          level: val?.level || undefined,
-          imageHorizontal: av.horizontal,
-          imageVertical: av.vertical,
-        };
-      }).filter(p => p.name);
+      const list: CombatPlayer[] = Object.values(data)
+        .filter((val: any) => val?.name && !val?.isPet)
+        .map((val: any) => {
+          const av = this.charSvc.resolveAvatarFor(val?.name || '', val?.imageHorizontal || '', val?.imageVertical || '');
+          return {
+            name: val?.name || '',
+            hp: val?.hp ?? 0,
+            maxHp: val?.maxHp ?? 0,
+            level: val?.level || undefined,
+            imageHorizontal: av.horizontal,
+            imageVertical: av.vertical,
+          };
+        })
+        .filter(p => p.name);
       list.sort((a, b) => a.name.localeCompare(b.name));
       this.players.set(list);
     });

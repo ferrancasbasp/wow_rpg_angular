@@ -826,17 +826,21 @@
     }
 
     @if (showTalentModal()) {
-      <div class="modal-overlay" (click)="showTalentModal.set(false)">
-        <div class="modal-content talent-modal" (click)="$event.stopPropagation()">
-          <div class="talent-modal-header">
+      <div class="equip-screen-overlay" (click)="showTalentModal.set(false)">
+        <div class="equip-screen talent-screen" (click)="$event.stopPropagation()">
+          <div class="equip-screen-header talent-screen-header">
             <div class="modal-title">{{ trSvc.t('talent_tree') }} — {{ charSvc.classConfig().name }}</div>
-            <div class="tp-badge" [class.has-points]="charSvc.availableTalentPoints() > 0">
-              <span>{{ trSvc.t('available_pts') }}</span>
-              <span class="tp-value">{{ charSvc.availableTalentPoints() }}</span>
+            <div class="talent-header-right">
+              <div class="tp-badge" [class.has-points]="charSvc.availableTalentPoints() > 0">
+                <span>{{ trSvc.t('available_pts') }}</span>
+                <span class="tp-value">{{ charSvc.availableTalentPoints() }}</span>
+              </div>
+              <button type="button" class="equip-close-btn" (click)="showTalentModal.set(false)">✕</button>
             </div>
           </div>
-          <div class="talent-modal-layout">
-            <div class="talent-modal-tree">
+          <div class="equip-screen-body talent-screen-body">
+            <div class="talent-modal-layout">
+              <div class="talent-modal-tree">
               <div class="wow-talent-list">
                 @for (tier of charSvc.tiers(); track tier) {
                   <div class="wow-tier-row" [class.tier-locked]="!charSvc.tierUnlocked(tier)">
@@ -932,8 +936,9 @@
                 <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
               }
             </div>
+            </div>
           </div>
-          <div class="modal-actions">
+          <div class="equip-screen-footer talent-screen-footer">
             <button class="action-btn danger" (click)="resetTalents()">{{ trSvc.t('reset_talents') }}</button>
             <button class="action-btn" (click)="showTalentModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
