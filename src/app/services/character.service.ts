@@ -332,7 +332,7 @@ export class CharacterService {
       result[key] += this.effectStatBonus(key);
       if (key === 'agilidad' && this.character().classKey === 'bard') {
         const quickFingers = this.talentRank('quick_fingers');
-        if (quickFingers > 0) result[key] = Math.round(result[key] * (1 + quickFingers * 0.01));
+        if (quickFingers > 0) result[key] = Math.round(result[key] * (1 + quickFingers * 0.025));
       }
       if (key === 'aguante' && this.character().classKey === 'valkyrie') {
         const enduranceRank = this.talentRank('endurance');
@@ -1427,7 +1427,7 @@ export class CharacterService {
       natural_perfection: `Crítico hechizos: +${rank * 2}%`,
       stone_of_rhythms: `Fin turno: ${rank * 15}% gasta 1 Sun Shard → +10% maná`,
       improved_staccato: `Staccato: +${rank * 5}% danyo, −${rank * 10}% mana`,
-      quick_fingers: `Esquiva: +${rank * 2}%`,
+      quick_fingers: `Esquiva: +${rank * 2}% · Agilidad: +${rank * 2.5}%`,
       resonance: `Curación: +${rank * 5}%`,
       improved_crescendo: `Crescendo self-buff: ${rank * 20}% del valor enviado`,
       improved_vivace: `Vivace: +${rank * 10}% curación · −${rank * 10}% mana`,
