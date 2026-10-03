@@ -146,21 +146,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
         const targetName = (event?.target || '').trim().toLowerCase();
         if (!myName || !targetName) return;
 
+        const petNames: string[] = [];
         const activePet = this.charSvc.activePetData();
-        const petName = activePet ? (myName + ' — ' + activePet.name.toLowerCase()) : '';
-        const isPetTarget = petName && targetName === petName;
+        const companionPet = this.charSvc.companionPetData();
+        if (activePet) petNames.push(myName + ' — ' + activePet.name.toLowerCase());
+        if (companionPet) petNames.push(myName + ' — ' + companionPet.name.toLowerCase());
+        const isPetTarget = petNames.includes(targetName);
 
         if (!isPetTarget && myName !== targetName) return;
 
         if (isPetTarget) {
           if (event.type === 'heal') {
-            this.charSvc.character.update(c => ({
-              ...c,
-              activePet: c.activePet ? { ...c.activePet, currentHP: Math.min(this.charSvc.petMaxHP(), c.activePet.currentHP + event.amount) } : null,
-            }));
+            if (companionPet && targetName === myName + ' — ' + companionPet.name.toLowerCase()) {
+              this.charSvc.character.update(c => ({
+                ...c,
+                companionPet: c.companionPet ? { ...c.companionPet, currentHP: Math.min(this.charSvc.companionPetMaxHP(), c.companionPet.currentHP + event.amount) } : null,
+              }));
+            } else if (activePet) {
+              this.charSvc.character.update(c => ({
+                ...c,
+                activePet: c.activePet ? { ...c.activePet, currentHP: Math.min(this.charSvc.petMaxHP(), c.activePet.currentHP + event.amount) } : null,
+              }));
+            }
+            this.charSvc.syncPetStatus();
             this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + event.amount + ' HP (pet)');
           } else if (event.type === 'damage' || event.type === 'monsterAttack') {
-            this.charSvc.petTakeDamage(event.amount);
+            this.charSvc.petTakeDamage(event.amount, targetName);
             this.incomingMasterMsg.set('💢 ' + (event.abilityName || 'Master') + ': -' + event.amount + ' danyo (pet)');
           }
           this.firebase.removeData('playerEvents/' + snapshot.key);
@@ -200,6 +211,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.charSvc.adjustHP(applied);
             const reducedNote = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
             this.incomingMasterMsg.set('💚 ' + (event.abilityName || 'Master') + ': +' + applied + ' HP' + reducedNote);
+          }
+        } else if (event.type === 'mana') {
+          if (this.charSvc.resourceConfig().type === 'mana') {
+            const maxMana = this.charSvc.maxMana();
+            this.charSvc.character.update(c => ({
+              ...c,
+              currentMana: Math.min(maxMana, (c.currentMana ?? maxMana) + (event.amount || 0)),
+            }));
+            this.incomingMasterMsg.set('💠 ' + (event.abilityName || 'Master') + ': +' + (event.amount || 0) + ' maná');
           }
         } else if (event.type === 'damage') {
           this.charSvc.adjustHP(-event.amount);
@@ -1361,6 +1381,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.simCombat.pushLog(`+${payload.damage} ${payload.ability || 'Curación'}`);
         return;
       }
+      if ((payload.damageType || '') === 'mana' && this.charSvc.resourceConfig().type === 'mana' && (payload.damage || 0) > 0) {
+        this.charSvc.character.update(c => ({
+          ...c,
+          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + payload.damage),
+        }));
+        this.simCombat.pushLog(`+${payload.damage} maná ${payload.ability || 'Maná'}`);
+        return;
+      }
       if (this.simCombat.enemy() && !this.simCombat.enemy()!.currentHP) {
         this.simCombat.pushLog('El dummy ya está derrotado');
         return;
@@ -1624,11 +1652,20 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('💧 Tótem de Corriente Sanadora: +' + healAmt + ' HP al grupo' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
       } else if (water.type === 'mana_spring') {
         const manaAmt = water.value ?? water.min ?? 0;
-        this.charSvc.character.update(c => ({
-          ...c,
-          currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaAmt),
-        }));
-        this.charSvc.showToast('💠 Tótem Manantial de Maná: +' + manaAmt + ' maná' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
+        this.sendDamagePayload({
+          player: me,
+          ability: 'Tótem Manantial de Maná (Grupal)',
+          rank: 1,
+          damage: manaAmt,
+          damageType: 'mana',
+          aoe: true,
+          chain: false,
+          effects: null,
+          turn,
+          timestamp: now,
+          assigned: false,
+        });
+        this.charSvc.showToast('💠 Tótem Manantial de Maná: envía +' + manaAmt + ' maná al grupo' + (remaining > 0 ? ' · ' + remaining + ' turnos' : ' · se consume'));
       }
       this.charSvc.updateTotem('water', remaining > 0 ? remaining : null);
     }
