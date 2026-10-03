@@ -9,7 +9,7 @@ export const WARLOCK: CharacterClass = {
   formulas: {
     hp: (s, lvl) => 30 + s.aguante * 9 + lvl * 5,
     mana: (s, lvl) => 40 + s.intelecto * 15 + lvl * 5,
-    spellPower: (s) => Math.round(s.intelecto * 0.75),
+    spellPower: (s) => Math.round(s.intelecto * 0.65),
     attackPower: (s) => 0,
     manaRegen: (s) => Math.round(s.espiritu * 0.25 + 12),
   },
@@ -160,9 +160,8 @@ export const WARLOCK: CharacterClass = {
       costPct: 0.05,
       castType: 'instant',
       cooldown: 0,
-      description: 'Drena la vida del enemigo causando danyo y curandote por el 50% del danyo. Genera 1 Soul Shard.',
+      description: 'Drena la vida del enemigo causando danyo y curandote por el 50% del danyo.',
       damageRanges: [{ rank: 1, level: 12, min: 18, max: 25 }, { rank: 2, level: 18, min: 28, max: 38 }, { rank: 3, level: 24, min: 40, max: 55 }],
-      generatesShard: 1,
       lifestealPct: 0.50,
     },
     {
