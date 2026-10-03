@@ -52,6 +52,8 @@ interface PartyMember {
   maxHp: number;
   level?: number;
   classKey?: string;
+  isPet?: boolean;
+  owner?: string;
 }
 
 interface Monster {
@@ -1124,13 +1126,17 @@ export class MasterComponent implements OnInit {
   }
 
   upsertPartyMember(val: any) {
-    if (typeof val.hp !== 'number' || typeof val.maxHp !== 'number') return;
+    if (typeof val.hp !== 'number' || typeof val.maxHp !== 'number') {
+      if (!val.isPet) return;
+    }
     const member: PartyMember = {
       name: val.name,
-      hp: val.hp,
-      maxHp: val.maxHp,
+      hp: val.hp || 0,
+      maxHp: val.maxHp || 1,
       level: val.level || undefined,
       classKey: val.classKey || undefined,
+      isPet: !!val.isPet,
+      owner: val.owner || undefined,
     };
     this.partyMembers.update(list => {
       const others = list.filter(p => p.name !== val.name);
@@ -1141,6 +1147,15 @@ export class MasterComponent implements OnInit {
   partyHPPercent(p: PartyMember): number {
     if (!p.maxHp || p.maxHp <= 0) return 0;
     return Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
+  }
+
+  petsForPlayer(owner: string): PartyMember[] {
+    return this.partyMembers().filter(p => p.isPet && p.owner === owner);
+  }
+
+  petShortName(p: PartyMember): string {
+    const idx = p.name.lastIndexOf(' — ');
+    return idx >= 0 ? p.name.slice(idx + 3) : p.name;
   }
 
   onPlayerChipClick(name: string) {

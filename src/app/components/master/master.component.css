@@ -443,6 +443,35 @@
       background: linear-gradient(135deg, #2a6a2a, #4a9a4a);
     }
 
+    .party-pets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 4px;
+    }
+
+    .party-pet-chip {
+      background: rgba(138, 115, 68, 0.15);
+      border: 1px solid rgba(138, 115, 68, 0.4);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-muted);
+    }
+
+    .party-pet-chip:hover {
+      border-color: var(--gold);
+      color: var(--text);
+    }
+
+    .party-pet-chip.active {
+      border-color: #4a9a4a;
+      color: #6be56b;
+      box-shadow: 0 0 6px rgba(74, 154, 74, 0.4);
+    }
+
     .party-header-right {
       display: flex;
       align-items: center;

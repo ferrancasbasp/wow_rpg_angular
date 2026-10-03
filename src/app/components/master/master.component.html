@@ -16,32 +16,48 @@
         <div class="panel-body">          @if (partyMembers().length > 0) {
             <div class="party-list">
               @for (p of partyMembers(); track p.name) {
-                <div
-                  class="party-card"
-                  [class.party-targeting]="isPlayerTargeting()"
-                  [class.active]="sendTargetName() === p.name && !sendAll()"
-                  (click)="onPlayerChipClick(p.name)"
-                >
-                  <div class="party-header">
-                    <span class="party-name">{{ p.name }}</span>
-                    <span class="party-header-right">
-                      @if (p.level) {
-                        <span class="party-level">Nv. {{ p.level }}</span>
-                      }
-                      <button class="party-rez" title="Revivir" (click)="revivePlayer(p.name); $event.stopPropagation()">🌿</button>
-                      <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name); $event.stopPropagation()">✕</button>
-                    </span>
+                @if (!p.isPet) {
+                  <div
+                    class="party-card"
+                    [class.party-targeting]="isPlayerTargeting()"
+                    [class.active]="sendTargetName() === p.name && !sendAll()"
+                    (click)="onPlayerChipClick(p.name)"
+                  >
+                    <div class="party-header">
+                      <span class="party-name">{{ p.name }}</span>
+                      <span class="party-header-right">
+                        @if (p.level) {
+                          <span class="party-level">Nv. {{ p.level }}</span>
+                        }
+                        <button class="party-rez" title="Revivir" (click)="revivePlayer(p.name); $event.stopPropagation()">🌿</button>
+                        <button class="party-del" title="{{ trSvc.t('remove_from_party') }}" (click)="removePartyMember(p.name); $event.stopPropagation()">✕</button>
+                      </span>
+                    </div>
+                    <div class="party-hp-bar">
+                      <div
+                        class="party-hp-fill"
+                        [class.low]="partyHPPercent(p) > 25 && partyHPPercent(p) <= 50"
+                        [class.critical]="partyHPPercent(p) <= 25"
+                        [style.width]="partyHPPercent(p) + '%'"
+                      ></div>
+                      <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
+                    </div>
+                    @if (petsForPlayer(p.name).length > 0) {
+                      <div class="party-pets">
+                        @for (pet of petsForPlayer(p.name); track pet.name) {
+                          <span
+                            class="party-pet-chip"
+                            [class.active]="sendTargetName() === pet.name && !sendAll()"
+                            (click)="onPlayerChipClick(pet.name)"
+                            title="Target: {{ pet.name }}"
+                          >
+                            🐾 {{ petShortName(pet) }}
+                          </span>
+                        }
+                      </div>
+                    }
                   </div>
-                  <div class="party-hp-bar">
-                    <div
-                      class="party-hp-fill"
-                      [class.low]="partyHPPercent(p) > 25 && partyHPPercent(p) <= 50"
-                      [class.critical]="partyHPPercent(p) <= 25"
-                      [style.width]="partyHPPercent(p) + '%'"
-                    ></div>
-                    <div class="party-hp-text">{{ p.hp }} / {{ p.maxHp }}</div>
-                  </div>
-                </div>
+                }
               }
               <button
                 class="player-chip all-chip"
