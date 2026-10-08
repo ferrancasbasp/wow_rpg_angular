@@ -765,42 +765,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('☠️ Poison Mastery activa · ' + effectText + ' (' + duration + ' turnos)');
   }
 
-  castCombustion(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'combustion'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Combustion', target: 'combustion', value: 50, duration },
-      ],
-    }));
-    this.charSvc.showToast('🔥 Combustion activa · +50% critico de Fuego · Orbes de Fuego x2 (+10% danyo critico por orbe) · ' + duration + ' turnos');
-  }
-
-  castIcyVeins(ability: any) {
-    const duration = 2;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'icy_veins'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Icy Veins', target: 'icy_veins', value: 1, duration },
-      ],
-    }));
-    this.charSvc.showToast('🧊 Icy Veins activa · tus hechizos de Escarcha son instantaneos (' + duration + ' turno(s))');
-  }
-
-  castArcanePower(ability: any) {
-    const duration = 2;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'arcane_power'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Arcane Power', target: 'arcane_power', value: 20, duration },
-      ],
-    }));
-    this.charSvc.showToast('⚡ Arcane Power activa · 2 turnos: coste de mana -50% · +20% Spell Power · +25% danyo critico');
-  }
-
   castAscendance(ability: any) {
     const duration = 3;
     this.charSvc.character.update(c => ({
@@ -3182,12 +3146,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castBladeFlurry(ability);
     } else if (ability.id === 'poison_mastery') {
       this.castPoisonMastery(ability);
-    } else if (ability.id === 'combustion') {
-      this.castCombustion(ability);
-    } else if (ability.id === 'icy_veins') {
-      this.castIcyVeins(ability);
-    } else if (ability.id === 'arcane_power') {
-      this.castArcanePower(ability);
     } else if (ability.id === 'ascendance') {
       this.castAscendance(ability);
     } else if (ability.id === 'bloodlust') {
