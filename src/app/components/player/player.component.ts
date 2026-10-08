@@ -2509,9 +2509,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }));
         this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ' + buffText + ' (self · SIM)');
       } else {
-        this.charSvc.sendBuffEvent(ability, buffValue);
+        const buffSelTarget = this.selectedHealTarget();
+        const buffTarget = buffSelTarget && !ability.aoe && !ability.partyBuff && !ability.buff?.applySelf ? buffSelTarget : null;
+        this.charSvc.sendBuffEvent(ability, buffValue, buffTarget || undefined);
         this.charSvc.showToast(
-          ability.name + ' R' + ability.currentRank + ': ' + buffText + ' — ' + this.trSvc.t('sent_to_master')
+          ability.name + ' R' + ability.currentRank + ': ' + buffText + (buffTarget ? ' → ' + buffTarget : '') + ' — ' + this.trSvc.t('sent_to_master')
         );
       }
       if (ability.id === 'crescendo') {

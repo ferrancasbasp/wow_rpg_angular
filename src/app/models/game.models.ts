@@ -243,6 +243,24 @@ export interface CharacterClass {
   pets?: Pet[];
 }
 
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export type ItemSlot =
+  | 'head' | 'chest' | 'hands' | 'legs' | 'feet'
+  | 'mainHand' | 'offHand' | 'twoHand' | 'ranged';
+
+export interface Item {
+  id: string;
+  name: string;
+  slot: ItemSlot;
+  rarity: ItemRarity;
+  bonus: Partial<Stats>;
+  defense?: number;
+  weaponDamage?: number;
+  owner: string | null;
+  createdAt: number;
+}
+
 export interface EquipmentItem {
   name: string;
   bonus: Partial<Stats>;

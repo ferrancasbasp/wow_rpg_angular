@@ -1844,7 +1844,7 @@ export class CharacterService {
     }
   }
 
-  sendBuffEvent(ability: any, buffValueOverride?: number) {
+  sendBuffEvent(ability: any, buffValueOverride?: number, targetName?: string) {
     if (this.simMode()) {
       this.simCombat.pushLog(`${ability.name || 'Buff'} aplicado`);
       return;
@@ -1866,6 +1866,7 @@ export class CharacterService {
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
+        ...(targetName ? { targetName } : {}),
       });
     } catch (e) {
       console.error('Firebase send buff error:', e);

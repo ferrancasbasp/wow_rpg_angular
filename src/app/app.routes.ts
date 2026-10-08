@@ -3,6 +3,7 @@ import { PlayerComponent } from './components/player/player.component';
 import { MasterComponent } from './components/master/master.component';
 import { CombatComponent } from './components/combat/combat.component';
 import { SimComponent } from './components/sim/sim.component';
+import { ItemGeneratorComponent } from './components/item-generator/item-generator.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'player', pathMatch: 'full' },
@@ -10,4 +11,5 @@ export const routes: Routes = [
   { path: 'master', component: MasterComponent },
   { path: 'combat', component: CombatComponent },
   { path: 'sim', component: SimComponent },
+  { path: 'item-gen', component: ItemGeneratorComponent },
 ];

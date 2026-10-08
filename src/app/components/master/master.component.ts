@@ -673,9 +673,27 @@ export class MasterComponent implements OnInit {
   }
 
   private tryAutoRouteMemberHeal(event: DamageEvent): boolean {
-    if (event.damageType !== 'heal' || event.aoe) return false;
+    if (event.aoe) return false;
     const target = (event.targetName || '').trim();
     if (!target || !this.knownPlayers().includes(target)) return false;
+    if (event.damageType === 'buff') {
+      const buffName = (event.ability || '').replace(' (Buff)', '');
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'buff',
+        abilityName: buffName,
+        buffStat: event.buffStat,
+        buffValue: event.buffValue,
+        buffDuration: event.buffDuration,
+        isPercent: event.isPercent,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: +${event.buffValue} ${event.buffStat}`);
+      this.sendLog.update(log => [`${target}: +${event.buffValue} ${event.buffStat} (${buffName})`, ...log].slice(0, 8));
+      this.markEventAssigned(event);
+      return true;
+    }
+    if (event.damageType !== 'heal') return false;
     const abilityName = (event.ability || '').replace(' (Cura)', '');
     if (event.isHot) {
       this.firebase.pushData('playerEvents', {
