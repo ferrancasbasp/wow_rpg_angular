@@ -31,6 +31,11 @@ export const rogueAbilityHooks: ClassAbilityHooks = {
         ctx.critMult += ctx.svc.talentRank('lethality') * 0.05;
       }
     },
+    modifyComboSpend(_ability, ctx) {
+      if (ctx.svc.character().classKey === 'rogue') {
+        ctx.roll = Math.round(ctx.roll * Math.max(1, ctx.comboSpent));
+      }
+    },
   },
 };
 

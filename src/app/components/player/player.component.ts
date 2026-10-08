@@ -1469,36 +1469,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
       critMult = ctx.critMult;
       roll = Math.round(roll * critMult);
     }
-    let efCritText = '';
-    if (isCrit && this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning') && this.charSvc.talentRank('elemental_focus') > 0) {
-      const efMax = this.charSvc.getMaelstromMax();
-      this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(efMax, (c.comboPoints || 0) + 1) }));
-      efCritText = ' · +1 Maelstorm (crit)';
-    }
+    // S7 — extras justo tras el crítico (onCrit) + postura genérica + extras post-postura (onRollReady)
+    ctx.roll = roll;
+    this.runSpellHooks('onCrit', ability, ctx);
+    roll = ctx.roll;
     if ((isRage || isEnergy) && this.charSvc.inBattleStance()) {
       const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
       roll = Math.round(roll * battleMult);
     }
-    if (ability.id === 'charge' && this.charSvc.character().classKey === 'warrior') {
-      const icRank = this.charSvc.talentRank('improved_charge');
-      if (icRank > 0) {
-        const hs = this.charSvc.unlockedAbilities().find((a: any) => a.id === 'heroic_strike');
-        const hsAvg = hs ? Math.round((((hs as any).currentMin || 0) + ((hs as any).currentMax || 0)) / 2) : 20;
-        roll += Math.round(hsAvg * 0.15 * icRank);
-      }
-    }
+    ctx.roll = roll;
+    this.runSpellHooks('onRollReady', ability, ctx);
+    roll = ctx.roll;
 
     let comboSpent = 0;
     if (ability.spendsCombo) {
       comboSpent = this.charSvc.character().comboPoints || 0;
-      if (this.charSvc.character().classKey === 'rogue') {
-        roll = Math.round(roll * Math.max(1, comboSpent));
-      } else {
-        const equinoxRank = this.charSvc.talentRank('equinox');
-        const fragPower = 0.30 * (1 + equinoxRank * 0.15);
-        const aoeMult = ability.aoe ? 0.5 : 1.0;
-        roll = Math.round(roll * (1 + (comboSpent) * fragPower * aoeMult));
-      }
+      ctx.comboSpent = comboSpent;
+      ctx.roll = roll;
+      this.runSpellHooks('modifyComboSpend', ability, ctx);
+      roll = ctx.roll;
       this.charSvc.character.update(c => {
         const ftRank = this.charSvc.talentRank('finishing_touch');
         if (ftRank > 0) {
@@ -2150,7 +2139,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + (ctx.texts['unyielding'] || '') + serpentText + woundText + rendText + sunderText + (ctx.texts['maelstorm'] || '') + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + (ctx.texts['unyielding'] || '') + serpentText + woundText + rendText + sunderText + (ctx.texts['maelstorm'] || '') + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + (ctx.texts['efCrit'] || '') + arcaneOrbText + orbText + natureBoostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

@@ -25,6 +25,14 @@ export const shamanAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onCrit(_ability, ctx) {
+      const svc = ctx.svc;
+      if (ctx.isCrit && svc.character().classKey === 'shaman' && (ctx.ability.id === 'lightning_bolt' || ctx.ability.id === 'chain_lightning') && svc.talentRank('elemental_focus') > 0) {
+        const efMax = svc.getMaelstromMax();
+        svc.character.update(c => ({ ...c, comboPoints: Math.min(efMax, (c.comboPoints || 0) + 1) }));
+        ctx.texts['efCrit'] = ' · +1 Maelstorm (crit)';
+      }
+    },
     onSpend(_ability, ctx) {
       const svc = ctx.svc;
       if (ctx.maelstormFree) {

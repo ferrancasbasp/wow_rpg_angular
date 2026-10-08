@@ -17,6 +17,16 @@ export const warriorAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onRollReady(ability, ctx) {
+      if (ability.id === 'charge' && ctx.svc.character().classKey === 'warrior') {
+        const icRank = ctx.svc.talentRank('improved_charge');
+        if (icRank > 0) {
+          const hs = ctx.svc.unlockedAbilities().find((a: any) => a.id === 'heroic_strike');
+          const hsAvg = hs ? Math.round((((hs as any).currentMin || 0) + ((hs as any).currentMax || 0)) / 2) : 20;
+          ctx.roll += Math.round(hsAvg * 0.15 * icRank);
+        }
+      }
+    },
     onSpend(ability, ctx) {
       if (ability.id === 'basic_attack' && ctx.isRage) {
         const usRank = ctx.svc.talentRank('unyielding_strikes');

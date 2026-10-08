@@ -9,6 +9,14 @@ export const druidAbilityHooks: ClassAbilityHooks = {
     return false;
   },
   spell: {
+    modifyComboSpend(_ability, ctx) {
+      if (ctx.svc.character().classKey === 'druid') {
+        const equinoxRank = ctx.svc.talentRank('equinox');
+        const fragPower = 0.30 * (1 + equinoxRank * 0.15);
+        const aoeMult = ctx.ability.aoe ? 0.5 : 1.0;
+        ctx.roll = Math.round(ctx.roll * (1 + ctx.comboSpent * fragPower * aoeMult));
+      }
+    },
     modifyCost(ability, ctx) {
       const svc = ctx.svc;
       if (svc.character().classKey === 'druid' && svc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) {
