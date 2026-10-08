@@ -1470,6 +1470,36 @@
     .wow-panel:nth-child(2) { animation-delay: 0.1s; }
     @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+    .party-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .item-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.25));
+      border: 1px solid var(--gold-dark); border-radius: 8px;
+      padding: 12px; display: flex; flex-direction: column; gap: 8px;
+      transition: var(--transition);
+    }
+    .item-card:hover { transform: translateY(-2px); box-shadow: 0 0 12px var(--gold-glow); }
+    .item-card-name {
+      font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .item-card-slot { font-size: 11px; color: var(--text-dim); }
+    .item-card-bonus { display: flex; flex-wrap: wrap; gap: 4px; }
+    .item-card-stat {
+      font-size: 11px; color: var(--gold-light);
+      border: 1px solid var(--gold-dark); border-radius: 3px;
+      padding: 1px 5px; background: rgba(0,0,0,0.3);
+    }
+    .item-card-owner {
+      font-size: 11px; color: var(--gold); font-weight: 700;
+      margin-top: auto; text-align: right;
+    }
+    .item-card-owner.stashed { color: var(--text-dim); font-weight: 400; }
+
     @media (max-width: 920px) {
       .equip-layout { grid-template-columns: 1fr; }
       .equip-portrait-frame { position: static; max-height: 60vh; }

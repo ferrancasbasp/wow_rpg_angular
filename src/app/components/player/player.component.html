@@ -31,6 +31,9 @@
             <button class="quick-icon-btn" (click)="showEquipment.set(true)" title="Equipo">
               <span>🛡️</span>
             </button>
+            <button class="quick-icon-btn" (click)="showPartyItems.set(true)" title="Party Items">
+              <span>🎒</span>
+            </button>
             <button class="quick-icon-btn talent-btn" [class.has-points]="charSvc.availableTalentPoints() > 0"
                     (click)="showTalentModal.set(true)" title="Talentos">
               <span>🌟</span>
@@ -782,6 +785,41 @@
           </div>
           <div class="equip-screen-footer">
             <button class="action-btn" (click)="showEquipment.set(false)">{{ trSvc.t('cerrar') }}</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showPartyItems()) {
+      <div class="equip-screen-overlay">
+        <div class="equip-screen party-items-screen">
+          <div class="equip-screen-header">
+            <div class="modal-title">Party Items</div>
+            <button type="button" class="equip-close-btn" (click)="showPartyItems.set(false)">✕</button>
+          </div>
+          <div class="equip-screen-body">
+            @if (partyItems().length === 0) {
+              <div class="damage-empty">No hay ítems del grupo aún — créalos en Item Creation.</div>
+            } @else {
+              <div class="party-items-grid">
+                @for (item of partyItems(); track item.id) {
+                  <div class="item-card" [style.borderColor]="rarityColor[item.rarity]"
+                       [style.boxShadow]="'0 0 8px ' + rarityColor[item.rarity] + '33'">
+                    <div class="item-card-name" [style.color]="rarityColor[item.rarity]">{{ item.name }}</div>
+                    <div class="item-card-slot">{{ slotIcon[item.slot] }} {{ slotLabelOf(item.slot) }} · {{ item.rarity }}</div>
+                    <div class="item-card-bonus">
+                      @for (b of itemBonusList(item); track b.label) {
+                        <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+                      }
+                    </div>
+                    <div class="item-card-owner" [class.stashed]="!item.owner">{{ item.owner ? '◉ ' + item.owner : '🎒 Stash' }}</div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="equip-screen-footer">
+            <button class="action-btn" (click)="showPartyItems.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>

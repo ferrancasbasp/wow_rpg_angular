@@ -13,7 +13,8 @@ import {
   xpForLevel,
 } from '../../data/game-data';
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
-import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
+import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb, Item, ItemSlot } from '../../models/game.models';
+import { ITEM_SLOTS, SLOT_ICON, RARITY_COLOR } from '../../data/items';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
 import { classAbilityHooks, classSpellHooks } from '../../classes/hooks/registry';
 import type { ClassHooksContext, PlayerLink } from '../../classes/hooks/class-hooks';
@@ -87,9 +88,15 @@ export class PlayerComponent implements OnInit, OnDestroy {
   partyFrames = signal<{ name: string; initials: string; self: boolean }[]>([]);
   selectedHealTarget = signal<string | null>(null);
   valkFallen = signal(false);
+  showPartyItems = signal(false);
+  partyItems = signal<Item[]>([]);
+
+  readonly rarityColor = RARITY_COLOR;
+  readonly slotIcon = SLOT_ICON;
 
   private playerEventUnsub: (() => void) | null = null;
   private partyListUnsub: (() => void) | null = null;
+  private itemsNodeUnsub: (() => void) | null = null;
 
   newEffect = signal<{
     type: ActiveEffect['type'];
@@ -138,11 +145,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.registerPlayer();
     this.initPlayerEventListener();
     this.initPartyFrames();
+    this.initPartyItems();
   }
 
   ngOnDestroy() {
     this.playerEventUnsub?.();
     this.partyListUnsub?.();
+    this.itemsNodeUnsub?.();
   }
 
   initPartyFrames() {
@@ -194,6 +203,40 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   toggleHealTarget(name: string) {
     this.selectedHealTarget.update(t => t === name ? null : name);
+  }
+
+  initPartyItems() {
+    try {
+      this.itemsNodeUnsub = this.firebase.onValue('items', (data) => {
+        const list: Item[] = [];
+        if (data && typeof data === 'object') {
+          for (const [key, val] of Object.entries(data) as [string, any][]) {
+            if (!val || typeof val !== 'object') continue;
+            list.push({ id: key, ...val } as Item);
+          }
+        }
+        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        this.partyItems.set(list);
+      });
+    } catch {
+      this.partyItems.set([]);
+    }
+  }
+
+  slotLabelOf(slot: ItemSlot): string {
+    return ITEM_SLOTS.find(s => s.key === slot)?.label || slot;
+  }
+
+  itemBonusList(item: Item): { label: string; value: number }[] {
+    const statKeys: StatKey[] = ['fuerza', 'agilidad', 'intelecto', 'aguante', 'espiritu'];
+    const out: { label: string; value: number }[] = [];
+    statKeys.forEach((k) => {
+      const v = (item.bonus || {})[k] || 0;
+      if (v > 0) out.push({ label: STAT_ABBR[k], value: v });
+    });
+    if ((item.defense || 0) > 0) out.push({ label: 'ARM', value: item.defense || 0 });
+    if ((item.weaponDamage || 0) > 0) out.push({ label: 'DÑO', value: item.weaponDamage || 0 });
+    return out;
   }
 
   initPlayerEventListener() {
