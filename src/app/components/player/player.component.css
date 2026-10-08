@@ -1240,6 +1240,11 @@
     .top-side-controls {
       display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 220px;
     }
+    .resource-col {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px;
+    }
+    .resource-col > .resource-section { flex: none; }
+    .resource-col > .effects-section { margin-bottom: 0; }
 
     .lang-toggle-btn {
       align-self: flex-end; padding: 4px 10px; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;

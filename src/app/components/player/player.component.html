@@ -1,4 +1,5 @@
     <div class="top-bar-row">
+      <div class="resource-col">
       <div class="resource-section">
         <div class="char-header-row">
           <div class="class-icon">
@@ -309,6 +310,36 @@
         }
       </div>
 
+      <div class="effects-section">
+        <div class="effects-header">
+          <span class="effects-title">{{ trSvc.t('efectos') }}</span>
+          @if (visibleEffects().length > 0) {
+            <span class="effects-count">{{ visibleEffects().length }}</span>
+          }
+        </div>
+        <div class="effects-body">
+          @if (visibleEffects().length > 0) {
+            <div class="effects-active-list">
+              @for (eff of visibleEffects(); track eff.id) {
+                <div class="effect-chip" [style.--eff-color]="debuffColor(eff)">
+                  <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
+                  <span class="effect-name">{{ eff.name }}</span>
+                  @if (eff.debuffType && eff.debuffType !== 'none') {
+                    <span class="effect-debuff-type" [style.color]="DEBUFF_TYPES[eff.debuffType].color">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
+                  }
+                  <span class="effect-value">{{ effectValueText(eff) }}</span>
+                  <span class="effect-duration">{{ eff.duration }}t</span>
+                  <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="effects-empty">{{ trSvc.t('no_active_effects') }}</div>
+          }
+        </div>
+      </div>
+      </div>
+
       <div class="top-side-controls">
         @if (charSvc.character().classKey === 'warrior') {
           <div class="warrior-stance-row">
@@ -381,35 +412,6 @@
             }
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="effects-section">
-      <div class="effects-header">
-        <span class="effects-title">{{ trSvc.t('efectos') }}</span>
-        @if (visibleEffects().length > 0) {
-          <span class="effects-count">{{ visibleEffects().length }}</span>
-        }
-      </div>
-      <div class="effects-body">
-        @if (visibleEffects().length > 0) {
-          <div class="effects-active-list">
-            @for (eff of visibleEffects(); track eff.id) {
-              <div class="effect-chip" [style.--eff-color]="debuffColor(eff)">
-                <span class="effect-icon">{{ EFFECT_TYPES[eff.type].icon }}</span>
-                <span class="effect-name">{{ eff.name }}</span>
-                @if (eff.debuffType && eff.debuffType !== 'none') {
-                  <span class="effect-debuff-type" [style.color]="DEBUFF_TYPES[eff.debuffType].color">{{ DEBUFF_TYPES[eff.debuffType].label }}</span>
-                }
-                <span class="effect-value">{{ effectValueText(eff) }}</span>
-                <span class="effect-duration">{{ eff.duration }}t</span>
-                <button class="effect-remove" (click)="removeEffect(eff.id)">✕</button>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="effects-empty">{{ trSvc.t('no_active_effects') }}</div>
-        }
       </div>
     </div>
 
