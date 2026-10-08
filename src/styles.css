@@ -84,18 +84,4 @@ h1, h2, h3, .title-font { font-family: 'Cinzel', serif; letter-spacing: 0.05em; 
 .status-dot.connected { background: var(--success); box-shadow: 0 0 6px var(--success); }
 .status-dot.disconnected { background: var(--danger); }
 
-/* Nav */
-.nav-bar {
-  display: flex; gap: 8px; justify-content: center; margin-top: 16px; padding-bottom: 12px;
-}
-.nav-link {
-  padding: 6px 20px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
-  letter-spacing: 0.05em; background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
-  border: 1px solid var(--gold-dark); border-radius: var(--radius); color: var(--gold);
-  cursor: pointer; transition: var(--transition); text-transform: uppercase;
-  text-decoration: none;
-}
-.nav-link:hover, .nav-link.active {
-  background: linear-gradient(180deg, var(--bg-panel-hover) 0%, var(--bg-panel) 100%);
-  border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 10px var(--gold-glow);
-}
+/* Navegación (app root): topbar sticky + menú desplegable en app.css */

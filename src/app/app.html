@@ -1,7 +1,17 @@
+<div class="topbar">
+  <span class="topbar-title">WoW TTRPG</span>
+  <button class="menu-toggle" [class.open]="menuOpen()" (click)="toggleMenu()" aria-label="Menú" [attr.aria-expanded]="menuOpen()">
+    <span class="menu-toggle-line"></span>
+    <span class="menu-toggle-line"></span>
+    <span class="menu-toggle-line"></span>
+  </button>
+</div>
+@if (menuOpen()) {
+  <nav class="menu-panel">
+    <a routerLink="/player" routerLinkActive="active" (click)="closeMenu()" class="menu-link">Ficha</a>
+    <a routerLink="/master" routerLinkActive="active" (click)="closeMenu()" class="menu-link">Master</a>
+    <a routerLink="/combat" routerLinkActive="active" (click)="closeMenu()" class="menu-link">Combat</a>
+    <a routerLink="/sim" routerLinkActive="active" (click)="closeMenu()" class="menu-link">Sim</a>
+  </nav>
+}
 <router-outlet />
-<nav class="nav-bar">
-  <a routerLink="/player" routerLinkActive="active" class="nav-link">Ficha</a>
-  <a routerLink="/master" routerLinkActive="active" class="nav-link">Master</a>
-  <a routerLink="/combat" routerLinkActive="active" class="nav-link">Combat</a>
-  <a routerLink="/sim" routerLinkActive="active" class="nav-link">Sim</a>
-</nav>

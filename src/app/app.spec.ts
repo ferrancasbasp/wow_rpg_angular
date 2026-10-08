@@ -15,14 +15,27 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('renderiza la navegacion principal', async () => {
+  it('renderiza el toggler compacto sin mostrar el menu hasta abrirlo', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    const nav = compiled.querySelector('.nav-bar');
-    expect(nav).toBeTruthy();
-    expect(nav?.textContent).toContain('Ficha');
-    expect(nav?.textContent).toContain('Master');
-    expect(nav?.textContent).toContain('Combat');
+    expect(compiled.querySelector('.topbar')).toBeTruthy();
+    expect(compiled.querySelector('.menu-toggle')).toBeTruthy();
+    expect(compiled.querySelector('.menu-panel')).toBeNull();
+  });
+
+  it('despliega el menu con las 4 pantallas al pulsar el toggler', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const toggle = compiled.querySelector('.menu-toggle') as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    const panel = compiled.querySelector('.menu-panel');
+    expect(panel).toBeTruthy();
+    expect(panel?.textContent).toContain('Ficha');
+    expect(panel?.textContent).toContain('Master');
+    expect(panel?.textContent).toContain('Combat');
+    expect(panel?.textContent).toContain('Sim');
   });
 });
