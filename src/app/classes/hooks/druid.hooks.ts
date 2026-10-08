@@ -8,6 +8,14 @@ export const druidAbilityHooks: ClassAbilityHooks = {
     }
     return false;
   },
+  spell: {
+    modifyCost(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'druid' && svc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) {
+        ctx.cost = 0;
+      }
+    },
+  },
 };
 
 function castRebirth(ability: any, { svc, player }: ClassHooksContext) {

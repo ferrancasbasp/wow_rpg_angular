@@ -10,6 +10,11 @@ export const bardAbilityHooks: ClassAbilityHooks = {
     return false;
   },
   spell: {
+    modifyCost(ability, ctx) {
+      if (ability.id === 'vivace') {
+        ctx.cost = Math.round((ctx.cost || 0) * (1 - ctx.svc.talentRank('improved_vivace') * 0.10));
+      }
+    },
     modifyCritChance(ability, ctx) {
       if (ctx.svc.character().classKey === 'bard' && ['scherzo', 'sforzando'].includes(ability.id)) {
         ctx.critChance += ctx.svc.talentRank('rinforzando') * 4;

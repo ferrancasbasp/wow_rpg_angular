@@ -1275,21 +1275,38 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.charSvc.hasEffect('arcane_power')) {
       cost = Math.round((cost || 0) * 0.5);
     }
-    if (ability.id === 'vivace') {
-      cost = Math.round((cost || 0) * (1 - this.charSvc.talentRank('improved_vivace') * 0.10));
-    }
-    if (this.charSvc.character().classKey === 'druid' && this.charSvc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) {
-      cost = 0;
-    }
+
+    // S0/S1 — contexto del pipeline + coste con descuentos por clase (S1 modifyCost)
+    const ctx: SpellCastContext = {
+      svc: this.charSvc,
+      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
+      t: (key) => this.trSvc.t(key),
+      ability,
+      resType,
+      isRage,
+      isEnergy,
+      isFocus,
+      cost,
+      resourceActual: this.charSvc.resourceActual(),
+      resourceMax: this.charSvc.resourceMax(),
+      manaActual: this.charSvc.manaActual(),
+      maelstormFree: this.charSvc.isMaelstormReady() && ability.castType === 'cast',
+      lastWillRage: isRage && this.charSvc.isLastWillActive(),
+      actionCost: 1,
+      clearcast: false,
+      roll: 0,
+      critChance: 0,
+      critMult: 1.5,
+      isCrit: false,
+      texts: {},
+    };
+    this.runSpellHooks('modifyCost', ability, ctx);
+    cost = ctx.cost;
     if (this.charSvc.hasEffect('inner_focus')) {
       cost = 0;
     }
 
-    const maelstormFree = this.charSvc.isMaelstormReady() && ability.castType === 'cast';
-    if (maelstormFree) {
-      cost = Math.round((cost || 0) * 0.5 * (1 - this.charSvc.talentRank('maelstrom_efficiency') * 0.15));
-    }
-
+    const maelstormFree = ctx.maelstormFree;
     const resourceActual = this.charSvc.resourceActual();
     const resourceMax = this.charSvc.resourceMax();
     const manaActual = this.charSvc.manaActual();
@@ -1311,6 +1328,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const lockAndLoadInstant = ability.id === 'aimed_shot' && this.charSvc.hasEffect('lock_and_load');
     const maelstormNoGcd = maelstormFree && this.charSvc.character().classKey === 'shaman' && this.charSvc.talentRank('maelstrom_mastery') > 0;
     const actionCost = ability.noGcd || maelstormNoGcd ? 0 : (maelstormFree ? 1 : ((ability.castType === 'instant' || icyVeinsInstant || backdraftInstant || mindBlastInstant || lockAndLoadInstant) ? 1 : 2));
+    ctx.actionCost = actionCost;
+
+    // S2 — gates (CDs, acciones, instantes, stealth, shards, combo) + S3 valkyrie (pool + overrides)
     if (!this.charSvc.canAct(actionCost)) {
       this.charSvc.showToast(this.trSvc.t('sin_acciones'));
       return;
@@ -1428,6 +1448,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(this.trSvc.t('stealth_off'));
     }
 
+    // S4 — gasto de recurso real (acción, maná, rage/Pool/combo/shards) + refunds
     this.charSvc.useAction(actionCost);
 
     let maelstormText = '';
@@ -1448,6 +1469,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     const clearcast = (isRage || isEnergy || isFocus) ? false : this.charSvc.checkClearcasting();
+    ctx.clearcast = clearcast;
 
     if (isRage) {
       if (lastWillRage) {
@@ -1504,30 +1526,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     }
 
-    const ctx: SpellCastContext = {
-      svc: this.charSvc,
-      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
-      t: (key) => this.trSvc.t(key),
-      ability,
-      resType,
-      isRage,
-      isEnergy,
-      isFocus,
-      cost,
-      resourceActual,
-      resourceMax,
-      manaActual,
-      maelstormFree,
-      lastWillRage,
-      actionCost,
-      clearcast,
-      roll: 0,
-      critChance: 0,
-      critMult: 1.5,
-      isCrit: false,
-      texts: {},
-    };
-
+    // S5 — tirada base + mods planos por clase (modifyRoll)
     const min = ability.currentMin || 0;
     const max = ability.currentMax || 0;
     let roll = min + Math.floor(Math.random() * (max - min + 1));

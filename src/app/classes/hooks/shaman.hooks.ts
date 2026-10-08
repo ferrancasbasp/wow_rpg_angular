@@ -25,6 +25,11 @@ export const shamanAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    modifyCost(_ability, ctx) {
+      if (ctx.maelstormFree) {
+        ctx.cost = Math.round((ctx.cost || 0) * 0.5 * (1 - ctx.svc.talentRank('maelstrom_efficiency') * 0.15));
+      }
+    },
     modifyCritChance(ability, ctx) {
       const svc = ctx.svc;
       if (svc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning')) {

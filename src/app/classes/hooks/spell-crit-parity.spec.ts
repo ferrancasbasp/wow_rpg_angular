@@ -130,6 +130,22 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
     return critMult;
   }
 
+  function runHookedCost(ctx: SpellCastContext, baseCost: number) {
+    ctx.cost = baseCost;
+    ctx.maelstormFree = svc.isMaelstormReady() && ctx.ability.castType === 'cast';
+    for (const h of classSpellHooks) h.modifyCost?.(ctx.ability, ctx);
+    return ctx.cost;
+  }
+
+  function refCost(ability: any, baseCost: number) {
+    let cost = baseCost;
+    if (ability.id === 'vivace') cost = Math.round((cost || 0) * (1 - svc.talentRank('improved_vivace') * 0.10));
+    if (svc.character().classKey === 'druid' && svc.selectedCapstone() === 'nature_guardian' && (ability.id === 'sunfall' || ability.id === 'starsurge')) cost = 0;
+    const mFree = svc.isMaelstormReady() && ability.castType === 'cast';
+    if (mFree) cost = Math.round((cost || 0) * 0.5 * (1 - svc.talentRank('maelstrom_efficiency') * 0.15));
+    return cost;
+  }
+
   function refRoll(ability: any) {
     let roll = 100;
     if (ability.id === 'shield_bash' && svc.character().classKey === 'valkyrie') {
@@ -150,6 +166,8 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
     talents?: Record<string, number>;
     effects?: string[];
     fireOrbs?: number;
+    capstone?: string;
+    maelstromReady?: boolean;
   }
 
   const scenarios: Scenario[] = [
@@ -168,6 +186,9 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
     { name: 'shaman lightning_bolt + ascendance (add-then-mult)', classKey: 'shaman', ability: { id: 'lightning_bolt', castType: 'cast', type: 'damage' }, talents: { thundering_strikes: 3, elemental_fury: 2 }, effects: ['ascendance'] },
     { name: 'shaman flame_shock sin ascendance', classKey: 'shaman', ability: { id: 'flame_shock', castType: 'instant', type: 'damage', school: 'Fuego' }, talents: { elemental_fury: 5 } },
     { name: 'druid sunfall sin mods crit', classKey: 'druid', ability: { id: 'sunfall', castType: 'cast', type: 'damage', school: 'Arcano' } },
+    { name: 'bard vivace coste reducido', classKey: 'bard', ability: { id: 'vivace', castType: 'cast', type: 'heal', isHot: false, isDot: false }, talents: { improved_vivace: 3 } },
+    { name: 'druid nature_guardian sunfall coste 0', classKey: 'druid', ability: { id: 'sunfall', castType: 'cast', type: 'damage', school: 'Arcano' }, capstone: 'nature_guardian' },
+    { name: 'shaman maelstorm coste reducido', classKey: 'shaman', ability: { id: 'lightning_bolt', castType: 'cast', type: 'damage' }, talents: { maelstrom_efficiency: 2 }, effects: ['ascendance'], maelstromReady: true },
   ];
 
   beforeEach(() => {
@@ -182,9 +203,12 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
       if (s.talents) setTalents(s.talents);
       if (s.effects) setEffects(s.effects);
       if (s.fireOrbs) setFireOrbs(s.fireOrbs);
+      if (s.capstone) svc.character.update(c => ({ ...c, capstone: s.capstone as any }));
+      if (s.maelstromReady) svc.character.update(c => ({ ...c, comboPoints: svc.getMaelstromMax() }));
 
       const { ctx, baseChance } = makeScalar(s.ability);
 
+      expect(runHookedCost(ctx, 40)).toBe(refCost(s.ability, 40));
       expect(runHookedChance(ctx)).toBe(refChance(s.ability, baseChance));
       expect(runHookedMult(ctx)).toBe(refMult(s.ability));
       expect(runHookedRoll(ctx)).toBe(refRoll(s.ability));
