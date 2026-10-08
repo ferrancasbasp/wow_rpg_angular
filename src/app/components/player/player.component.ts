@@ -16,7 +16,7 @@ import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
 import { classAbilityHooks, classSpellHooks } from '../../classes/hooks/registry';
-import type { ClassHooksContext } from '../../classes/hooks/class-hooks';
+import type { ClassHooksContext, PlayerLink } from '../../classes/hooks/class-hooks';
 import type { SpellCastContext, SpellHooks } from '../../classes/hooks/spell-hooks';
 
 const ORB_SYMBOLS: Record<ElementalOrb, string> = {
@@ -1279,7 +1279,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     // S0/S1 — contexto del pipeline + coste con descuentos por clase (S1 modifyCost)
     const ctx: SpellCastContext = {
       svc: this.charSvc,
-      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
+      player: this.buildPlayerLink(),
       t: (key) => this.trSvc.t(key),
       ability,
       resType,
@@ -1298,6 +1298,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       critChance: 0,
       critMult: 1.5,
       isCrit: false,
+      comboSpent: 0,
+      sunShardsSpent: 0,
       texts: {},
     };
     this.runSpellHooks('modifyCost', ability, ctx);
@@ -1354,87 +1356,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let valkSpendText = '';
-    if (ability.energyCost && this.charSvc.character().classKey === 'valkyrie' && !this.charSvc.valkyriePoolHas(ability.energyCost)) {
-      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-      this.charSvc.showToast('No tienes suficiente carga de ' + poolName);
-      return;
-    }
-    if (ability.energyCost && this.charSvc.character().classKey === 'valkyrie') {
-      const spent = this.charSvc.spendValkyriePool(ability.energyCost);
-      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-      valkSpendText = ' · −' + spent + ' carga de ' + poolName;
-    }
-
-    if (ability.id === 'valk_mending' && this.charSvc.character().classKey === 'valkyrie') {
-      const poolActual = this.charSvc.valkyriePoolValue();
-      if (poolActual <= 0) {
-        const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-        this.charSvc.showToast('No tienes carga de ' + poolName);
-        return;
-      }
-      const spent = this.charSvc.spendValkyriePool(poolActual);
-      const tmRank = this.charSvc.talentRank('twin_mending');
-      const mFlat = Math.round((ability.currentBuffValue || 60) * (1 + tmRank * 0.15));
-      const healAmount = spent + mFlat;
-      this.charSvc.adjustHP(healAmount);
-      this.charSvc.syncPlayerStatus();
-      this.charSvc.useAction(actionCost);
-      const effCdM = this.charSvc.getEffectiveCooldown(ability);
-      if (effCdM > 0) {
-        this.charSvc.character.update(c => {
-          if (!c.currentCooldowns) c.currentCooldowns = {};
-          c.currentCooldowns[ability.id] = effCdM;
-          return { ...c };
-        });
-      }
-      const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-      let twinMendingText = '';
-      if (tmRank > 0) {
-        const tmHeal = Math.round(healAmount * 0.20 * tmRank);
-        if (tmHeal > 0) {
-          this.charSvc.sendHealEvent({ ...ability, name: 'Twin Mending' }, tmHeal);
-          twinMendingText = ' · 🤝 +' + tmHeal + ' a un aliado (Twin Mending)';
-        }
-      }
-      const nowHP = this.charSvc.hpActual();
-      if (nowHP >= this.charSvc.maxHP()) {
-        this.valkFallen.set(false);
-      }
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName + ' + ' + mFlat + ')' + twinMendingText);
-      return;
-    }
-
-    if (this.charSvc.character().classKey === 'valkyrie' && (ability.id === 'valk_dive_strike' || ability.id === 'valk_lightning_bolt')) {
-      if (!this.charSvc.odinsWillActive()) {
-        this.charSvc.showToast('Necesitas el buffo de Odins Will para usar ' + ability.name);
-        return;
-      }
-      if (ability.id === 'valk_dive_strike' && !this.charSvc.valkyrieFlying()) {
-        this.charSvc.showToast(ability.name + ' requiere estar en el cielo');
-        return;
-      }
-    }
-
-    if (ability.id === 'valk_lightning_bolt' && this.charSvc.character().classKey === 'valkyrie') {
-      const poolActual = this.charSvc.valkyriePoolValue();
-      if (poolActual <= 0) {
-        const poolName = this.charSvc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza';
-        this.charSvc.showToast('No tienes carga de ' + poolName);
-        return;
-      }
-      const spent = this.charSvc.spendValkyriePool(poolActual);
-      const flat = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
-      const vortexMult = 1 + this.charSvc.talentRank('lightning_vortex') * 0.10;
-      const flatBoosted = Math.round(flat * vortexMult);
-      const ijRank = this.charSvc.talentRank('improved_javelin');
-      const energyContribution = 0.70 + ijRank * 0.10;
-      const energyDmg = Math.round(spent * energyContribution);
-      const roll = flatBoosted + energyDmg;
-      this.charSvc.useAction(actionCost);
-      this.charSvc.turnDamage.update(d => d + roll);
-      this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' R' + ability.currentRank }, roll, 1, 1);
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flatBoosted + ' plano + ' + energyDmg + ' de ' + spent + ' carga de ' + this.charSvc.selectedValkyriePool() + ' (' + Math.round(energyContribution * 100) + '%)' + (ijRank > 0 ? ' · Improved Javelin R' + ijRank : '') + ') — ' + this.trSvc.t('sent_to_master'));
+    // S3 — valkyrie pool + flujos completos (valk_mending, valk_lightning_bolt, gates odins/vuelo)
+    if (this.runSpellHooksCast('castSpell', ability, ctx)) {
       return;
     }
 
@@ -2243,7 +2166,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + valkSpendText + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
@@ -2308,11 +2231,26 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  private buildPlayerLink(): PlayerLink {
+    return {
+      sendDamagePayload: (payload) => this.sendDamagePayload(payload),
+      setValkFallen: (active) => this.valkFallen.set(active),
+      updateAbilityRoll: (id, roll, crit) => this.abilityRolls.update(r => ({ ...r, [id]: { roll, crit } })),
+    };
+  }
+
   private runSpellHooks<M extends keyof SpellHooks>(method: M, ability: any, ctx: SpellCastContext): void {
     for (const hooks of classSpellHooks) {
       const fn = hooks[method];
       if (fn) (fn as any)(ability, ctx);
     }
+  }
+
+  private runSpellHooksCast(method: 'castSpell', ability: any, ctx: SpellCastContext): boolean {
+    for (const hooks of classSpellHooks) {
+      if (hooks[method]?.(ability, ctx)) return true;
+    }
+    return false;
   }
 
   castUtility(ability: any) {
@@ -2322,7 +2260,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
     const hookCtx: ClassHooksContext = {
       svc: this.charSvc,
-      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
+      player: this.buildPlayerLink(),
       t: (key) => this.trSvc.t(key),
     };
     const resType = this.charSvc.resourceConfig().type;

@@ -9,12 +9,15 @@ import type { PlayerLink } from './class-hooks';
  *   S1 modifyCost→ coste final (descuentos por clase)
  *   S2 gates     → recurs/CD/acciones/stealth/shards/combo (validaciones)
  *   S3 valkyrie  → pool lanza/escudo + flujos completos con override castSpell()
- *   S4 spend     → gasto de recurso real + refunds
+ *   S4 onSpend   → gasto de recurso real + refunds/tipos por clase
  *   S5 modifyRoll→ tirada base + mods planos (shield_bash, cone_of_cold)
  *   S6 crit      → critChance + early/genericos/late de critMult (orden NO conmutativo)
- *   S7 onRollReady → extras post-crítico (combo/sun/shards/notas, stances, charge)
+ *   S7 onCrit    → extras justo tras el crítico (shaman elemental_focus)
+ *   S7 stance    → multiplicador de postura (genérico)
+ *   S7 onRollReady → extras post-postura (warrior improved_charge)
+ *   S7 spends    → combo (modifyComboSpend) / sun_shards / shards / notas (genéricos flag-driven)
  *   S8 gen       → generación de recursos tras el golpe
- *   S9 terminal  → Hot/Dot/Heal/Damage + payloads + toasts
+ *   S9 terminal  → onHot/onDot/onHeal/onDamage + payloads + toasts
  *
  * Los hooks de cada clase viven en {clase}.hooks.ts -> spell: SpellHooks.
  * Regla de oro: nunca dejes una rama inline Y en el hook (doble ejecución);
@@ -41,19 +44,27 @@ export interface SpellCastContext {
   critChance: number;
   critMult: number;
   isCrit: boolean;
+  comboSpent: number;
+  sunShardsSpent: number;
   texts: Record<string, string>;
 }
 
 export type SpellHookFn = (ability: any, ctx: SpellCastContext) => void;
 
 export interface SpellHooks {
-  // Override COMPLETO del cast (flujos autónomos con early-return):
-  // p.ej. valk_mending, valk_lightning_bolt. Devuelve true si ya lo ha gestionado.
+  // Override COMPLETO del pipeline (flujos autónomos con early-return):
+  // valkyrie (valk_mending, valk_lightning_bolt, gates odins/vuelo, gasto del
+  // pool para abilities con energyCost). Devuelve true si ya ha quedado gestionado;
+  // false (o undefined) para que el pipeline continúe normalmente.
   castSpell?(ability: any, ctx: SpellCastContext): boolean;
   // S1 — muta ctx.cost tras el coste base y el descuento genérico de arcane_power.
   // Bard (vivace), druid (nature_guardian sunfall/starsurge), shaman (maelstorm).
   // Atención: la reducción genérica de inner_focus (=0) corre DESPUÉS del hook.
   modifyCost?: SpellHookFn;
+  // S4 — corre justo tras useAction/consumo real de acción, antes del gasto de
+  // recurso por resType. Shaman (reset combo + texto maelstorm), warrior
+  // (unyielding_strikes: acción gratuita en basic_attack).
+  onSpend?: SpellHookFn;
   // S5 — muta ctx.roll tras la tirada min/max base. Valkyrie (shield_bash warded),
   // mage (cone_of_cold improved).
   modifyRoll?: SpellHookFn;
@@ -69,9 +80,20 @@ export interface SpellHooks {
   // luego ascendance x1.25, en ese orden), mage (frost_power, orbes), rogue (lethality).
   // Mantén += y *= en el mismo orden que la fórmula original.
   critMultLate?: SpellHookFn;
-  // S7 — extras post-crítico sobre roll/recursos (charge, spends de combo/shards/
-  // notas/sun, storm_strike, evangelism…). Aún en construcción.
+  // S7 — primeros extras tras determinar isCrit, ANTES del multiplicador genérico
+  // de postura. Shaman (elemental_focus: +1 Maelstorm en crit de lightning/chain).
+  onCrit?: SpellHookFn;
+  // S7 — extras tras el multiplicador genérico de postura y antes de los spends.
+  // Warrior (improved_charge sobre charge).
   onRollReady?: SpellHookFn;
+  // S7 — dentro del bloque genérico spendsCombo: calcula el multiplicador sobre
+  // ctx.roll con ctx.comboSpent. Rogue (x combo), druid (equinox/fragmented).
+  modifyComboSpend?: SpellHookFn;
+  // S9 terminal — delegan el cálculo específico de cada tipo de hechizo.
+  onHot?: SpellHookFn;
+  onDot?: SpellHookFn;
+  onHeal?: SpellHookFn;
+  onDamage?: SpellHookFn;
 }
 
 export const noopSpellHooks: SpellHooks = {};

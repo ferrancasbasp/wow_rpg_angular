@@ -14,6 +14,91 @@ export const valkyrieAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    castSpell(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey !== 'valkyrie') return false;
+      const poolName = () => (svc.selectedValkyriePool() === 'shield' ? 'escuido' : 'lanza');
+
+      if (ability.energyCost && !svc.valkyriePoolHas(ability.energyCost)) {
+        svc.showToast('No tienes suficiente carga de ' + poolName());
+        return true;
+      }
+      if (ability.energyCost) {
+        const spent = svc.spendValkyriePool(ability.energyCost);
+        ctx.texts['valkSpend'] = ' · −' + spent + ' carga de ' + poolName();
+      }
+
+      if (ability.id === 'valk_mending') {
+        const poolActual = svc.valkyriePoolValue();
+        if (poolActual <= 0) {
+          svc.showToast('No tienes carga de ' + poolName());
+          return true;
+        }
+        const spent = svc.spendValkyriePool(poolActual);
+        const tmRank = svc.talentRank('twin_mending');
+        const mFlat = Math.round((ability.currentBuffValue || 60) * (1 + tmRank * 0.15));
+        const healAmount = spent + mFlat;
+        svc.adjustHP(healAmount);
+        svc.syncPlayerStatus();
+        svc.useAction(ctx.actionCost);
+        const effCdM = svc.getEffectiveCooldown(ability);
+        if (effCdM > 0) {
+          svc.character.update(c => {
+            if (!c.currentCooldowns) c.currentCooldowns = {};
+            c.currentCooldowns[ability.id] = effCdM;
+            return { ...c };
+          });
+        }
+        let twinMendingText = '';
+        if (tmRank > 0) {
+          const tmHeal = Math.round(healAmount * 0.20 * tmRank);
+          if (tmHeal > 0) {
+            svc.sendHealEvent({ ...ability, name: 'Twin Mending' }, tmHeal);
+            twinMendingText = ' · 🤝 +' + tmHeal + ' a un aliado (Twin Mending)';
+          }
+        }
+        const nowHP = svc.hpActual();
+        if (nowHP >= svc.maxHP()) {
+          ctx.player.setValkFallen(false);
+        }
+        svc.showToast(ability.name + ' R' + ability.currentRank + ': +' + healAmount + ' vida (' + spent + ' carga de ' + poolName() + ' + ' + mFlat + ')' + twinMendingText);
+        return true;
+      }
+
+      if (ability.id === 'valk_dive_strike' || ability.id === 'valk_lightning_bolt') {
+        if (!svc.odinsWillActive()) {
+          svc.showToast('Necesitas el buffo de Odins Will para usar ' + ability.name);
+          return true;
+        }
+        if (ability.id === 'valk_dive_strike' && !svc.valkyrieFlying()) {
+          svc.showToast(ability.name + ' requiere estar en el cielo');
+          return true;
+        }
+      }
+
+      if (ability.id === 'valk_lightning_bolt') {
+        const poolActual = svc.valkyriePoolValue();
+        if (poolActual <= 0) {
+          svc.showToast('No tienes carga de ' + poolName());
+          return true;
+        }
+        const spent = svc.spendValkyriePool(poolActual);
+        const flat = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
+        const vortexMult = 1 + svc.talentRank('lightning_vortex') * 0.10;
+        const flatBoosted = Math.round(flat * vortexMult);
+        const ijRank = svc.talentRank('improved_javelin');
+        const energyContribution = 0.70 + ijRank * 0.10;
+        const energyDmg = Math.round(spent * energyContribution);
+        const roll = flatBoosted + energyDmg;
+        svc.useAction(ctx.actionCost);
+        svc.turnDamage.update(d => d + roll);
+        svc.sendDamageEvent({ ...ability, name: ability.name + ' R' + ability.currentRank }, roll, 1, 1);
+        svc.showToast(ability.name + ' R' + ability.currentRank + ': ⚡ ' + roll + ' daño mágico (' + flatBoosted + ' plano + ' + energyDmg + ' de ' + spent + ' carga de ' + svc.selectedValkyriePool() + ' (' + Math.round(energyContribution * 100) + '%)' + (ijRank > 0 ? ' · Improved Javelin R' + ijRank : '') + ') — ' + ctx.t('sent_to_master'));
+        return true;
+      }
+
+      return false;
+    },
     modifyRoll(ability, ctx) {
       if (ability.id === 'shield_bash' && ctx.svc.character().classKey === 'valkyrie') {
         const wardedRank = ctx.svc.talentRank('warded');

@@ -18,7 +18,7 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
     const baseChance = parseFloat((resType === 'rage' || resType === 'energy' || resType === 'focus') ? svc.meleeCrit() : svc.spellCrit());
     const ctx: SpellCastContext = {
       svc,
-      player: { sendDamagePayload: () => {} },
+      player: { sendDamagePayload: () => {}, setValkFallen: () => {}, updateAbilityRoll: () => {} },
       t: (k) => k,
       ability,
       resType,
@@ -37,6 +37,8 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
       critChance: baseChance,
       critMult: 1.5,
       isCrit: true,
+      comboSpent: 0,
+      sunShardsSpent: 0,
       texts: {},
     };
     return { ctx, baseChance };

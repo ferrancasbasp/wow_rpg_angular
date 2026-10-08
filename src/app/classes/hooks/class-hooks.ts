@@ -3,6 +3,8 @@ import type { SpellHooks } from './spell-hooks';
 
 export interface PlayerLink {
   sendDamagePayload(payload: Record<string, unknown>): void;
+  setValkFallen(active: boolean): void;
+  updateAbilityRoll(id: string, roll: number, crit: boolean): void;
 }
 
 export interface ClassHooksContext {
