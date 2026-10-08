@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, RouterTestingModule],
     }).compileComponents();
   });
 
@@ -14,10 +15,14 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('renderiza la navegacion principal', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, wow-rpg');
+    const nav = compiled.querySelector('.nav-bar');
+    expect(nav).toBeTruthy();
+    expect(nav?.textContent).toContain('Ficha');
+    expect(nav?.textContent).toContain('Master');
+    expect(nav?.textContent).toContain('Combat');
   });
 });
