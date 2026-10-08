@@ -5,5 +5,6 @@ import { mageAbilityHooks } from './mage.hooks';
 import { shamanAbilityHooks } from './shaman.hooks';
 import { hunterAbilityHooks } from './hunter.hooks';
 import { rogueAbilityHooks } from './rogue.hooks';
+import { priestAbilityHooks } from './priest.hooks';
 
-export const classAbilityHooks: ClassAbilityHooks[] = [warlockAbilityHooks, warriorAbilityHooks, mageAbilityHooks, shamanAbilityHooks, hunterAbilityHooks, rogueAbilityHooks];
+export const classAbilityHooks: ClassAbilityHooks[] = [warlockAbilityHooks, warriorAbilityHooks, mageAbilityHooks, shamanAbilityHooks, hunterAbilityHooks, rogueAbilityHooks, priestAbilityHooks];
