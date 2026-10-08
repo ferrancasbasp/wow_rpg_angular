@@ -25,6 +25,16 @@ export const shamanAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onSpend(_ability, ctx) {
+      const svc = ctx.svc;
+      if (ctx.maelstormFree) {
+        svc.character.update(c => ({ ...c, comboPoints: 0 }));
+        const noGcd = svc.character().classKey === 'shaman' && svc.talentRank('maelstrom_mastery') > 0;
+        ctx.texts['maelstorm'] = noGcd
+          ? ' · ¡Maelstorm! Lanzamiento sin GCD y (−50% maná)'
+          : ' · ¡Maelstorm! Lanzamiento instantáneo (−50% maná)';
+      }
+    },
     modifyCost(_ability, ctx) {
       if (ctx.maelstormFree) {
         ctx.cost = Math.round((ctx.cost || 0) * 0.5 * (1 - ctx.svc.talentRank('maelstrom_efficiency') * 0.15));

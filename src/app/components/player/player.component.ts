@@ -1371,25 +1371,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(this.trSvc.t('stealth_off'));
     }
 
-    // S4 — gasto de recurso real (acción, maná, rage/Pool/combo/shards) + refunds
+    // S4 — gasto de recurso real (acción, maná, rage/Pool/combo/shards) + refunds/tipos (onSpend)
     this.charSvc.useAction(actionCost);
-
-    let maelstormText = '';
-    if (maelstormFree) {
-      this.charSvc.character.update(c => ({ ...c, comboPoints: 0 }));
-      maelstormText = maelstormNoGcd
-        ? ' · ¡Maelstorm! Lanzamiento sin GCD y (−50% maná)'
-        : ' · ¡Maelstorm! Lanzamiento instantáneo (−50% maná)';
-    }
-
-    let unyieldingText = '';
-    if (ability.id === 'basic_attack' && isRage) {
-      const usRank = this.charSvc.talentRank('unyielding_strikes');
-      if (usRank > 0 && Math.random() * 100 < usRank * 4) {
-        this.charSvc.useAction(-1);
-        unyieldingText = ' · ¡Acción gratis!';
-      }
-    }
+    this.runSpellHooks('onSpend', ability, ctx);
 
     const clearcast = (isRage || isEnergy || isFocus) ? false : this.charSvc.checkClearcasting();
     ctx.clearcast = clearcast;
@@ -2166,7 +2150,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + unyieldingText + serpentText + woundText + rendText + sunderText + maelstormText + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
+        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + (ctx.texts['unyielding'] || '') + serpentText + woundText + rendText + sunderText + (ctx.texts['maelstorm'] || '') + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + efCritText + arcaneOrbText + orbText + natureBoostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {

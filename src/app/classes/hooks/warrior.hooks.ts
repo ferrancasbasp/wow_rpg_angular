@@ -17,6 +17,15 @@ export const warriorAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onSpend(ability, ctx) {
+      if (ability.id === 'basic_attack' && ctx.isRage) {
+        const usRank = ctx.svc.talentRank('unyielding_strikes');
+        if (usRank > 0 && Math.random() * 100 < usRank * 4) {
+          ctx.svc.useAction(-1);
+          ctx.texts['unyielding'] = ' · ¡Acción gratis!';
+        }
+      }
+    },
     modifyCritChance(ability, ctx) {
       if (ability.id === 'basic_attack' && ctx.svc.character().classKey === 'warrior') {
         ctx.critChance += ctx.svc.talentRank('unyielding_strikes') * 1;
