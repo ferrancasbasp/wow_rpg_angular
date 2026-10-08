@@ -400,56 +400,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  castFinale(ability: any) {
-    const notes = this.charSvc.getNotes();
-    const level = this.charSvc.character().level;
-    const ranks = ability.damageRanges || [];
-    const rnk = [...ranks].reverse().find((d: any) => d.level <= level) || ranks[0];
-    const minD = rnk ? rnk.min : 18;
-    const maxD = rnk ? rnk.max : 26;
-    let roll = minD + Math.floor(Math.random() * (maxD - minD + 1));
-    roll += Math.round(this.charSvc.spellPower() * (ability.spellPowerRatio || 0.8));
-    const contribution = this.charSvc.noteContribution();
-    roll = Math.round(roll * contribution);
-    let isCrit = false;
-    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
-      isCrit = true;
-      roll = Math.round(roll * 1.5);
-    }
-    this.charSvc.clearNotes();
-    let noteText = ' · ' + notes.length + ' notas consumidas (×' + contribution.toFixed(1) + ')';
-    const maestroRank = this.charSvc.talentRank('maestro');
-    if (maestroRank > 0 && Math.random() * 100 < maestroRank * 35) {
-      this.charSvc.actionsUsed.update(n => Math.max(0, n - 1));
-      noteText += ' · ¡Maestro! +1 accion';
-    }
-    const improRank = this.charSvc.talentRank('impro');
-    if (improRank > 0 && Math.random() * 100 < improRank * 20) {
-      const maxNote = this.charSvc.classConfig().comboConfig?.max || 7;
-      const newNote = 1 + Math.floor(Math.random() * maxNote);
-      this.charSvc.addNote(newNote);
-      noteText += ' · ¡Impro! Nueva nota: ' + NOTE_NAMES[newNote - 1];
-    }
-    this.charSvc.addTurnDamage(roll);
-    this.sendDamagePayload({
-      player: this.charSvc.character().name || 'Jugador',
-      ability: ability.name,
-      rank: rnk ? rnk.rank : 1,
-      damage: roll,
-      damageType: 'magical',
-      aoe: false,
-      effects: null,
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    this.charSvc.showToast(ability.name + ': ' + roll + ' danyo de magia' + (isCrit ? ' ¡CRITICO!' : '') + noteText + ' — ' + this.trSvc.t('sent_to_master'));
-  }
-
-
-
-
-
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.charSvc.character.update(c => ({ ...c, name: value }));
@@ -2749,8 +2699,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       });
       this.charSvc.syncPlayerStatus();
       this.charSvc.showToast('📯 Last Will: 3 turnos gastando vida en vez de ira (10 de ira → 5% de vida), +60% probabilidad de critico, +20 ira y Odin\'s Will activo (R' + odinsRank + ')');
-    } else if (ability.id === 'finale') {
-      this.castFinale(ability);
     } else if (ability.id === 'nature_guardian') {
       const moonMax = this.charSvc.getMaelstromMax();
       const sunMax = this.charSvc.sunShardsMax();
