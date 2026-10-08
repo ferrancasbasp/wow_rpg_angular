@@ -801,19 +801,51 @@
             @if (partyItems().length === 0) {
               <div class="damage-empty">No hay ítems del grupo aún — créalos en Item Creation.</div>
             } @else {
-              <div class="party-items-grid">
-                @for (item of partyItems(); track item.id) {
-                  <div class="item-card" [style.borderColor]="rarityColor[item.rarity]"
-                       [style.boxShadow]="'0 0 8px ' + rarityColor[item.rarity] + '33'">
-                    <div class="item-card-name" [style.color]="rarityColor[item.rarity]">{{ item.name }}</div>
-                    <div class="item-card-slot">{{ slotIcon[item.slot] }} {{ slotLabelOf(item.slot) }} · {{ item.rarity }}</div>
-                    <div class="item-card-bonus">
-                      @for (b of itemBonusList(item); track b.label) {
-                        <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+              <div class="party-items-section">
+                <div class="party-items-section-title">🎒 Stash</div>
+                @if (stashItems().length === 0) {
+                  <div class="damage-empty">El stash está vacío — todos los ítems están equipados.</div>
+                } @else {
+                  <div class="party-items-grid">
+                    @for (item of stashItems(); track item.id) {
+                      <div class="item-card" [style.borderColor]="rarityColor[item.rarity]"
+                           [style.boxShadow]="'0 0 8px ' + rarityColor[item.rarity] + '33'">
+                        <div class="item-card-name" [style.color]="rarityColor[item.rarity]">{{ item.name }}</div>
+                        <div class="item-card-slot">{{ slotIcon[item.slot] }} {{ slotLabelOf(item.slot) }} · {{ item.rarity }}</div>
+                        <div class="item-card-bonus">
+                          @for (b of itemBonusList(item); track b.label) {
+                            <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+                          }
+                        </div>
+                        <div class="item-card-owner stashed">🎒 Stash</div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="party-items-section">
+                <div class="party-items-section-title">⚔️ Equipados</div>
+                @if (equippedByPlayer().length === 0) {
+                  <div class="damage-empty">Nadie lleva ítems equipados.</div>
+                } @else {
+                  @for (group of equippedByPlayer(); track group.player) {
+                    <div class="party-items-player"><b>◉ {{ group.player }}</b></div>
+                    <div class="party-items-grid">
+                      @for (item of group.items; track item.id) {
+                        <div class="item-card" [style.borderColor]="rarityColor[item.rarity]"
+                             [style.boxShadow]="'0 0 8px ' + rarityColor[item.rarity] + '33'">
+                          <div class="item-card-name" [style.color]="rarityColor[item.rarity]">{{ item.name }}</div>
+                          <div class="item-card-slot">{{ slotIcon[item.slot] }} {{ slotLabelOf(item.slot) }} · {{ item.rarity }}</div>
+                          <div class="item-card-bonus">
+                            @for (b of itemBonusList(item); track b.label) {
+                              <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+                            }
+                          </div>
+                          <div class="item-card-owner">{{ group.player }}</div>
+                        </div>
                       }
                     </div>
-                    <div class="item-card-owner" [class.stashed]="!item.owner">{{ item.owner ? '◉ ' + item.owner : '🎒 Stash' }}</div>
-                  </div>
+                  }
                 }
               </div>
             }

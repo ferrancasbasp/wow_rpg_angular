@@ -205,6 +205,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.selectedHealTarget.update(t => t === name ? null : name);
   }
 
+  stashItems = computed<Item[]>(() => this.partyItems().filter(i => !i.owner));
+  equippedByPlayer = computed(() => {
+    const map = new Map<string, Item[]>();
+    for (const item of this.partyItems()) {
+      if (!item.owner) continue;
+      const arr = map.get(item.owner) ?? [];
+      arr.push(item);
+      map.set(item.owner, arr);
+    }
+    return [...map.entries()].map(([player, items]) => ({ player, items }));
+  });
+
   initPartyItems() {
     try {
       this.itemsNodeUnsub = this.firebase.onValue('items', (data) => {
