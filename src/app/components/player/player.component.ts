@@ -587,54 +587,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
 
-  castShadowDance(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'shadow_dance'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shadow Dance', target: 'shadow_dance', value: 0, duration },
-      ],
-    }));
-    this.charSvc.showToast('🩶 Shadow Dance activa · habilidades de sigilo sin Stealth (' + duration + ' turnos)');
-  }
-
-  castBladeFlurry(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'blade_flurry'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Blade Flurry', target: 'blade_flurry', value: 0, duration },
-      ],
-    }));
-    this.charSvc.showToast('🌪️ Blade Flurry activa · tu daño directo impacta a otro enemigo, +10 energía extra por turno (' + duration + ' turnos)');
-  }
-
-  castPoisonMastery(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'poison_mastery'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Poison Mastery', target: 'poison_mastery', value: 0, duration },
-      ],
-    }));
-    const hasWound = this.charSvc.hasEffect('woundPoison');
-    const hasMortal = this.charSvc.hasEffect('poisonDamage');
-    const hasVamp = this.charSvc.hasEffect('leechPoison');
-    let effectText: string;
-    if (hasWound) {
-      effectText = 'Wound: tus ataques además reducen un 25% el daño del enemigo';
-    } else if (hasMortal) {
-      effectText = 'Veneno Mortal x1.5';
-    } else if (hasVamp) {
-      effectText = 'Veneno Vampírico x1.5';
-    } else {
-      effectText = 'envenena antes tus armas para potenciar el veneno';
-    }
-    this.charSvc.showToast('☠️ Poison Mastery activa · ' + effectText + ' (' + duration + ' turnos)');
-  }
 
   onNameInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
@@ -2945,12 +2897,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castRebirth(ability);
     } else if (ability.id === 'finale') {
       this.castFinale(ability);
-    } else if (ability.id === 'shadow_dance') {
-      this.castShadowDance(ability);
-    } else if (ability.id === 'blade_flurry') {
-      this.castBladeFlurry(ability);
-    } else if (ability.id === 'poison_mastery') {
-      this.castPoisonMastery(ability);
     } else if (ability.id === 'nature_guardian') {
       const moonMax = this.charSvc.getMaelstromMax();
       const sunMax = this.charSvc.sunShardsMax();
