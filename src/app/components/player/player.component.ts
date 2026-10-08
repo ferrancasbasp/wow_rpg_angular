@@ -15,6 +15,8 @@ import {
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
+import { warlockAbilityHooks } from '../../classes/hooks/warlock.hooks';
+import type { ClassHooksContext } from '../../classes/hooks/class-hooks';
 
 const ORB_SYMBOLS: Record<ElementalOrb, string> = {
   fire: '🔥',
@@ -398,125 +400,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  castSummonInfernal(ability: any) {
-    const shardCost = ability.shardCost || 2;
-    this.charSvc.spendShards(shardCost);
-
-    const sp = this.charSvc.spellPower();
-    const ratio = ability.spellPowerRatio || 0.8;
-    const dr = ability.damageRanges?.[0] || { min: 70, max: 110 };
-    const minD = Math.round(dr.min + sp * ratio);
-    const maxD = Math.round(dr.max + sp * ratio);
-    let dmg = minD + Math.floor(Math.random() * (maxD - minD + 1));
-    if (Math.random() * 100 < parseFloat(this.charSvc.spellCrit())) {
-      let critMult = 1.5;
-      if (this.charSvc.hasEffect('demonic_form')) critMult = critMult * 1.25;
-      dmg = Math.round(dmg * critMult);
-    }
-
-    const landingAbility = {
-      ...ability,
-      currentRank: 1,
-      isDot: false,
-      inflictsEffects: [{ type: 'debuff', name: this.trSvc.t('infernal_stun'), target: 'stunned', value: 0, duration: ability.stunDuration || 1 }],
-    };
-    this.charSvc.sendDamageEvent(landingAbility, dmg);
-
-    const turns = ability.infernalTurns || 4;
-    this.charSvc.summonInfernal(turns);
-    this.charSvc.showToast('🔥 Infernal aterriza! ' + dmg + ' danyo de Fuego a todos · stun 1 turno · lucha ' + turns + ' turnos');
-  }
-
-  castDemonicSacrifice(ability: any) {
-    const shardCost = ability.shardCost || 2;
-    if (!this.charSvc.spendShards(shardCost)) {
-      this.charSvc.showToast(this.trSvc.t('need_shards') + ' ' + shardCost + ' ' + this.trSvc.t('soul_shards_plural'));
-      return;
-    }
-    const pet = this.charSvc.activePetData();
-    if (!pet) {
-      this.charSvc.addShard(shardCost);
-      this.charSvc.showToast('No tienes un demonio invocado para sacrificar');
-      return;
-    }
-    const now = Date.now() + Math.random();
-    const maxHp = this.charSvc.maxHP();
-    if (pet.id === 'imp') {
-      this.charSvc.character.update(c => ({
-        ...c,
-        activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== 'Burning Soul'),
-          { id: now, type: 'buff' as const, name: 'Burning Soul', target: 'spellPower', value: 20, duration: 999, isPercent: true },
-        ],
-      }));
-      this.charSvc.showToast('💀 Sacrificaste al Imp · Burning Soul: +20% Spell Power (toda la batalla)');
-    } else if (pet.id === 'voidwalker') {
-      const shieldAmt = Math.round(maxHp * 0.25);
-      this.charSvc.character.update(c => ({
-        ...c,
-        activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== 'Void Fortitude' && e.target !== 'shield'),
-          { id: now, type: 'buff' as const, name: 'Void Fortitude', target: 'maxHP', value: 25, duration: 999, isPercent: true },
-          { id: now + 1, type: 'buff' as const, name: 'Void Fortitude', target: 'shield', value: shieldAmt, duration: 999 },
-        ],
-      }));
-      this.charSvc.showToast('💀 Sacrificaste al Voidwalker · Void Fortitude: +25% vida maxima y escudo de ' + shieldAmt + ' HP');
-    } else {
-      this.charSvc.addShard(shardCost);
-      this.charSvc.showToast('Ese demonio no puede ser sacrificado (aun)');
-      return;
-    }
-    this.charSvc.dismissPet();
-  }
-
-  castDarkStar(ability: any) {
-    const mb = this.charSvc.computedAbilities().find(a => a.id === 'mind_blast');
-    let dmg = 0;
-    if (mb && ((mb as any).currentMin || (mb as any).currentMax)) {
-      const minD = (mb as any).currentMin || 0;
-      const maxD = (mb as any).currentMax || 0;
-      dmg = Math.round(minD + Math.random() * (maxD - minD));
-    } else {
-      const sp = this.charSvc.spellPower();
-      dmg = Math.round(40 + Math.random() * 15 + sp * 0.429);
-    }
-    const dm = this.charSvc.computedAbilities().find(a => a.id === 'dark_mending');
-    let heal = 0;
-    if (dm && ((dm as any).currentMin || (dm as any).currentMax)) {
-      const minH = (dm as any).currentMin || 0;
-      const maxH = (dm as any).currentMax || 0;
-      heal = Math.round(minH + Math.random() * (maxH - minH));
-    } else {
-      const sp = this.charSvc.spellPower();
-      heal = Math.round(135 + sp * 0.7);
-    }
-    const isCrit = Math.random() * 100 < parseFloat(this.charSvc.spellCrit());
-    if (isCrit) {
-      dmg = Math.round(dmg * 1.5);
-      heal = Math.round(heal * 1.5);
-    }
-    const lowHp = (this.charSvc.character().currentHP ?? this.charSvc.maxHP()) / this.charSvc.maxHP() < 0.5;
-    if (lowHp) heal = Math.round(heal * 2);
-    const myName = this.charSvc.character().name || 'Jugador';
-    this.sendDamagePayload({
-      player: myName,
-      ability: ability.name,
-      rank: ability.currentRank || 1,
-      damage: dmg,
-      damageType: 'magical',
-      aoe: true,
-      effects: null,
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    const healMult = this.charSvc.healingReceivedMult();
-    const appliedHeal = healMult < 1 ? Math.round(heal * healMult) : heal;
-    this.charSvc.adjustHP(appliedHeal);
-    const healReduced = healMult < 1 ? ' (cura reducida −' + Math.round((1 - healMult) * 100) + '%)' : '';
-    this.charSvc.showToast(ability.name + ': ' + dmg + ' danyo de sombra a todos (AOE)' + (isCrit ? ' ¡CRITICO!' : '') + ' · te curas ' + appliedHeal + healReduced + (lowHp ? ' (x2 low HP)' : ''));
-  }
-
   castFinale(ability: any) {
     const notes = this.charSvc.getNotes();
     const level = this.charSvc.character().level;
@@ -864,39 +747,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast("Valkyrie's Call: +1 accion a todos los aliados y cura de " + heal + ' HP — 2 eventos AOE al Master');
   }
 
-  castSeedOfCorruption(ability: any) {
-    const shardCost = ability.shardCost || 1;
-    if (!this.charSvc.spendShards(shardCost)) {
-      this.charSvc.showToast(this.trSvc.t('need_shards') + ' 1 ' + this.trSvc.t('soul_shard'));
-      return;
-    }
-    const corr = this.charSvc.computedAbilities().find(a => a.id === 'corruption');
-    let dotTick = 10;
-    if (corr && ((corr as any).dotTick || (corr as any).currentDotValue)) {
-      dotTick = (corr as any).dotTick || (corr as any).currentDotValue || 10;
-    } else {
-      const rank = this.charSvc.maxAvailableRank(this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')!);
-      const dr = (this.charSvc.classConfig().abilities.find(a => a.id === 'corruption')?.dotRanges || []).find(d => d.rank === rank);
-      if (dr) {
-        dotTick = dr.value;
-      }
-    }
-    const boosted = Math.round(dotTick * 1.10);
-    this.sendDamagePayload({
-      player: this.charSvc.character().name || 'Jugador',
-      ability: ability.name,
-      rank: ability.currentRank || 1,
-      damage: 0,
-      damageType: 'magical',
-      aoe: true,
-      effects: [{ type: 'dot', name: 'Seed of Corruption', value: boosted, duration: 5, debuffType: 'shadow' }],
-      seedShards: true,
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    this.charSvc.showToast(ability.name + ': DoT potenciado (+10%) a todos los enemigos · -35% mana · el Master devuelve 1 Soul Shard por enemigo (max 5)');
-  }
 
   castShadowDance(ability: any) {
     const duration = 3;
@@ -3008,6 +2858,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast('Pasiva: ' + ability.name + ' activa');
       return;
     }
+    const hookCtx: ClassHooksContext = {
+      svc: this.charSvc,
+      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
+      t: (key) => this.trSvc.t(key),
+    };
     const resType = this.charSvc.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';
@@ -3326,16 +3181,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.id === 'explosive_shot') {
       this.castExplosiveShot(ability);
-    } else if (ability.id === 'summon_infernal') {
-      this.castSummonInfernal(ability);
-    } else if (ability.id === 'seed_of_corruption') {
-      this.castSeedOfCorruption(ability);
+    } else if (warlockAbilityHooks.castUtility?.(ability, hookCtx) ?? false) {
+      return;
     } else if (ability.totem) {
       this.castTotem(ability);
     } else if (ability.weaponImbue) {
       this.castWeaponImbue(ability);
-    } else if (ability.id === 'demonic_sacrifice') {
-      this.castDemonicSacrifice(ability);
     } else if (ability.id === 'holy_nova') {
       this.castHolyNova(ability);
     } else if (ability.id === 'valkyries_call') {
@@ -3366,8 +3217,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castCallFromValhalla(ability);
     } else if (ability.id === 'rebirth') {
       this.castRebirth(ability);
-    } else if (ability.id === 'dark_star') {
-      this.castDarkStar(ability);
     } else if (ability.id === 'finale') {
       this.castFinale(ability);
     } else if (ability.id === 'kill_command') {
@@ -3407,16 +3256,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast(this.trSvc.t('druid_nature_guardian_toast'));
     } else if (ability.id === 'unsummon_pet') {
       this.charSvc.dismissPet();
-    } else if (ability.id === 'life_tap') {
-      const manaGained = ability.currentBuffValue;
-      const healthLost = manaGained;
-      this.charSvc.character.update(c => ({
-        ...c,
-        currentHP: Math.max(1, hpActual - healthLost),
-        currentMana: Math.min(this.charSvc.maxMana(), (c.currentMana ?? this.charSvc.maxMana()) + manaGained),
-      }));
-      this.charSvc.syncPlayerStatus();
-      this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': -' + healthLost + ' vida · +' + manaGained + ' mana');
     } else if (ability.buff && ability.buff.applySelf) {
       if (ability.id === 'inner_fire') {
         const iifRank = this.charSvc.talentRank('improved_inner_fire');
