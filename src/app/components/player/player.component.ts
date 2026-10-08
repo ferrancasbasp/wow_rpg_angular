@@ -84,7 +84,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   levelUpFlash = signal(false);
   abilityRolls = signal<Record<string, { roll: number; crit: boolean }>>({});
   incomingMasterMsg = signal('');
-  partyFrames = signal<{ name: string; initials: string }[]>([]);
+  partyFrames = signal<{ name: string; initials: string; self: boolean }[]>([]);
   selectedHealTarget = signal<string | null>(null);
   valkFallen = signal(false);
 
@@ -147,26 +147,43 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   initPartyFrames() {
     try {
-      this.partyListUnsub = this.firebase.onValue('players', (data) => {
-        const myName = (this.charSvc.character().name || '').trim().toLowerCase();
-        const list: { name: string; initials: string }[] = [];
-        if (data && typeof data === 'object') {
-          for (const val of Object.values(data) as any[]) {
-            const n = String(val?.name || '').trim();
-            if (!n || val?.isPet) continue;
-            if (myName && n.toLowerCase() === myName) continue;
-            list.push({ name: n, initials: this.partyInitials(n) });
-          }
-        }
-        list.sort((a, b) => a.name.localeCompare(b.name));
-        this.partyFrames.set(list);
-        const sel = this.selectedHealTarget();
-        if (sel && !list.some(m => m.name === sel)) {
-          this.selectedHealTarget.set(null);
-        }
-      });
+      this.partyListUnsub = this.firebase.onValue('players', () => this.refreshPartyFrames());
     } catch {
       this.partyFrames.set([]);
+    }
+    this.refreshPartyFrames();
+  }
+
+  async refreshPartyFrames() {
+    let data: any = null;
+    try {
+      data = await this.firebase.onceValue('players');
+    } catch {
+      // base de datos inaccesible: se muestra al menos la ficha propia
+    }
+    this.applyPartyData(data);
+  }
+
+  private applyPartyData(data: any) {
+    const myName = (this.charSvc.character().name || '').trim();
+    const myNameL = myName.toLowerCase();
+    const list: { name: string; initials: string; self: boolean }[] = [];
+    if (data && typeof data === 'object') {
+      for (const val of Object.values(data) as any[]) {
+        const n = String(val?.name || '').trim();
+        if (!n || val?.isPet) continue;
+        if (myNameL && n.toLowerCase() === myNameL) continue;
+        list.push({ name: n, initials: this.partyInitials(n), self: false });
+      }
+    }
+    if (myNameL) {
+      list.unshift({ name: myName, initials: this.partyInitials(myName), self: true });
+    }
+    list.sort((a, b) => Number(b.self) - Number(a.self) || a.name.localeCompare(b.name));
+    this.partyFrames.set(list);
+    const sel = this.selectedHealTarget();
+    if (sel && !list.some(m => m.name === sel)) {
+      this.selectedHealTarget.set(null);
     }
   }
 
@@ -836,6 +853,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   endTurn() {
     const oldTurn = this.charSvc.turnNumber();
+    this.refreshPartyFrames();
     this.processEffects();
 
     if (this.charSvc.character().classKey === 'mage') {
@@ -1814,8 +1832,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const outMult = this.charSvc.healingOutgoingMult();
       const outNote = outMult < 1 ? ' (curas −' + Math.round((1 - outMult) * 100) + '%)' : '';
       const selHealTarget = this.selectedHealTarget();
-      const mySelfName = (this.charSvc.character().name || '').trim().toLowerCase();
-      const healTarget = selHealTarget && !ability.aoe && selHealTarget.toLowerCase() !== mySelfName ? selHealTarget : null;
+      const healTarget = selHealTarget && !ability.aoe ? selHealTarget : null;
       const healTargetNote = healTarget ? ' → ' + healTarget : '';
       if (ability.id === 'power_word_shield') {
         roll = Math.round(roll * healBonus * outMult);
@@ -1943,7 +1960,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           if (poisonDmg > 0 && ability.damageType === 'physical') hitRoll += poisonDmg;
           this.charSvc.turnDamage.update(d => d + hitRoll);
         }
-        this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits);
+        this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits, h > 0);
       }
       if (ability.chain) {
         const chBounces = ability.bounces || 1;
@@ -1951,7 +1968,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         for (let b = 1; b <= chBounces; b++) {
           const bRoll = Math.round(roll * Math.pow(chDecay, b));
           this.charSvc.turnDamage.update(d => d + bRoll);
-          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Salto ' + b + ')' }, bRoll, 1, 1);
+          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Salto ' + b + ')' }, bRoll, 1, 1, true);
         }
       }
       // S9 — damage post-payload (onHit): shaman windfury, hunter double_tap
@@ -2631,6 +2648,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.persistTurnState();
     this.charSvc.petRest();
     this.charSvc.syncPlayerStatus();
+    this.refreshPartyFrames();
     if (this.charSvc.character().classKey === 'bard') {
       const ability = this.charSvc.classConfig().abilities.find(a => a.id === 'rested_inspiration');
       const level = this.charSvc.character().level;

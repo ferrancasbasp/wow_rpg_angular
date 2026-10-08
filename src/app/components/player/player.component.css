@@ -1350,6 +1350,14 @@
     .party-frame-btn:hover {
       border-color: var(--gold); box-shadow: 0 0 6px var(--gold-glow); transform: scale(1.06);
     }
+    .party-frame-btn.self {
+      border-style: dashed;
+      color: var(--gold);
+      opacity: 0.85;
+    }
+    .party-frame-btn.self:hover {
+      opacity: 1;
+    }
     .party-frame-btn.active {
       border-color: #4a9a4a; color: #6be56b;
       box-shadow: 0 0 8px rgba(74, 154, 74, 0.45);
@@ -1357,16 +1365,17 @@
     }
 
     .turn-damage-box {
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px;
       background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
-      border: 1px solid var(--gold-dark); border-radius: var(--radius); padding: 10px 16px;
+      border: 1px solid var(--gold-dark); border-radius: var(--radius); padding: 5px 12px;
+      cursor: default;
     }
     .turn-damage-label {
-      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.05em; color: var(--text-dim);
+      font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.05em; color: var(--text-dim);
       text-transform: uppercase;
     }
     .turn-damage-value {
-      font-size: 32px; font-weight: 700; color: #c0392b; font-family: 'Cinzel', serif; line-height: 1;
+      font-size: 18px; font-weight: 700; color: #c0392b; font-family: 'Cinzel', serif; line-height: 1;
     }
     .hp-action-row { display: flex; gap: 6px; align-items: stretch; }
     .hp-loss-input {

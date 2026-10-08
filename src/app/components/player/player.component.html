@@ -360,8 +360,8 @@
             <button class="weapon-mode-btn" [class.active]="charSvc.warriorWeaponMode() === 'twohanded'" (click)="changeWeaponMode('twohanded')">2H</button>
           </div>
         }
-        <div class="turn-damage-box">
-          <span class="turn-damage-label">{{ trSvc.t('danyo') }} {{ trSvc.t('turno_actual') }}</span>
+        <div class="turn-damage-box" title="{{ trSvc.t('danyo') }} {{ trSvc.t('turno_actual') }}">
+          <span class="turn-damage-label">DPS</span>
           <span class="turn-damage-value">{{ charSvc.turnDamage() }}</span>
         </div>
         <div class="turn-btn-row">
@@ -419,8 +419,9 @@
               @for (m of partyFrames(); track m.name) {
                 <button
                   class="party-frame-btn"
+                  [class.self]="m.self"
                   [class.active]="selectedHealTarget() === m.name"
-                  [title]="m.name"
+                  [title]="m.self ? 'Tú — ' + m.name : m.name"
                   (click)="toggleHealTarget(m.name)"
                 >{{ m.initials }}</button>
               }

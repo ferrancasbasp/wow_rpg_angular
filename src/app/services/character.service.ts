@@ -1742,7 +1742,7 @@ export class CharacterService {
     };
   }
 
-  sendDamageEvent(ability: any, damage: number, hitNum: number = 1, totalHits: number = 1) {
+  sendDamageEvent(ability: any, damage: number, hitNum: number = 1, totalHits: number = 1, splash: boolean = false) {
     if (this.simMode()) {
       let effects: any = null;
       if (ability.isDot) {
@@ -1777,6 +1777,7 @@ export class CharacterService {
         aoe: ability.aoe || false,
         effects,
         symbol: (this.character().raidSymbol ?? null),
+        splash,
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,

@@ -95,6 +95,7 @@ interface DamageEvent {
   buffDuration?: number;
   isPercent?: boolean;
   symbol?: number | null;
+  splash?: boolean;
   buffAp?: number;
   buffSp?: number;
 }
@@ -230,7 +231,16 @@ export class MasterComponent implements OnInit {
           ? this.aliveMonsterBySymbol(event.symbol)
           : null;
         if (autoTarget) {
-          this.applySingleDamage(autoTarget, event);
+          if (event.splash) {
+            const target = this.randomSplashTarget(event.symbol);
+            if (target) {
+              this.applySingleDamage(target, event);
+            } else {
+              this.sendLog.update(log => [`${event.player}: ${event.ability} — sin otros objetivos vivos (daño perdido)`, ...log].slice(0, 8));
+            }
+          } else {
+            this.applySingleDamage(autoTarget, event);
+          }
         } else if (event.damageType === 'rebirth') {
           this.firebase.setData('damageEvents/' + event.id, { assigned: true });
           const rezAmount = event.damage || 200;
@@ -365,6 +375,12 @@ export class MasterComponent implements OnInit {
 
   aliveMonsterBySymbol(symbol: number): Monster | null {
     return this.monsters().find((m) => m.currentHP > 0 && m.symbol === symbol) || null;
+  }
+
+  private randomSplashTarget(symbol: number | null | undefined): Monster | null {
+    const others = this.monsters().filter((m) => m.currentHP > 0 && m.symbol !== symbol);
+    if (others.length === 0) return null;
+    return others[Math.floor(Math.random() * others.length)];
   }
 
   getEvent(id: string): DamageEvent | undefined {
