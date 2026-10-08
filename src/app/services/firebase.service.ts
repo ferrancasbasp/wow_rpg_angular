@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, off, remove, update, get } from 'firebase/database';
+import { getDatabase, ref, push, onValue, off, remove, update, get, runTransaction } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCxsMUUHvw_LQrl24VgDtJiperHF2rRL_Y',
@@ -28,6 +28,10 @@ export class FirebaseService {
 
   removeData(path: string) {
     return remove(ref(this.db, path));
+  }
+
+  runTransaction(path: string, updater: (current: number | null) => number) {
+    return runTransaction(ref(this.db, path), (current: any) => updater(current == null ? null : Number(current) || 0));
   }
 
   onValue(path: string, callback: (data: any) => void) {

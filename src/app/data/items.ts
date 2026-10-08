@@ -39,3 +39,5 @@ export const ITEM_SLOTS: ItemSlotMeta[] = [
 export const SLOT_ICON: Record<ItemSlot, string> = Object.fromEntries(
   ITEM_SLOTS.map((s) => [s.key, s.icon]),
 ) as Record<ItemSlot, string>;
+
+export const ITEM_SELL_COPPER = 150;

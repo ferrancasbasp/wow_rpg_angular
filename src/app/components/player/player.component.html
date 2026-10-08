@@ -798,6 +798,14 @@
             <button type="button" class="equip-close-btn" (click)="showPartyItems.set(false)">✕</button>
           </div>
           <div class="equip-screen-body">
+            <div class="party-wallet">
+              <div class="party-wallet-title">👛 Wallet</div>
+              <div class="party-wallet-coins">
+                <span class="wallet-coin wallet-gold">🪙 {{ walletGold() }}</span>
+                <span class="wallet-coin wallet-silver">◯ {{ walletSilver() }}</span>
+                <span class="wallet-coin wallet-copper">• {{ walletCopperCoins() }}</span>
+              </div>
+            </div>
             @if (partyItems().length === 0) {
               <div class="damage-empty">No hay ítems del grupo aún — créalos en Item Creation.</div>
             } @else {
@@ -818,6 +826,9 @@
                           }
                         </div>
                         <div class="item-card-owner stashed">🎒 Stash</div>
+                        <button class="item-sell-btn" (click)="sellItem(item)" [disabled]="sellingItem() === item.id">
+                          {{ sellingItem() === item.id ? 'Vendiendo…' : '💰 Vender +1 pl · 50 co' }}
+                        </button>
                       </div>
                     }
                   </div>

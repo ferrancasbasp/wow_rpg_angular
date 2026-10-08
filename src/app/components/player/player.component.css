@@ -1470,6 +1470,39 @@
     .wow-panel:nth-child(2) { animation-delay: 0.1s; }
     @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+    .party-wallet {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      max-width: 1200px; margin: 0 auto 18px;
+      border: 1px solid var(--gold-dark); border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255,215,0,0.08), rgba(0,0,0,0.25));
+      padding: 10px 14px;
+    }
+    .party-wallet-title {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .party-wallet-coins { display: flex; align-items: center; gap: 16px; }
+    .wallet-coin {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .wallet-gold { color: #ffd700; }
+    .wallet-silver { color: #c9ccd1; }
+    .wallet-copper { color: #cd7f32; }
+    .item-sell-btn {
+      margin-top: auto;
+      border: 1px solid #cd7f32; border-radius: 4px;
+      background: rgba(205,127,50,0.15); color: #e0a06a;
+      font-family: 'Cinzel', serif; font-size: 11px; cursor: pointer;
+      padding: 4px 8px; transition: var(--transition);
+    }
+    .item-sell-btn:hover:not(:disabled) {
+      background: rgba(205,127,50,0.35); color: #ffe3c0;
+      box-shadow: 0 0 8px rgba(205,127,50,0.5);
+    }
+    .item-sell-btn:disabled { opacity: 0.6; cursor: wait; }
+
     .party-items-section + .party-items-section { margin-top: 22px; }
     .party-items-section-title {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;

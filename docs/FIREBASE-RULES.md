@@ -55,6 +55,10 @@ el resto.
     "monsters": {
       ".read": true,
       ".write": true
+    },
+    "wallet": {
+      ".read": true,
+      ".write": true
     }
   }
 }
@@ -74,6 +78,7 @@ Resumen de las reglas:
 | `damageEvents`   | ✅   | ✅       | Jugadores envían daño/curas/buffs (`push`); el master marca `assigned` |
 | `playerEvents`   | ✅   | ✅       | El master envía eventos; los jugadores los borran al consumirlos |
 | `monsters`       | ✅   | ✅       | El master y combat leen enemigos |
+| `wallet`         | ✅   | ✅       | Bolsa del grupo (`wallet/copper`, transacción al vender) |
 | (resto)          | ❌   | ❌       | Denegado: `/.read`, `/.write` en falso |
 
 Notas importantes:
@@ -132,3 +137,5 @@ Esto limitaría el desequipe/equipe del item únicamente a su dueño. **Implica 
 - 2026-10: la app pasó a un modelo de items en base de datos (`items/<pushId>`, owner única).
   `items` es un path nuevo que NO existía en sets de reglas previos por-path — por eso la
   generación daba "No se pudo guardar — revisa Firebase" hasta abrir este path.
+- 2026-10: se añadió `wallet` (bolsa del grupo) con venta fija de items; también es un path
+  nuevo que hay que añadir al set por-path publicado.

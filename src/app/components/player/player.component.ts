@@ -14,7 +14,7 @@ import {
 } from '../../data/game-data';
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb, Item, ItemSlot } from '../../models/game.models';
-import { ITEM_SLOTS, SLOT_ICON, RARITY_COLOR } from '../../data/items';
+import { ITEM_SLOTS, SLOT_ICON, RARITY_COLOR, ITEM_SELL_COPPER } from '../../data/items';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
 import { classAbilityHooks, classSpellHooks } from '../../classes/hooks/registry';
 import type { ClassHooksContext, PlayerLink } from '../../classes/hooks/class-hooks';
@@ -90,13 +90,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
   valkFallen = signal(false);
   showPartyItems = signal(false);
   partyItems = signal<Item[]>([]);
+  walletCopper = signal(0);
+  sellingItem = signal<string | null>(null);
+  readonly ITEM_SELL_COPPER = ITEM_SELL_COPPER;
 
   readonly rarityColor = RARITY_COLOR;
   readonly slotIcon = SLOT_ICON;
 
+  walletGold = computed(() => Math.floor(this.walletCopper() / 10000));
+  walletSilver = computed(() => Math.floor((this.walletCopper() % 10000) / 100));
+  walletCopperCoins = computed(() => this.walletCopper() % 100);
+
   private playerEventUnsub: (() => void) | null = null;
   private partyListUnsub: (() => void) | null = null;
   private itemsNodeUnsub: (() => void) | null = null;
+  private walletUnsub: (() => void) | null = null;
 
   newEffect = signal<{
     type: ActiveEffect['type'];
@@ -146,12 +154,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.initPlayerEventListener();
     this.initPartyFrames();
     this.initPartyItems();
+    this.initWallet();
   }
 
   ngOnDestroy() {
     this.playerEventUnsub?.();
     this.partyListUnsub?.();
     this.itemsNodeUnsub?.();
+    this.walletUnsub?.();
   }
 
   initPartyFrames() {
@@ -237,6 +247,36 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   slotLabelOf(slot: ItemSlot): string {
     return ITEM_SLOTS.find(s => s.key === slot)?.label || slot;
+  }
+
+  initWallet() {
+    try {
+      this.walletUnsub = this.firebase.onValue('wallet', (data) => {
+        const raw = data && typeof data === 'object' ? (data as any).copper : data;
+        this.walletCopper.set(Number(raw) || 0);
+      });
+    } catch {
+      this.walletCopper.set(0);
+    }
+  }
+
+  async sellItem(item: Item) {
+    if (item.owner) {
+      this.charSvc.showToast('❌ Un ítem equipado no se puede vender');
+      return;
+    }
+    if (this.sellingItem()) return;
+    this.sellingItem.set(item.id);
+    try {
+      await this.firebase.runTransaction('wallet/copper', (cur) => (cur || 0) + ITEM_SELL_COPPER);
+      await this.firebase.removeData('items/' + item.id);
+      this.charSvc.showToast('✅ Vendido ' + item.name + ' (+1 pl · 50 co)');
+    } catch (e) {
+      const err = e as { code?: string; message?: string };
+      this.charSvc.showToast('❌ No se pudo vender: ' + (err?.code || err?.message || 'revisa consola'));
+    } finally {
+      this.sellingItem.set(null);
+    }
   }
 
   itemBonusList(item: Item): { label: string; value: number }[] {
