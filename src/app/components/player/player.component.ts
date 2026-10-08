@@ -10,7 +10,7 @@ import {
   DEBUFF_TYPES, debuffColor,
   NOTE_NAMES, NOTE_COLORS,
   STATUS_OPTIONS, HOT_DOT_TARGETS, EQUIPMENT_SLOTS, MAX_LEVEL,
-  xpForLevel, createDefaultCharacter,
+  xpForLevel,
 } from '../../data/game-data';
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
@@ -68,7 +68,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.saveToLocalStorage();
   }
 
-  showExportModal = signal(false);
   showTalentModal = signal(false);
   showStatsModal = signal(false);
   showEquipment = signal(false);
@@ -2623,43 +2622,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.showToast('🥐 Rested Inspiration: +' + rank.value + ' Espiritu a todo el grupo (5 turnos)');
       }
     }
-  }
-
-  resetCharacter() {
-    if (confirm('¿Reiniciar la ficha? Se perderan los cambios sin guardar.')) {
-      this.charSvc.character.set(
-        createDefaultCharacter(this.charSvc.character().classKey, this.classRegistry.getAll())
-      );
-      this.charSvc.turnNumber.set(1);
-      this.charSvc.showToast('Ficha reiniciada');
-    }
-  }
-
-  openExport() {
-    this.showExportModal.set(true);
-  }
-
-  exportedJson(): string {
-    return JSON.stringify(this.charSvc.character(), null, 2);
-  }
-
-  copyJson() {
-    navigator.clipboard.writeText(this.exportedJson()).then(() => {
-      this.charSvc.showToast('JSON copiado al portapapeles');
-    }).catch(() => {
-      this.charSvc.showToast('No se pudo copiar');
-    });
-  }
-
-  downloadJson() {
-    const blob = new Blob([this.exportedJson()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (this.charSvc.character().name || 'personaje').replace(/\s+/g, '_') + '_ficha.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    this.charSvc.showToast('Archivo descargado');
   }
 
   saveChar() {

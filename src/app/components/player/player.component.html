@@ -37,6 +37,12 @@
                 <span class="tp-badge-mini">{{ charSvc.availableTalentPoints() }}</span>
               }
             </button>
+            <button class="quick-icon-btn" (click)="saveChar()" title="Guardar en la nube">
+              <span>💾</span>
+            </button>
+            <button class="quick-icon-btn" (click)="openLoadModal()" title="Cargar personaje">
+              <span>📂</span>
+            </button>
           </div>
         </div>
 
@@ -597,13 +603,6 @@
 
     </div>
 
-    <div class="action-bar">
-      <button class="action-btn" (click)="saveChar()">{{ trSvc.t('save') }}</button>
-      <button class="action-btn" (click)="openLoadModal()">{{ trSvc.t('load') }}</button>
-      <button class="action-btn" (click)="openExport()">{{ trSvc.t('export_json') }}</button>
-      <button class="action-btn danger" (click)="resetCharacter()">{{ trSvc.t('reset') }}</button>
-    </div>
-
     @if (showStatsModal()) {
       <div class="modal-overlay" (click)="showStatsModal.set(false)">
         <div class="modal-content stats-modal" (click)="$event.stopPropagation()">
@@ -765,20 +764,6 @@
           </div>
           <div class="equip-screen-footer">
             <button class="action-btn" (click)="showEquipment.set(false)">{{ trSvc.t('cerrar') }}</button>
-          </div>
-        </div>
-      </div>
-    }
-
-    @if (showExportModal()) {
-      <div class="modal-overlay" (click)="showExportModal.set(false)">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-title">{{ trSvc.t('export_sheet') }}</div>
-          <textarea class="modal-textarea" readonly [value]="exportedJson()"></textarea>
-          <div class="modal-actions">
-            <button class="action-btn" (click)="copyJson()">{{ trSvc.t('copy') }}</button>
-            <button class="action-btn" (click)="downloadJson()">{{ trSvc.t('download') }}</button>
-            <button class="action-btn" (click)="showExportModal.set(false)">{{ trSvc.t('cerrar') }}</button>
           </div>
         </div>
       </div>
