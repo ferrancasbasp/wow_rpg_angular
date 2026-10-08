@@ -6,6 +6,7 @@ import { NPC_REGISTRY } from '../../data/npc-registry';
 import { Npc, NpcAttackEffect } from '../../models/game.models';
 import { DEBUFF_TYPES } from '../../data/game-data';
 import { MOB_SYMBOLS, assignedSymbolIndexes, nextFreeSymbol, symbolIcon as symbolIconOf, symbolImg as symbolImgOf } from '../../data/mob-symbols';
+import { ensureLocalCacheHygiene, getMonsters, setMonsters } from '../../services/local-cache';
 
 interface MonsterAttack {
   name: string;
@@ -1024,8 +1025,7 @@ export class MasterComponent implements OnInit {
   saveMonsters() {
     this.monsters.set([...this.monsters()]);
     try {
-      localStorage.setItem(
-        'ttrpg_wow_monsters',
+      setMonsters(
         JSON.stringify({
           monsters: this.monsters(),
           counter: this.monsterIdCounter(),
@@ -1037,7 +1037,8 @@ export class MasterComponent implements OnInit {
 
   loadMonsters() {
     try {
-      const data = localStorage.getItem('ttrpg_wow_monsters');
+      ensureLocalCacheHygiene();
+      const data = getMonsters();
       if (data) {
         const parsed = JSON.parse(data);
         const monsters: Monster[] = parsed.monsters || [];
@@ -1067,8 +1068,7 @@ export class MasterComponent implements OnInit {
         this.monsterIdCounter.set(counter);
         if (enriched > 0) {
           try {
-            localStorage.setItem(
-              'ttrpg_wow_monsters',
+            setMonsters(
               JSON.stringify({
                 monsters: this.monsters(),
                 counter: this.monsterIdCounter(),

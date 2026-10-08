@@ -1,7 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { SIM_SHEET_URL } from '../data/sim-config';
-
-const STORAGE_KEY = 'sim_runs_pending';
+import { ensureLocalCacheHygiene, getSimPending, setSimPending } from './local-cache';
 
 export interface SimRun {
   fecha: string;
@@ -107,7 +106,8 @@ export class SimCombatService {
 
   private loadPending(): SimRun[] {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      ensureLocalCacheHygiene();
+      const raw = getSimPending();
       return raw ? (JSON.parse(raw) as SimRun[]) : [];
     } catch {
       return [];
@@ -115,7 +115,7 @@ export class SimCombatService {
   }
 
   private storePending(pending: SimRun[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pending.slice(-200)));
+    setSimPending(JSON.stringify(pending.slice(-200)));
     this.refreshPendingCount();
   }
 

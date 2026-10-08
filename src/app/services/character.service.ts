@@ -3,7 +3,8 @@ import { Character, CharacterClass, Stats, StatKey, Ability, ActiveEffect, Pet, 
 import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { SimCombatService } from './sim-combat.service';
-import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, STORAGE_KEY, EQUIPMENT_SLOTS } from '../data/game-data';
+import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, EQUIPMENT_SLOTS } from '../data/game-data';
+import { ensureLocalCacheHygiene, getCharacter, setCharacter, getTurnState, setTurnState, clearTurnState } from './local-cache';
 
 interface CharacterAvatarPaths {
   horizontal: string;
@@ -127,7 +128,7 @@ export class CharacterService {
   persistTurnState() {
     if (this.simMode()) return;
     try {
-      localStorage.setItem('wow_turn_state', JSON.stringify({
+      setTurnState(JSON.stringify({
         _name: (this.character().name || '').trim(),
         turn: this.turnNumber(),
         turnDamage: this.turnDamage(),
@@ -140,16 +141,16 @@ export class CharacterService {
 
   restoreTurnState() {
     try {
-      const raw = localStorage.getItem('wow_turn_state');
+      const raw = getTurnState();
       if (!raw) return;
       const snap = JSON.parse(raw);
       if (!snap || typeof snap.turn !== 'number') return;
       if (snap._name && snap._name !== (this.character().name || '').trim()) {
-        localStorage.removeItem('wow_turn_state');
+        clearTurnState();
         return;
       }
       if (this.turnNumber() > snap.turn) {
-        localStorage.removeItem('wow_turn_state');
+        clearTurnState();
         return;
       }
       this.turnNumber.set(snap.turn);
@@ -1543,7 +1544,7 @@ export class CharacterService {
   saveToLocalStorage() {
     if (this.simMode()) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.character()));
+      setCharacter(JSON.stringify(this.character()));
     } catch (e) {
       console.error('Save error:', e);
     }
@@ -1551,7 +1552,8 @@ export class CharacterService {
 
   loadFromLocalStorage() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      ensureLocalCacheHygiene();
+      const raw = getCharacter();
       if (raw) this.applyParsedCharacter(JSON.parse(raw));
     } catch (e) {
       console.error('Load error:', e);
