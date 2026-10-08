@@ -1300,6 +1300,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       isCrit: false,
       comboSpent: 0,
       sunShardsSpent: 0,
+      hotTotal: 0,
+      dotTotal: 0,
+      dotTick: 0,
+      dotDuration: 0,
+      healBonus: 0,
+      sendAbility: null,
+      extraHitCritMult: 1.5,
       texts: {},
     };
     this.runSpellHooks('modifyCost', ability, ctx);
@@ -1564,20 +1571,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     }
 
-    let stormStrikeBuffText = '';
-    if (ability.id === 'storm_strike' && this.charSvc.character().classKey === 'shaman') {
-      const natureBuffValue = ability.currentBuffValue || 20;
-      const natureBuffDur = ability.buff?.duration || 2;
-      this.charSvc.character.update(c => ({
-        ...c,
-        activeEffects: [
-          ...(c.activeEffects || []).filter(e => e.name !== 'Storm Strike'),
-          { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Storm Strike', target: 'nature_boost', value: natureBuffValue, duration: natureBuffDur, isPercent: true },
-        ],
-      }));
-      stormStrikeBuffText = ' · ⛈️ siguiente hechizo de Naturaleza +' + natureBuffValue + '%';
-    }
-
     if (isRage && ability.generatesRage) {
       const baseGen = this.charSvc.getEffectiveRageGen(ability);
       const rageGen = isCrit ? baseGen * 2 : baseGen;
@@ -1673,14 +1666,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const sunShardMax = this.charSvc.sunShardsMax();
       sunShardText = ' · ' + sunShardsSpent + ' ☀️ consumidos';
     }
-    if (ability.id === 'earth_shock' && this.charSvc.character().classKey === 'shaman') {
-      const ssRank = this.charSvc.talentRank('static_shock');
-      if (ssRank > 0 && Math.random() * 100 < ssRank * 25) {
-        const ssMax = this.charSvc.getMaelstromMax();
-        this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(ssMax, (c.comboPoints || 0) + 1) }));
-        comboText += ' · +1 Maelstorm (Static Shock)';
-      }
-    }
 
     let focusText = '';
     if (ability.focusGain && isFocus) {
@@ -1715,14 +1700,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.modulateNotes(ability.modulateNotes || 1);
       noteText = ' · Notas +1 tono';
     }
-    if (ability.id === 'sforzando') {
-      const removedNote = this.charSvc.removeHighestNote();
-      if (removedNote) noteText = ' · Nota mas alta perdida: ' + NOTE_NAMES[removedNote - 1];
-      if (this.charSvc.talentRank('improved_sforzando') > 0) {
-        this.charSvc.modulateNotes(1);
-        noteText += ' · Notas +1 tono (Improved Sforzando)';
-      }
-    }
     let noteContributionValue = 0;
     if (ability.spendsNotes) {
       noteContributionValue = this.charSvc.noteContribution();
@@ -1745,32 +1722,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
 
     if (ability.isHot) {
-      let lunarText = '';
-      const lhRank = this.charSvc.talentRank('lunar_healing');
-      if (lhRank > 0 && Math.random() * 100 < lhRank * 10) {
-        const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
-        this.charSvc.character.update(c => ({
-          ...c,
-          comboPoints: Math.min(comboMax, (c.comboPoints || 0) + 1),
-        }));
-        lunarText = ' · +1 Moon Shard';
-      }
       let hotTotal = ability.hotTotal;
       if (evText) {
         const boost = 1 + this.charSvc.talentRank('evangelism') * 0.03;
         hotTotal = Math.round(hotTotal * boost);
       }
       const hotTick = Math.round(hotTotal / ability.hotDuration);
-      let germText = '';
-      if (ability.id === 'rejuvenation' && this.charSvc.talentRank('germination') > 0) {
-        const germTotal = Math.round(hotTotal * 0.5);
-        const germTick = Math.max(1, Math.round(germTotal / ability.hotDuration));
-        this.charSvc.sendHealEvent({ ...ability, id: 'germination', name: 'Germination', isHot: true, hotDuration: ability.hotDuration }, germTotal);
-        germText = ' · 🌸 Germination ' + germTick + '/turno (' + germTotal + ' total, 50%)';
-      }
+      // S9 — HoT (onHot): lunar_healing, germination (druid)
+      ctx.hotTotal = hotTotal;
+      this.runSpellHooks('onHot', ability, ctx);
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + hotTick + '/turno · ' +
-        ability.hotDuration + 't (' + hotTotal + ' total)' + germText + lunarText + evText + noteText +
+        ability.hotDuration + 't (' + hotTotal + ' total)' + (ctx.texts['germ'] || '') + (ctx.texts['lunar'] || '') + evText + noteText +
         ' — 🩹 HoT sobre ti'
       );
       this.charSvc.sendHealEvent(ability, hotTotal);
@@ -1791,89 +1754,27 @@ export class PlayerComponent implements OnInit, OnDestroy {
         dotTick = Math.round(dotTotal / baseDotDur);
       }
       const displayedTotal = dotTick * ability.dotDuration;
-      let directText = '';
-      if (ability.id === 'immolate' || ability.id === 'flame_shock') {
-        const min = ability.currentMin || 0;
-        const max = ability.currentMax || 0;
-        const directRoll = min + Math.floor(Math.random() * (max - min + 1));
-        const direct = ability.id === 'immolate' ? Math.round(directRoll / 2) : directRoll;
-        directText = ' +' + direct + ' directo';
-        this.charSvc.turnDamage.update(d => d + direct);
-        this.charSvc.sendDamageEvent({ ...ability, isDot: false }, direct, 1, 1);
-      }
+      // S9 — DoT (onDot): immolate/flame_shock base directo
+      this.runSpellHooks('onDot', ability, ctx);
+      const directText = ctx.texts['direct'] || '';
       this.charSvc.showToast(
         ability.name + ' R' + ability.currentRank + ': ' + dotTick + '/turno · ' +
         ability.dotDuration + 't (' + displayedTotal + ' total)' + directText + comboText + sunShardText + evText + ' — ' + this.trSvc.t('apply_to_enemy')
       );
       this.charSvc.sendDamageEvent({ ...ability, dotTotal, dotTick }, 0, 1, 1);
     } else if (ability.type === 'heal' && !ability.isHot) {
-      let healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.05;
-      if (this.charSvc.character().classKey === 'priest') {
-        healBonus *= 1 + this.charSvc.talentRank('preservation') * 0.10;
-      }
-      let tidalWaveText = '';
-      let spiritLinkText = '';
+      // S9 — heal (onHeal): healBonus por clase (priest/shaman/bard/druid) y textos
+      ctx.healBonus = 1 + this.charSvc.talentRank('healing_focus') * 0.05;
+      this.runSpellHooks('onHeal', ability, ctx);
+      const healBonus = ctx.healBonus;
+      let tidalWaveText = ctx.texts['tidal'] || '';
+      let spiritLinkText = ctx.texts['spirit'] || '';
+      let healGraceText = ctx.texts['healGrace'] || '';
+      let lunarText = ctx.texts['lunar'] || '';
       const spiritLinkActive = this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('spirit_link');
-      if (this.charSvc.character().classKey === 'shaman') {
-        const twRank = this.charSvc.talentRank('tidal_waves');
-        if (twRank > 0 && ability.id === 'chain_heal') {
-          this.charSvc.character.update(c => ({
-            ...c,
-            activeEffects: [
-              ...(c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
-              { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Tidal Waves', target: 'tidal_waves', value: 10 * twRank, duration: 3, isPercent: false },
-            ],
-          }));
-          tidalWaveText = ' · Tidal Waves: siguiente Healing Wave +' + (10 * twRank) + '%';
-        }
-        if (ability.id === 'healing_wave' && this.charSvc.hasEffect('tidal_waves')) {
-          const twBuff = (this.charSvc.character().activeEffects || []).find(e => e.target === 'tidal_waves');
-          if (twBuff) {
-            healBonus *= (1 + (twBuff.value || 0) / 100);
-            tidalWaveText = ' · Tidal Waves +' + (twBuff.value || 0) + '%';
-            this.charSvc.character.update(c => ({
-              ...c,
-              activeEffects: (c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
-            }));
-          }
-        }
-        if (spiritLinkActive && ability.id === 'chain_heal') {
-          healBonus *= 1.20;
-          spiritLinkText = ' · 🕸️ Vínculo: +20% curación';
-        }
-      }
-      let healGraceText = '';
-      if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'healing_wave' || ability.id === 'chain_heal')) {
-        const hgRank = this.charSvc.talentRank('healing_grace');
-        if (hgRank > 0) {
-          healBonus *= (1 + hgRank * 0.10);
-          if (Math.random() * 100 < hgRank * 20) {
-            const hgMax = this.charSvc.getMaelstromMax();
-            this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(hgMax, (c.comboPoints || 0) + 1) }));
-            healGraceText = ' · +1 Maelstorm';
-          }
-        }
-      }
-      const resonanceRank = this.charSvc.talentRank('resonance');
-      if (resonanceRank > 0) healBonus *= (1 + resonanceRank * 0.05);
-      if (ability.id === 'vivace') {
-        const ivRank = this.charSvc.talentRank('improved_vivace');
-        if (ivRank > 0) healBonus *= (1 + ivRank * 0.10);
-      }
-      let lunarText = '';
-      const lhRank = this.charSvc.talentRank('lunar_healing');
-      if (lhRank > 0 && Math.random() * 100 < lhRank * 10) {
-        const comboMax = (this.charSvc.classConfig().comboConfig?.max) || 5;
-        this.charSvc.character.update(c => ({
-          ...c,
-          comboPoints: Math.min(comboMax, (c.comboPoints || 0) + 1),
-        }));
-        lunarText = ' · +1 Moon Shard';
-      }
       const outMult = this.charSvc.healingOutgoingMult();
       const outNote = outMult < 1 ? ' (curas −' + Math.round((1 - outMult) * 100) + '%)' : '';
       if (ability.id === 'power_word_shield') {
-        healBonus *= (1 + this.charSvc.talentRank('improved_shield') * 0.10);
         roll = Math.round(roll * healBonus * outMult);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
@@ -1928,50 +1829,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (poisonDmg > 0 && ability.damageType === 'physical') {
         roll += Math.round(poisonDmg);
       }
-      let imbueText = '';
+      // S9 — damage (onDamage): mods por clase pre-toast (imbue, generacion de
+      // energia/ira, hope_and_grace, soul_leech, ignite, deep_wounds, serpent/rend/
+      // sunder, valk charge/taunt, orbes elementales, storm_strike, static_shock)
+      ctx.roll = roll;
+      ctx.sendAbility = ability;
+      this.runSpellHooks('onDamage', ability, ctx);
+      roll = ctx.roll;
+      let sendAbility = ctx.sendAbility;
+      comboText += (ctx.texts['staticShock'] || '');
+      if (!ability.spendsNotes) noteText += (ctx.texts['sforzando'] || '');
       let chainText = '';
       if (ability.chain) {
         chainText = ' · ⛓️ envía ' + (ability.bounces || 1) + ' impacto(s) extra (rebote)';
-      }
-      if ((ability.id === 'basic_attack' || ability.id === 'storm_strike') && this.charSvc.character().classKey === 'shaman') {
-        const shImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
-        if (shImbue) {
-          if (shImbue.name === 'Arma Lengua de Fuego') {
-            const iwiRank = this.charSvc.talentRank('improved_weapon_imbues');
-            const imbDmg = Math.round(shImbue.value * (1 + iwiRank * 0.10));
-            roll += imbDmg;
-            imbueText = ' · 🔥+' + imbDmg + ' fuego';
-          } else {
-            const wfDisplay = (shImbue.value || 20) + this.charSvc.talentRank('improved_weapon_imbues') * 5;
-            imbueText = ' · 💨 Windfury (' + wfDisplay + '%)';
-          }
-        }
-      }
-      if (ability.id === 'basic_attack' && this.charSvc.classConfig().abilities) {
-        if (isEnergy && this.charSvc.hasPassive('energetic_basic_attack')) {
-          const baseGen = isCrit ? 4 : 2;
-          const ieaRank = this.charSvc.talentRank('improved_energetic_attacks');
-          const energyGen = Math.floor(baseGen * (1 + ieaRank * 0.5));
-          const resourceMax = this.charSvc.resourceMax();
-          this.charSvc.character.update(c => ({
-            ...c,
-            currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + energyGen),
-          }));
-          rageText = ' · +' + energyGen + ' energia';
-        }
-        const fotwRank = this.charSvc.talentRank('first_of_the_wild');
-        if (fotwRank > 0 && this.charSvc.character().classKey === 'druid') {
-          const hpGain = Math.round(this.charSvc.maxHP() * fotwRank * 0.01);
-          const manaGain = Math.round(this.charSvc.maxMana() * fotwRank * 0.01);
-          const resourceMax = this.charSvc.resourceMax();
-          this.charSvc.character.update(c => ({
-            ...c,
-            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + hpGain),
-            currentMana: Math.min(resourceMax, (c.currentMana ?? resourceMax) + manaGain),
-          }));
-          this.charSvc.syncPlayerStatus();
-          fotwText = ' · +' + hpGain + ' vida · +' + manaGain + ' maná (First of the Wild)';
-        }
       }
       this.charSvc.turnDamage.update(d => d + roll);
       let lifestealText = '';
@@ -1985,13 +1855,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.charSvc.syncPlayerStatus();
         lifestealText = ' · +' + heal + ' vida';
       }
-      if (ability.id === 'basic_attack' && this.charSvc.selectedCapstone() === 'hope_and_grace') {
-        const graceHeal = Math.round(roll * 0.30);
-        if (graceHeal > 0) {
-          this.charSvc.sendHealEvent({ ...ability, id: 'hope_and_grace', name: 'Hope and Grace', description: '' }, graceHeal);
-          lifestealText += ' · 🕊️ +' + graceHeal + ' vida (Hope and Grace) — ' + this.trSvc.t('sent_to_master');
-        }
-      }
+      lifestealText += (ctx.texts['hope'] || '');
       const leechPoisonPct = this.charSvc.getLeechPoisonPercent();
       if (leechPoisonPct > 0 && ability.damageType === 'physical') {
         const leechHeal = Math.round(roll * leechPoisonPct / 100);
@@ -2004,73 +1868,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
           lifestealText += ' · 🩸 Veneno Vampírico +' + leechHeal + ' vida';
         }
       }
-      const slRank = this.charSvc.talentRank('soul_leech');
-      if (slRank > 0 && (ability.id === 'shadow_bolt' || ability.id === 'chaos_bolt')) {
-        const leechHeal = Math.round(roll * slRank * 0.10);
-        if (leechHeal > 0) {
-          this.charSvc.character.update(c => ({
-            ...c,
-            currentHP: Math.min(this.charSvc.maxHP(), (c.currentHP ?? this.charSvc.maxHP()) + leechHeal),
-          }));
-          this.charSvc.syncPlayerStatus();
-          lifestealText += ' · 🩸 Soul Leech +' + leechHeal + ' vida';
-        }
-      }
-      const igniteRank = this.charSvc.talentRank('ignite');
-      let igniteText = '';
-      if (isCrit && igniteRank > 0 && ability.school === 'Fuego') {
-        const igniteTotal = Math.max(1, Math.round(roll * 0.08 * igniteRank));
-        const igniteTick = Math.max(1, Math.round(igniteTotal / 3));
-        this.charSvc.sendDamageEvent(
-          { ...ability, id: 'ignite', name: 'Ignite', isDot: true, dotTick: igniteTick, dotDuration: 3, stackable: true, damageType: 'magical' },
-          0, 1, 1
-        );
-        igniteText = ' · 🔥 Ignite ' + igniteTotal + ' (' + igniteTick + '/t · 3t)';
-      }
-      const dwRank = this.charSvc.talentRank('deep_wounds');
-      let deepWoundsText = '';
-      if (isCrit && dwRank > 0 && ability.type === 'damage' && ability.damageType !== 'heal' && !ability.isDot && !ability.isHot && this.charSvc.character().classKey === 'warrior') {
-        const dwTotal = Math.max(1, Math.round(roll * 0.10 * dwRank));
-        const dwTick = Math.max(1, Math.round(dwTotal / 3));
-        this.charSvc.sendDamageEvent(
-          { ...ability, id: 'deep_wounds', name: 'Deep Wounds', isDot: true, dotTick: dwTick, dotDuration: 3, stackable: true, damageType: 'physical' },
-          0, 1, 1
-        );
-        deepWoundsText = ' · 🩸 Deep Wounds ' + dwTotal + ' (' + dwTick + '/t · 3t)';
-      }
+      lifestealText += (ctx.texts['soulLeech'] || '');
       const dmgText = isCrit ? '¡CRITICO!' : ability.inflictsEffects ? '¡Aturde al enemigo!' : 'Lanzado';
-      let serpentText = '';
-      let sendAbility: any = ability;
-      if (ability.id === 'multi_shot') {
-        const ssRank = this.charSvc.talentRank('serpent_spread');
-        if (ssRank > 0) {
-          const serp = this.charSvc.computedAbilities().find((x: any) => x.id === 'serpent_sting');
-          const serpTick = serp && serp.dotTick ? serp.dotTick : Math.max(1, roll);
-          const serpentTick = Math.max(1, Math.round(serpTick * 0.15 * ssRank));
-          sendAbility = { ...ability, inflictsEffects: [{ type: 'dot', name: 'Serpent Sting', value: serpentTick, duration: 4, debuffType: 'poison', stackable: false }] };
-          serpentText = ' · 🐍 Serpent Sting ' + serpentTick + '/t (4t)';
-        }
-      }
-      let rendText = '';
-      if (ability.id === 'rend') {
-        const eff = sendAbility.inflictsEffects && sendAbility.inflictsEffects[0];
-        if (eff) {
-          const rendDot = (ability as any).currentDotValue || eff.value || 8;
-          const rendDur = (eff.duration || 5) + this.charSvc.talentRank('improved_rend');
-          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: rendDot, duration: rendDur }] };
-          rendText = ' · 🩸 sangrado ' + rendDot + '/t (' + rendDur + 't)';
-        }
-      }
-      let sunderText = '';
-      if (ability.id === 'sunder_armor') {
-        const eff = sendAbility.inflictsEffects && sendAbility.inflictsEffects[0];
-        if (eff) {
-          const sunderRank = ability.currentRank || 1;
-          const shred = (ability.armorShred && ability.armorShred[sunderRank - 1]) || 8;
-          sendAbility = { ...sendAbility, inflictsEffects: [{ ...eff, value: shred }] };
-          sunderText = ' · 🛡️ armadura −' + shred;
-        }
-      }
       let woundText = '';
       const woundPct = this.charSvc.getWoundPoisonPercent();
       if (woundPct > 0) {
@@ -2084,69 +1883,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         sendAbility = { ...sendAbility, inflictsEffects: effects };
       }
 
-      let valkChargeText = '';
-      let valkTauntText = '';
-      if (this.charSvc.character().classKey === 'valkyrie') {
-        const critEnergyMult = isCrit ? 1 + this.charSvc.talentRank('critical_energy') * 0.33 : 1;
-        const lvEnergyMult = this.charSvc.talentRank('lightning_vortex') > 0 ? 1.10 : 1;
-        if (ability.id === 'empalar') {
-          const gained = Math.round(roll * 0.5 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
-          this.charSvc.addSpearCharge(gained);
-          valkChargeText = ' · ⚔️ Lanza +' + gained;
-        } else if (ability.id === 'shield_bash') {
-          const gained = Math.round(roll * 1.0 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult());
-          this.charSvc.addShieldCharge(gained);
-          const myName = (this.charSvc.character().name || '').trim() || 'Jugador';
-          const effects = sendAbility.inflictsEffects ? [...sendAbility.inflictsEffects] : [];
-          effects.push({ type: 'debuff' as const, name: 'Provocar', target: 'taunt' as const, value: myName, duration: 2, debuffType: 'none' as const, stackable: false });
-          sendAbility = { ...sendAbility, inflictsEffects: effects };
-          valkChargeText = ' · 🛡️ Escudo +' + gained;
-          valkTauntText = ' · 🗯️ Provocas al enemigo';
-        } else if (ability.id === 'valk_cleave') {
-          const gained = Math.round(roll * 0.3 * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
-          this.charSvc.addSpearCharge(gained);
-          valkChargeText = ' · ⚔️ Lanza +' + gained;
-        } else if (ability.id === 'valk_dive_strike') {
-          const gained = Math.round(roll * 0.4 * lvEnergyMult * this.charSvc.valkyrieChargeGainMult() * critEnergyMult);
-          this.charSvc.addSpearCharge(gained);
-          valkChargeText = ' · ⚔️ Lanza +' + gained;
-          this.charSvc.character.update(c => ({
-            ...c,
-            activeEffects: (c.activeEffects || []).filter(e => e.target !== 'flying'),
-          }));
-          valkChargeText += ' · 🕊️ Aterrizas al hacer Plunge';
-        }
-      }
-
-      let arcaneOrbText = '';
-      let orbText = '';
-      if (this.charSvc.hasElementalOrbs() && ability.type === 'damage') {
-        const orbEl: ElementalOrb | null = ability.school === 'Fuego' ? 'fire'
-          : ability.school === 'Escarcha' ? 'frost'
-          : ability.school === 'Arcano' ? 'arcane' : null;
-        if (orbEl) {
-          const arcaneOrbsBefore = this.charSvc.countElementalOrbs('arcane');
-          if (arcaneOrbsBefore > 0 && Math.random() * 100 < arcaneOrbsBefore * 10) {
-            this.charSvc.useAction(-1);
-            arcaneOrbText = ' · ⚡ Orbes Arcanos: +1 acción';
-          }
-          this.charSvc.addElementalOrb(orbEl);
-          const orbCount = this.charSvc.elementalOrbs().length;
-          const orbName = orbEl === 'fire' ? 'Fuego' : orbEl === 'frost' ? 'Escarcha' : 'Arcano';
-          orbText = ' · ' + ORB_SYMBOLS[orbEl] + ' ' + orbName + ' (' + orbCount + '/3)';
-        }
-      }
-
       const abilityLabel = ability.id === 'basic_attack' ? ability.name : (ability.name + ' R' + ability.currentRank);
       this.charSvc.showToast(
-        abilityLabel + ': ' + dmgText + imbueText + chainText + igniteText + deepWoundsText + ccText + rageText + fotwText + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + stormStrikeBuffText + (ctx.texts['unyielding'] || '') + serpentText + woundText + rendText + sunderText + (ctx.texts['maelstorm'] || '') + (ctx.texts['valkSpend'] || '') + valkChargeText + valkTauntText + (ctx.texts['efCrit'] || '') + arcaneOrbText + orbText + natureBoostText
+        abilityLabel + ': ' + dmgText + (ctx.texts['imbue'] || '') + chainText + (ctx.texts['ignite'] || '') + (ctx.texts['deep'] || '') + ccText + (ctx.texts['rageE'] || rageText) + (ctx.texts['fotw'] || fotwText) + comboText + sunShardText + shardText + focusText + conduitText + lifestealText + noteText + evText + boostText + (ctx.texts['storm'] || '') + (ctx.texts['unyielding'] || '') + (ctx.texts['serpent'] || '') + woundText + (ctx.texts['rend'] || '') + (ctx.texts['sunder'] || '') + (ctx.texts['maelstorm'] || '') + (ctx.texts['valkSpend'] || '') + (ctx.texts['valkCharge'] || '') + (ctx.texts['valkTaunt'] || '') + (ctx.texts['efCrit'] || '') + (ctx.texts['arcaneOrb'] || '') + (ctx.texts['orb'] || '') + natureBoostText
       );
       const hits = ability.multiHit || 1;
       for (let h = 0; h < hits; h++) {
         let hitRoll = roll;
         if (hits > 1 && h > 0) {
           hitRoll = (ability.currentMin || 0) + Math.floor(Math.random() * ((ability.currentMax || 0) - (ability.currentMin || 0) + 1));
-          if (isCrit) hitRoll = Math.round(hitRoll * (this.charSvc.character().classKey === 'valkyrie' ? 1.5 + this.charSvc.talentRank('hurtfull_lightning') * 0.05 : 1.5));
+          if (isCrit) hitRoll = Math.round(hitRoll * ctx.extraHitCritMult);
           if (isRage && this.charSvc.inBattleStance()) {
             const battleMult = 1.10 + this.charSvc.talentRank('improved_stances') * 0.02;
             hitRoll = Math.round(hitRoll * battleMult);
@@ -2155,22 +1901,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.turnDamage.update(d => d + hitRoll);
         }
         this.charSvc.sendDamageEvent(sendAbility, hitRoll, h + 1, hits);
-      }
-      if ((ability.id === 'basic_attack' || ability.id === 'storm_strike') && this.charSvc.character().classKey === 'shaman') {
-        const wfImbue = (this.charSvc.character().activeEffects || []).find(e => e.target === 'weapon_imbue' && e.name === 'Arma Viento Furioso');
-        const wfChance = wfImbue ? (wfImbue.value || 20) + this.charSvc.talentRank('improved_weapon_imbues') * 5 : 0;
-        if (wfImbue && Math.random() * 100 < wfChance) {
-          this.charSvc.turnDamage.update(d => d + roll);
-          this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, roll, 1, 1);
-          let wfComboText = '';
-          const wfComboMax = this.charSvc.getMaelstromMax();
-          const wfComboChance = this.charSvc.getEffectiveComboChance(ability);
-          if (Math.random() * 100 < wfComboChance && (this.charSvc.character().comboPoints || 0) < wfComboMax) {
-            this.charSvc.character.update(c => ({ ...c, comboPoints: Math.min(wfComboMax, (c.comboPoints || 0) + 1) }));
-            wfComboText = ' · +1 Maelstorm';
-          }
-          this.charSvc.showToast('💨 Windfury! Ataque adicional ' + roll + ' dano' + wfComboText + ' — ' + this.trSvc.t('sent_to_master'));
-        }
       }
       if (ability.chain) {
         const chBounces = ability.bounces || 1;
@@ -2181,19 +1911,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Salto ' + b + ')' }, bRoll, 1, 1);
         }
       }
-      const dtRank = this.charSvc.talentRank('double_tap');
-      if (ability.id === 'arcanic_shot' && dtRank > 0 && Math.random() * 100 < dtRank * 15) {
-        this.charSvc.turnDamage.update(d => d + roll);
-        this.charSvc.sendDamageEvent({ ...ability, name: ability.name + ' (Double Tap)' }, roll, 1, 1);
-        this.charSvc.character.update(c => {
-          const focusMax = this.charSvc.resourceMax();
-          return {
-            ...c,
-            currentFocus: Math.min(focusMax, (c.currentFocus || 0) + 10),
-          };
-        });
-        this.charSvc.showToast(ability.name + ' R' + ability.currentRank + ': ✨ ¡Double Tap! ' + roll + ' dano extra · +10 Focus');
-      }
+      // S9 — damage post-payload (onHit): shaman windfury, hunter double_tap
+      ctx.roll = roll;
+      this.runSpellHooks('onHit', ability, ctx);
     }
   }
 

@@ -25,6 +25,121 @@ export const shamanAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      if (svc.character().classKey !== 'shaman') return;
+      if (ability.id === 'basic_attack' || ability.id === 'storm_strike') {
+        const shImbue = (svc.character().activeEffects || []).find(e => e.target === 'weapon_imbue');
+        if (shImbue) {
+          if (shImbue.name === 'Arma Lengua de Fuego') {
+            const iwiRank = svc.talentRank('improved_weapon_imbues');
+            const imbDmg = Math.round(shImbue.value * (1 + iwiRank * 0.10));
+            ctx.roll += imbDmg;
+            ctx.texts['imbue'] = ' · 🔥+' + imbDmg + ' fuego';
+          } else {
+            const wfDisplay = (shImbue.value || 20) + svc.talentRank('improved_weapon_imbues') * 5;
+            ctx.texts['imbue'] = ' · 💨 Windfury (' + wfDisplay + '%)';
+          }
+        }
+      }
+      if (ability.id === 'storm_strike') {
+        const natureBuffValue = ability.currentBuffValue || 20;
+        const natureBuffDur = ability.buff?.duration || 2;
+        svc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.name !== 'Storm Strike'),
+            { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Storm Strike', target: 'nature_boost', value: natureBuffValue, duration: natureBuffDur, isPercent: true },
+          ],
+        }));
+        ctx.texts['storm'] = ' · ⛈️ siguiente hechizo de Naturaleza +' + natureBuffValue + '%';
+      }
+      if (ability.id === 'earth_shock') {
+        const ssRank = svc.talentRank('static_shock');
+        if (ssRank > 0 && Math.random() * 100 < ssRank * 25) {
+          const ssMax = svc.getMaelstromMax();
+          svc.character.update(c => ({ ...c, comboPoints: Math.min(ssMax, (c.comboPoints || 0) + 1) }));
+          ctx.texts['staticShock'] = ' · +1 Maelstorm (Static Shock)';
+        }
+      }
+    },
+    onHit(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      if (svc.character().classKey !== 'shaman') return;
+      if (ability.id === 'basic_attack' || ability.id === 'storm_strike') {
+        const wfImbue = (svc.character().activeEffects || []).find(e => e.target === 'weapon_imbue' && e.name === 'Arma Viento Furioso');
+        const wfChance = wfImbue ? (wfImbue.value || 20) + svc.talentRank('improved_weapon_imbues') * 5 : 0;
+        if (wfImbue && Math.random() * 100 < wfChance) {
+          svc.turnDamage.update(d => d + ctx.roll);
+          svc.sendDamageEvent({ ...ability, name: ability.name + ' (Windfury)' }, ctx.roll, 1, 1);
+          let wfComboText = '';
+          const wfComboMax = svc.getMaelstromMax();
+          const wfComboChance = svc.getEffectiveComboChance(ability);
+          if (Math.random() * 100 < wfComboChance && (svc.character().comboPoints || 0) < wfComboMax) {
+            svc.character.update(c => ({ ...c, comboPoints: Math.min(wfComboMax, (c.comboPoints || 0) + 1) }));
+            wfComboText = ' · +1 Maelstorm';
+          }
+          svc.showToast('💨 Windfury! Ataque adicional ' + ctx.roll + ' dano' + wfComboText + ' — ' + ctx.t('sent_to_master'));
+        }
+      }
+    },
+    onDot(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      if (ability.id === 'flame_shock') {
+        const min = ability.currentMin || 0;
+        const max = ability.currentMax || 0;
+        const directRoll = min + Math.floor(Math.random() * (max - min + 1));
+        ctx.texts['direct'] = ' +' + directRoll + ' directo';
+        svc.turnDamage.update(d => d + directRoll);
+        svc.sendDamageEvent({ ...ability, isDot: false }, directRoll, 1, 1);
+      }
+    },
+    onHeal(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      if (svc.character().classKey !== 'shaman') return;
+      const spiritLinkActive = svc.hasEffect('spirit_link');
+      const twRank = svc.talentRank('tidal_waves');
+      if (twRank > 0 && ability.id === 'chain_heal') {
+        svc.character.update(c => ({
+          ...c,
+          activeEffects: [
+            ...(c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
+            { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Tidal Waves', target: 'tidal_waves', value: 10 * twRank, duration: 3, isPercent: false },
+          ],
+        }));
+        ctx.texts['tidal'] = ' · Tidal Waves: siguiente Healing Wave +' + (10 * twRank) + '%';
+      }
+      if (ability.id === 'healing_wave' && svc.hasEffect('tidal_waves')) {
+        const twBuff = (svc.character().activeEffects || []).find(e => e.target === 'tidal_waves');
+        if (twBuff) {
+          ctx.healBonus *= (1 + (twBuff.value || 0) / 100);
+          ctx.texts['tidal'] = ' · Tidal Waves +' + (twBuff.value || 0) + '%';
+          svc.character.update(c => ({
+            ...c,
+            activeEffects: (c.activeEffects || []).filter(e => e.target !== 'tidal_waves'),
+          }));
+        }
+      }
+      if (spiritLinkActive && ability.id === 'chain_heal') {
+        ctx.healBonus *= 1.20;
+        ctx.texts['spirit'] = ' · 🕸️ Vínculo: +20% curación';
+      }
+      if (ability.id === 'healing_wave' || ability.id === 'chain_heal') {
+        const hgRank = svc.talentRank('healing_grace');
+        if (hgRank > 0) {
+          ctx.healBonus *= (1 + hgRank * 0.10);
+          if (Math.random() * 100 < hgRank * 20) {
+            const hgMax = svc.getMaelstromMax();
+            svc.character.update(c => ({ ...c, comboPoints: Math.min(hgMax, (c.comboPoints || 0) + 1) }));
+            ctx.texts['healGrace'] = ' · +1 Maelstorm';
+          }
+        }
+      }
+    },
     onCrit(_ability, ctx) {
       const svc = ctx.svc;
       if (ctx.isCrit && svc.character().classKey === 'shaman' && (ctx.ability.id === 'lightning_bolt' || ctx.ability.id === 'chain_lightning') && svc.talentRank('elemental_focus') > 0) {

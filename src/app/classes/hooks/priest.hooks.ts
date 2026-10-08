@@ -9,6 +9,14 @@ export const priestAbilityHooks: ClassAbilityHooks = {
     return false;
   },
   spell: {
+    onHeal(_ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey !== 'priest') return;
+      ctx.healBonus *= 1 + svc.talentRank('preservation') * 0.10;
+      if (ctx.ability.id === 'power_word_shield') {
+        ctx.healBonus *= 1 + svc.talentRank('improved_shield') * 0.10;
+      }
+    },
     modifyCritChance(ability, ctx) {
       if (ability.type === 'heal' && !ability.isHot && !ability.isDot && ctx.svc.character().classKey === 'priest') {
         ctx.critChance += ctx.svc.talentRank('illumination') * 2;

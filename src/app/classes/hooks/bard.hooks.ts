@@ -10,6 +10,16 @@ export const bardAbilityHooks: ClassAbilityHooks = {
     return false;
   },
   spell: {
+    onHeal(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      const resonanceRank = svc.talentRank('resonance');
+      if (resonanceRank > 0) ctx.healBonus *= (1 + resonanceRank * 0.05);
+      if (ability.id === 'vivace') {
+        const ivRank = svc.talentRank('improved_vivace');
+        if (ivRank > 0) ctx.healBonus *= (1 + ivRank * 0.10);
+      }
+    },
     modifyCost(ability, ctx) {
       if (ability.id === 'vivace') {
         ctx.cost = Math.round((ctx.cost || 0) * (1 - ctx.svc.talentRank('improved_vivace') * 0.10));

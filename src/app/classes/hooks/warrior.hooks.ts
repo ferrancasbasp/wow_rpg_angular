@@ -17,6 +17,38 @@ export const warriorAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey !== 'warrior') return;
+      const dwRank = svc.talentRank('deep_wounds');
+      if (ctx.isCrit && dwRank > 0 && ability.type === 'damage' && ability.damageType !== 'heal' && !ability.isDot && !ability.isHot) {
+        const dwTotal = Math.max(1, Math.round(ctx.roll * 0.10 * dwRank));
+        const dwTick = Math.max(1, Math.round(dwTotal / 3));
+        svc.sendDamageEvent(
+          { ...ability, id: 'deep_wounds', name: 'Deep Wounds', isDot: true, dotTick: dwTick, dotDuration: 3, stackable: true, damageType: 'physical' },
+          0, 1, 1
+        );
+        ctx.texts['deep'] = ' · 🩸 Deep Wounds ' + dwTotal + ' (' + dwTick + '/t · 3t)';
+      }
+      if (ability.id === 'rend') {
+        const eff = ctx.sendAbility.inflictsEffects && ctx.sendAbility.inflictsEffects[0];
+        if (eff) {
+          const rendDot = ability.currentDotValue || eff.value || 8;
+          const rendDur = (eff.duration || 5) + svc.talentRank('improved_rend');
+          ctx.sendAbility = { ...ctx.sendAbility, inflictsEffects: [{ ...eff, value: rendDot, duration: rendDur }] };
+          ctx.texts['rend'] = ' · 🩸 sangrado ' + rendDot + '/t (' + rendDur + 't)';
+        }
+      }
+      if (ability.id === 'sunder_armor') {
+        const eff = ctx.sendAbility.inflictsEffects && ctx.sendAbility.inflictsEffects[0];
+        if (eff) {
+          const sunderRank = ability.currentRank || 1;
+          const shred = (ability.armorShred && ability.armorShred[sunderRank - 1]) || 8;
+          ctx.sendAbility = { ...ctx.sendAbility, inflictsEffects: [{ ...eff, value: shred }] };
+          ctx.texts['sunder'] = ' · 🛡️ armadura −' + shred;
+        }
+      }
+    },
     onRollReady(ability, ctx) {
       if (ability.id === 'charge' && ctx.svc.character().classKey === 'warrior') {
         const icRank = ctx.svc.talentRank('improved_charge');

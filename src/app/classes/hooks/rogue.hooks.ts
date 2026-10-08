@@ -17,6 +17,20 @@ export const rogueAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(ability, ctx) {
+      const svc = ctx.svc;
+      if (ability.id === 'basic_attack' && ctx.isEnergy && svc.hasPassive('energetic_basic_attack')) {
+        const baseGen = ctx.isCrit ? 4 : 2;
+        const ieaRank = svc.talentRank('improved_energetic_attacks');
+        const energyGen = Math.floor(baseGen * (1 + ieaRank * 0.5));
+        const resourceMax = svc.resourceMax();
+        svc.character.update(c => ({
+          ...c,
+          currentEnergy: Math.min(resourceMax, (c.currentEnergy || 0) + energyGen),
+        }));
+        ctx.texts['rageE'] = ' · +' + energyGen + ' energia';
+      }
+    },
     modifyCritChance(ability, ctx) {
       const svc = ctx.svc;
       if (ability.id === 'backstab' && svc.character().classKey === 'rogue') {

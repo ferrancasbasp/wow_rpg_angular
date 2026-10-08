@@ -39,6 +39,13 @@ describe('castSpell skeleton — parity crit/roll vs original', () => {
       isCrit: true,
       comboSpent: 0,
       sunShardsSpent: 0,
+      hotTotal: 0,
+      dotTotal: 0,
+      dotTick: 0,
+      dotDuration: 0,
+      healBonus: 0,
+      sendAbility: null,
+      extraHitCritMult: 1.5,
       texts: {},
     };
     return { ctx, baseChance };

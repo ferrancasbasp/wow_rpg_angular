@@ -1,4 +1,11 @@
+import type { ElementalOrb } from '../../models/game.models';
 import type { ClassAbilityHooks, ClassHooksContext } from './class-hooks';
+
+const ORB_SYMBOLS: Record<ElementalOrb, string> = {
+  fire: '🔥',
+  frost: '❄️',
+  arcane: '✨',
+};
 
 export const mageAbilityHooks: ClassAbilityHooks = {
   castUtility(ability, ctx) {
@@ -17,6 +24,25 @@ export const mageAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.hasElementalOrbs() && ability.type === 'damage') {
+        const orbEl: ElementalOrb | null = ability.school === 'Fuego' ? 'fire'
+          : ability.school === 'Escarcha' ? 'frost'
+          : ability.school === 'Arcano' ? 'arcane' : null;
+        if (orbEl) {
+          const arcaneOrbsBefore = svc.countElementalOrbs('arcane');
+          if (arcaneOrbsBefore > 0 && Math.random() * 100 < arcaneOrbsBefore * 10) {
+            svc.useAction(-1);
+            ctx.texts['arcaneOrb'] = ' · ⚡ Orbes Arcanos: +1 acción';
+          }
+          svc.addElementalOrb(orbEl);
+          const orbCount = svc.elementalOrbs().length;
+          const orbName = orbEl === 'fire' ? 'Fuego' : orbEl === 'frost' ? 'Escarcha' : 'Arcano';
+          ctx.texts['orb'] = ' · ' + ORB_SYMBOLS[orbEl] + ' ' + orbName + ' (' + orbCount + '/3)';
+        }
+      }
+    },
     modifyRoll(ability, ctx) {
       if (ability.id === 'cone_of_cold' && ctx.svc.character().classKey === 'mage') {
         const iccRank = ctx.svc.talentRank('improved_cone_of_cold');

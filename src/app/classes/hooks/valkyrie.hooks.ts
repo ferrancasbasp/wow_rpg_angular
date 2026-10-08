@@ -99,6 +99,47 @@ export const valkyrieAbilityHooks: ClassAbilityHooks = {
 
       return false;
     },
+    onDamage(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey !== 'valkyrie') return;
+      if (ability.id === 'basic_attack' && svc.selectedCapstone() === 'hope_and_grace') {
+        const graceHeal = Math.round(ctx.roll * 0.30);
+        if (graceHeal > 0) {
+          svc.sendHealEvent({ ...ability, id: 'hope_and_grace', name: 'Hope and Grace', description: '' }, graceHeal);
+          ctx.texts['hope'] = ' · 🕊️ +' + graceHeal + ' vida (Hope and Grace) — ' + ctx.t('sent_to_master');
+        }
+      }
+      const critEnergyMult = ctx.isCrit ? 1 + svc.talentRank('critical_energy') * 0.33 : 1;
+      const lvEnergyMult = svc.talentRank('lightning_vortex') > 0 ? 1.10 : 1;
+      ctx.extraHitCritMult = 1.5 + svc.talentRank('hurtfull_lightning') * 0.05;
+      if (ability.id === 'empalar') {
+        const gained = Math.round(ctx.roll * 0.5 * lvEnergyMult * svc.valkyrieChargeGainMult() * critEnergyMult);
+        svc.addSpearCharge(gained);
+        ctx.texts['valkCharge'] = ' · ⚔️ Lanza +' + gained;
+      } else if (ability.id === 'shield_bash') {
+        const gained = Math.round(ctx.roll * 1.0 * lvEnergyMult * svc.valkyrieChargeGainMult());
+        svc.addShieldCharge(gained);
+        const myName = (svc.character().name || '').trim() || 'Jugador';
+        const effects = ctx.sendAbility.inflictsEffects ? [...ctx.sendAbility.inflictsEffects] : [];
+        effects.push({ type: 'debuff' as const, name: 'Provocar', target: 'taunt' as const, value: myName, duration: 2, debuffType: 'none' as const, stackable: false });
+        ctx.sendAbility = { ...ctx.sendAbility, inflictsEffects: effects };
+        ctx.texts['valkCharge'] = ' · 🛡️ Escudo +' + gained;
+        ctx.texts['valkTaunt'] = ' · 🗯️ Provocas al enemigo';
+      } else if (ability.id === 'valk_cleave') {
+        const gained = Math.round(ctx.roll * 0.3 * svc.valkyrieChargeGainMult() * critEnergyMult);
+        svc.addSpearCharge(gained);
+        ctx.texts['valkCharge'] = ' · ⚔️ Lanza +' + gained;
+      } else if (ability.id === 'valk_dive_strike') {
+        const gained = Math.round(ctx.roll * 0.4 * lvEnergyMult * svc.valkyrieChargeGainMult() * critEnergyMult);
+        svc.addSpearCharge(gained);
+        ctx.texts['valkCharge'] = ' · ⚔️ Lanza +' + gained;
+        svc.character.update(c => ({
+          ...c,
+          activeEffects: (c.activeEffects || []).filter(e => e.target !== 'flying'),
+        }));
+        ctx.texts['valkCharge'] += ' · 🕊️ Aterrizas al hacer Plunge';
+      }
+    },
     modifyRoll(ability, ctx) {
       if (ability.id === 'shield_bash' && ctx.svc.character().classKey === 'valkyrie') {
         const wardedRank = ctx.svc.talentRank('warded');

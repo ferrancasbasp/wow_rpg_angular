@@ -24,6 +24,45 @@ export const warlockAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      const slRank = svc.talentRank('soul_leech');
+      if (slRank > 0 && (ability.id === 'shadow_bolt' || ability.id === 'chaos_bolt')) {
+        const leechHeal = Math.round(ctx.roll * slRank * 0.10);
+        if (leechHeal > 0) {
+          svc.character.update(c => ({
+            ...c,
+            currentHP: Math.min(svc.maxHP(), (c.currentHP ?? svc.maxHP()) + leechHeal),
+          }));
+          svc.syncPlayerStatus();
+          ctx.texts['soulLeech'] = ' · 🩸 Soul Leech +' + leechHeal + ' vida';
+        }
+      }
+      const igniteRank = svc.talentRank('ignite');
+      if (ctx.isCrit && igniteRank > 0 && ability.school === 'Fuego') {
+        const igniteTotal = Math.max(1, Math.round(ctx.roll * 0.08 * igniteRank));
+        const igniteTick = Math.max(1, Math.round(igniteTotal / 3));
+        svc.sendDamageEvent(
+          { ...ability, id: 'ignite', name: 'Ignite', isDot: true, dotTick: igniteTick, dotDuration: 3, stackable: true, damageType: 'magical' },
+          0, 1, 1
+        );
+        ctx.texts['ignite'] = ' · 🔥 Ignite ' + igniteTotal + ' (' + igniteTick + '/t · 3t)';
+      }
+    },
+    onDot(_ability, ctx) {
+      const svc = ctx.svc;
+      const ability = ctx.ability;
+      if (ability.id === 'immolate') {
+        const min = ability.currentMin || 0;
+        const max = ability.currentMax || 0;
+        const directRoll = min + Math.floor(Math.random() * (max - min + 1));
+        const direct = Math.round(directRoll / 2);
+        ctx.texts['direct'] = ' +' + direct + ' directo';
+        svc.turnDamage.update(d => d + direct);
+        svc.sendDamageEvent({ ...ability, isDot: false }, direct, 1, 1);
+      }
+    },
     modifyCritChance(ability, ctx) {
       if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
         ctx.critChance += ctx.svc.talentRank('destruction_specialization') * 5;

@@ -46,6 +46,15 @@ export interface SpellCastContext {
   isCrit: boolean;
   comboSpent: number;
   sunShardsSpent: number;
+  hotTotal: number;
+  dotTotal: number;
+  dotTick: number;
+  dotDuration: number;
+  healBonus: number;
+  // Ability que se envia al master (serpent/rend/sunder/wound la transforman).
+  sendAbility: any;
+  // Crit multiplier de los impactos extra de multiHit (valkyrie hurtfull_lightning).
+  extraHitCritMult: number;
   texts: Record<string, string>;
 }
 
@@ -93,7 +102,13 @@ export interface SpellHooks {
   onHot?: SpellHookFn;
   onDot?: SpellHookFn;
   onHeal?: SpellHookFn;
+  // S9 damage (pre-toast): imbues, generacion de recursos, ignite/deep_wounds,
+  // transformacion de sendAbility (serpent/rend/sunder), valk charge/taunt,
+  // orbes elementales, hope_and_grace, extraHitCritMult, static/storm buffs.
   onDamage?: SpellHookFn;
+  // S9 damage (post-payload): hits extra tras la cadena de multiHit y chain
+  // (shaman windfury, hunter double_tap).
+  onHit?: SpellHookFn;
 }
 
 export const noopSpellHooks: SpellHooks = {};

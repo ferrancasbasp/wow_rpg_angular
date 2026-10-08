@@ -21,6 +21,35 @@ export const hunterAbilityHooks: ClassAbilityHooks = {
     }
   },
   spell: {
+    onDamage(ability, ctx) {
+      const svc = ctx.svc;
+      if (ability.id === 'multi_shot') {
+        const ssRank = svc.talentRank('serpent_spread');
+        if (ssRank > 0) {
+          const serp = svc.computedAbilities().find((x: any) => x.id === 'serpent_sting');
+          const serpTick = serp && serp.dotTick ? serp.dotTick : Math.max(1, ctx.roll);
+          const serpentTick = Math.max(1, Math.round(serpTick * 0.15 * ssRank));
+          ctx.sendAbility = { ...ability, inflictsEffects: [{ type: 'dot', name: 'Serpent Sting', value: serpentTick, duration: 4, debuffType: 'poison', stackable: false }] };
+          ctx.texts['serpent'] = ' · 🐍 Serpent Sting ' + serpentTick + '/t (4t)';
+        }
+      }
+    },
+    onHit(ability, ctx) {
+      const svc = ctx.svc;
+      const dtRank = svc.talentRank('double_tap');
+      if (ability.id === 'arcanic_shot' && dtRank > 0 && Math.random() * 100 < dtRank * 15) {
+        svc.turnDamage.update(d => d + ctx.roll);
+        svc.sendDamageEvent({ ...ability, name: ability.name + ' (Double Tap)' }, ctx.roll, 1, 1);
+        svc.character.update(c => {
+          const focusMax = svc.resourceMax();
+          return {
+            ...c,
+            currentFocus: Math.min(focusMax, (c.currentFocus || 0) + 10),
+          };
+        });
+        svc.showToast(ability.name + ' R' + ability.currentRank + ': ✨ ¡Double Tap! ' + ctx.roll + ' dano extra · +10 Focus');
+      }
+    },
     modifyCritChance(ability, ctx) {
       const svc = ctx.svc;
       if (svc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
