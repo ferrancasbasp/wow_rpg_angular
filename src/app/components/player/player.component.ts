@@ -545,37 +545,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const statLabel = stat === 'attackPower' ? 'Attack Power' : 'Dodge';
     this.charSvc.showToast(ability.name + ' R' + rank + ': +' + value + ' ' + statLabel + ' — Aspect activado (solo puedes tener uno) · Focus ' + this.charSvc.resourceActual() + '/' + this.charSvc.resourceMax());
   }
-
-  castTotem(ability: any) {
-    const slot = ability.totem === 'fire' ? 'fire' : 'water';
-    const prev = this.charSvc.totemInfo(slot);
-    const itRank = this.charSvc.talentRank('improved_totems');
-    const totemMult = 1 + itRank * 0.10;
-    this.charSvc.summonTotem(slot, ability.totemType || 'searing', ability.totemTurns || 4, Math.round((ability.currentMin || 0) * totemMult), Math.round((ability.currentMax || 0) * totemMult), Math.round((ability.currentBuffValue || ability.currentMin || 0) * totemMult));
-    const slotLabel = ability.totem === 'fire' ? 'Tótem de Fuego' : 'Tótem de Agua';
-    const prevText = prev ? ' (sustituye al anterior)' : '';
-    const detail = ability.totemType === 'fire_nova'
-      ? 'explotará durante tu siguiente turno'
-      : 'duración ' + (ability.totemTurns || 4) + ' turnos';
-    const multText = itRank > 0 ? ' · efectividad +' + Math.round(itRank * 10) + '%' : '';
-    this.charSvc.showToast('🪵 ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' · ' + slotLabel + prevText + multText);
-  }
-
-  castWeaponImbue(ability: any) {
-    const imbValue = ability.currentBuffValue;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'weapon_imbue'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: ability.name, target: 'weapon_imbue', value: imbValue, duration: 999, isPercent: false },
-      ],
-    }));
-    const detail = ability.id === 'flametongue_weapon'
-      ? 'tus ataques basicos +' + imbValue + ' danyo de fuego'
-      : 'tus ataques basicos: ' + imbValue + '% Windfury';
-    this.charSvc.showToast('🗡️ ' + ability.name + ' R' + ability.currentRank + ': ' + detail + ' (solo un imbuíto de arma)');
-  }
-
   castHolyNova(ability: any) {
     const smite = this.charSvc.unlockedAbilities().find((a) => a.id === 'smite') as any;
     const healSpell = this.charSvc.unlockedAbilities().find((a) => a.id === 'heal') as any;
@@ -763,60 +732,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       effectText = 'envenena antes tus armas para potenciar el veneno';
     }
     this.charSvc.showToast('☠️ Poison Mastery activa · ' + effectText + ' (' + duration + ' turnos)');
-  }
-
-  castAscendance(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'ascendance'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Ascendance', target: 'ascendance', value: 1, duration },
-      ],
-    }));
-    const bolt = this.charSvc.unlockedAbilities().find((a: any) => a.id === 'lightning_bolt');
-    let boltText = '';
-    if (bolt) {
-      const min = (bolt as any).currentMin || 0;
-      const max = (bolt as any).currentMax || 0;
-      let roll = min + Math.floor(Math.random() * (max - min + 1));
-      const critChance = parseFloat(this.charSvc.spellCrit()) + this.charSvc.talentRank('thundering_strikes') * 5 + 5;
-      const isCrit = Math.random() * 100 < critChance;
-      if (isCrit) {
-        const critMult = (1.5 + this.charSvc.talentRank('elemental_fury') * 0.05) * 1.25;
-        roll = Math.round(roll * critMult);
-      }
-      this.charSvc.turnDamage.update(d => d + roll);
-      this.charSvc.sendDamageEvent({ ...bolt, isDot: false, aoe: false }, roll, 1, 1);
-      boltText = ' · ⚡ Rayo gratuito: ' + roll + ' danyo' + (isCrit ? ' ¡CRITICO!' : '');
-    }
-    this.charSvc.showToast('🔥 Ascendance activa · 3 turnos: +30% Spell Power, +5% crit y +25% danyo critico (Rayo, Cadena, Choque de Llamas y de Tierra)' + boltText);
-  }
-
-  castBloodlust(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'bloodlust'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Bloodlust', target: 'bloodlust', value: 20, duration },
-      ],
-      comboPoints: Math.min(this.charSvc.getMaelstromMax(), (c.comboPoints || 0) + 2),
-    }));
-    this.charSvc.sendBuffEvent(ability);
-    this.charSvc.showToast('🩸 Bloodlust · party +20% Attack Power y Spell Power (3 turnos) · +2 Cargas de Maelstorm — enviado al Master (AOE)');
-  }
-
-  castSpiritLink(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'spirit_link'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Spirit Link Totem', target: 'spirit_link', value: 1, duration },
-      ],
-    }));
-    this.charSvc.showToast('🕸️ Totem de Vinculo Espiritual (3 turnos) · Ola de Sanacion replica 30% a la party · Cadena de Sanacion +20%');
   }
 
   onNameInput(event: Event) {
@@ -3098,10 +3013,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castExplosiveShot(ability);
     } else if (this.dispatchClassAbility(ability, hookCtx)) {
       return;
-    } else if (ability.totem) {
-      this.castTotem(ability);
-    } else if (ability.weaponImbue) {
-      this.castWeaponImbue(ability);
     } else if (ability.id === 'holy_nova') {
       this.castHolyNova(ability);
     } else if (ability.id === 'valkyries_call') {
@@ -3146,12 +3057,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castBladeFlurry(ability);
     } else if (ability.id === 'poison_mastery') {
       this.castPoisonMastery(ability);
-    } else if (ability.id === 'ascendance') {
-      this.castAscendance(ability);
-    } else if (ability.id === 'bloodlust') {
-      this.castBloodlust(ability);
-    } else if (ability.id === 'spirit_link_totem') {
-      this.castSpiritLink(ability);
     } else if (ability.id === 'nature_guardian') {
       const moonMax = this.charSvc.getMaelstromMax();
       const sunMax = this.charSvc.sunShardsMax();
