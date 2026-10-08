@@ -89,6 +89,7 @@ interface DamageEvent {
   hotTick?: number;
   hotDuration?: number;
   isShield?: boolean;
+  targetName?: string;
   buffStat?: string;
   buffValue?: number;
   buffDuration?: number;
@@ -236,6 +237,7 @@ export class MasterComponent implements OnInit {
           const abilityName = (event.ability || 'Rebirth').replace(' (Revive)', '');
           this.sendLog.update(log => [`🌿 ${event.player || 'Druida'} ha lanzado ${abilityName} (${rezAmount} HP) — usa el botón 🌿 para revivir`, ...log].slice(0, 8));
           this.showToast(`🌿 ${event.player || 'Druida'} ha lanzado ${abilityName} — revive con el botón 🌿 de la tarjeta del caído`);
+        } else if (this.tryAutoRouteMemberHeal(event)) {
         } else {
           this.pendingEvents.update((events) => [...events, event]);
           if ((event.damageType === 'heal' || event.damageType === 'buff') && !event.aoe) {
@@ -652,6 +654,48 @@ export class MasterComponent implements OnInit {
       }
     }
     return '';
+  }
+
+  private tryAutoRouteMemberHeal(event: DamageEvent): boolean {
+    if (event.damageType !== 'heal' || event.aoe) return false;
+    const target = (event.targetName || '').trim();
+    if (!target || !this.knownPlayers().includes(target)) return false;
+    const abilityName = (event.ability || '').replace(' (Cura)', '');
+    if (event.isHot) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'hot',
+        abilityName,
+        hotTick: event.hotTick,
+        hotDuration: event.hotDuration,
+        hotTotal: event.damage,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: ${event.hotTick}/t · ${event.hotDuration}t`);
+      this.sendLog.update(log => [`${target}: ${event.hotTick}/t · ${event.hotDuration}t (${abilityName})`, ...log].slice(0, 8));
+    } else if (event.isShield) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'shield',
+        abilityName,
+        amount: event.damage,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: 🛡️ ${event.damage} absorcion`);
+      this.sendLog.update(log => [`${target}: 🛡️ ${event.damage} absorcion (${abilityName})`, ...log].slice(0, 8));
+    } else {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'heal',
+        abilityName,
+        amount: event.damage,
+        timestamp: Date.now(),
+      });
+      this.showToast(`${event.ability} → ${target}: +${event.damage} HP`);
+      this.sendLog.update(log => [`${target}: +${event.damage} HP (${abilityName})`, ...log].slice(0, 8));
+    }
+    this.markEventAssigned(event);
+    return true;
   }
 
   markEventAssigned(event: DamageEvent) {

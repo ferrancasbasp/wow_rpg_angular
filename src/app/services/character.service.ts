@@ -1790,7 +1790,7 @@ export class CharacterService {
     }
   }
 
-   sendHealEvent(ability: any, healAmount: number) {
+   sendHealEvent(ability: any, healAmount: number, targetName?: string) {
     const isHot = !!ability.isHot;
     const hotDuration = ability.hotDuration || 3;
     let appliedHotTick = 0;
@@ -1836,6 +1836,7 @@ export class CharacterService {
         turn: this.turnNumber(),
         timestamp: Date.now(),
         assigned: false,
+        ...(targetName ? { targetName } : {}),
       });
     } catch (e) {
       console.error('Firebase send heal error:', e);

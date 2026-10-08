@@ -412,6 +412,21 @@
             }
           </div>
         </div>
+        @if (partyFrames().length > 0) {
+          <div class="party-frames">
+            <div class="party-frames-label">{{ selectedHealTarget() ? 'Cura → ' + selectedHealTarget() : 'Objetivo cura' }}</div>
+            <div class="party-frames-row">
+              @for (m of partyFrames(); track m.name) {
+                <button
+                  class="party-frame-btn"
+                  [class.active]="selectedHealTarget() === m.name"
+                  [title]="m.name"
+                  (click)="toggleHealTarget(m.name)"
+                >{{ m.initials }}</button>
+              }
+            </div>
+          </div>
+        }
       </div>
     </div>
 

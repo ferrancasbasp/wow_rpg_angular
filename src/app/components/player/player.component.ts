@@ -84,9 +84,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
   levelUpFlash = signal(false);
   abilityRolls = signal<Record<string, { roll: number; crit: boolean }>>({});
   incomingMasterMsg = signal('');
+  partyFrames = signal<{ name: string; initials: string }[]>([]);
+  selectedHealTarget = signal<string | null>(null);
   valkFallen = signal(false);
 
   private playerEventUnsub: (() => void) | null = null;
+  private partyListUnsub: (() => void) | null = null;
 
   newEffect = signal<{
     type: ActiveEffect['type'];
@@ -132,11 +135,48 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.charSvc.loadFromLocalStorage();
+    this.charSvc.registerPlayer();
     this.initPlayerEventListener();
+    this.initPartyFrames();
   }
 
   ngOnDestroy() {
     this.playerEventUnsub?.();
+    this.partyListUnsub?.();
+  }
+
+  initPartyFrames() {
+    try {
+      this.partyListUnsub = this.firebase.onValue('players', (data) => {
+        const myName = (this.charSvc.character().name || '').trim().toLowerCase();
+        const list: { name: string; initials: string }[] = [];
+        if (data && typeof data === 'object') {
+          for (const val of Object.values(data) as any[]) {
+            const n = String(val?.name || '').trim();
+            if (!n || val?.isPet) continue;
+            if (myName && n.toLowerCase() === myName) continue;
+            list.push({ name: n, initials: this.partyInitials(n) });
+          }
+        }
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        this.partyFrames.set(list);
+        const sel = this.selectedHealTarget();
+        if (sel && !list.some(m => m.name === sel)) {
+          this.selectedHealTarget.set(null);
+        }
+      });
+    } catch {
+      this.partyFrames.set([]);
+    }
+  }
+
+  partyInitials(name: string): string {
+    const letters = name.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, '');
+    return (letters || name).toUpperCase().slice(0, 3);
+  }
+
+  toggleHealTarget(name: string) {
+    this.selectedHealTarget.update(t => t === name ? null : name);
   }
 
   initPlayerEventListener() {
@@ -1773,14 +1813,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
       const spiritLinkActive = this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('spirit_link');
       const outMult = this.charSvc.healingOutgoingMult();
       const outNote = outMult < 1 ? ' (curas −' + Math.round((1 - outMult) * 100) + '%)' : '';
+      const selHealTarget = this.selectedHealTarget();
+      const mySelfName = (this.charSvc.character().name || '').trim().toLowerCase();
+      const healTarget = selHealTarget && !ability.aoe && selHealTarget.toLowerCase() !== mySelfName ? selHealTarget : null;
+      const healTargetNote = healTarget ? ' → ' + healTarget : '';
       if (ability.id === 'power_word_shield') {
         roll = Math.round(roll * healBonus * outMult);
         this.abilityRolls.update(r => ({ ...r, [ability.id]: { roll, crit: isCrit } }));
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': 🛡️ ' + roll + ' absorcion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + healTargetNote + ccText + evText + lunarText + healGraceText + tidalWaveText + noteText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
-        this.charSvc.sendHealEvent(ability, roll);
+        this.charSvc.sendHealEvent(ability, roll, healTarget || undefined);
       } else {
         let darkMendingText = '';
         if (ability.id === 'dark_mending') {
@@ -1801,9 +1845,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
         }
         this.charSvc.showToast(
           ability.name + ' R' + ability.currentRank + ': ' + roll + ' curacion' +
-          (isCrit ? ' ¡CRITICO!' : '') + ccText + evText + lunarText + healGraceText + tidalWaveText + spiritLinkText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
+          (isCrit ? ' ¡CRITICO!' : '') + healTargetNote + ccText + evText + lunarText + healGraceText + tidalWaveText + spiritLinkText + noteText + darkMendingText + outNote + ' — ' + this.trSvc.t('sent_to_master')
         );
-        this.charSvc.sendHealEvent(ability, roll);
+        this.charSvc.sendHealEvent(ability, roll, healTarget || undefined);
         if (ability.chain) {
           const chBounces = ability.bounces || 1;
           const chDecay = ability.chainDecay || 0.6;
