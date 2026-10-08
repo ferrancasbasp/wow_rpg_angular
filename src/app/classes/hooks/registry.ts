@@ -1,4 +1,5 @@
 import type { ClassAbilityHooks } from './class-hooks';
+import type { SpellHooks } from './spell-hooks';
 import { warlockAbilityHooks } from './warlock.hooks';
 import { warriorAbilityHooks } from './warrior.hooks';
 import { mageAbilityHooks } from './mage.hooks';
@@ -11,3 +12,5 @@ import { valkyrieAbilityHooks } from './valkyrie.hooks';
 import { bardAbilityHooks } from './bard.hooks';
 
 export const classAbilityHooks: ClassAbilityHooks[] = [warlockAbilityHooks, warriorAbilityHooks, mageAbilityHooks, shamanAbilityHooks, hunterAbilityHooks, rogueAbilityHooks, priestAbilityHooks, druidAbilityHooks, valkyrieAbilityHooks, bardAbilityHooks];
+
+export const classSpellHooks: SpellHooks[] = classAbilityHooks.map(h => h.spell).filter((s): s is SpellHooks => !!s);

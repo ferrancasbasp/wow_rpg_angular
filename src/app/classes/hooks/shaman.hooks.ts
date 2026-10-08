@@ -24,6 +24,26 @@ export const shamanAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning')) {
+        ctx.critChance += svc.talentRank('thundering_strikes') * 5;
+      }
+      if (svc.character().classKey === 'shaman' && svc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+        ctx.critChance += 5;
+      }
+    },
+    critMultLate(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+        ctx.critMult += svc.talentRank('elemental_fury') * 0.05;
+      }
+      if (svc.character().classKey === 'shaman' && svc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
+        ctx.critMult = ctx.critMult * 1.25;
+      }
+    },
+  },
 };
 
 function castTotem(ability: any, { svc }: ClassHooksContext) {

@@ -15,8 +15,9 @@ import {
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
-import { classAbilityHooks } from '../../classes/hooks/registry';
+import { classAbilityHooks, classSpellHooks } from '../../classes/hooks/registry';
 import type { ClassHooksContext } from '../../classes/hooks/class-hooks';
+import type { SpellCastContext, SpellHooks } from '../../classes/hooks/spell-hooks';
 
 const ORB_SYMBOLS: Record<ElementalOrb, string> = {
   fire: '🔥',
@@ -1503,104 +1504,63 @@ export class PlayerComponent implements OnInit, OnDestroy {
       }));
     }
 
+    const ctx: SpellCastContext = {
+      svc: this.charSvc,
+      player: { sendDamagePayload: (payload) => this.sendDamagePayload(payload) },
+      t: (key) => this.trSvc.t(key),
+      ability,
+      resType,
+      isRage,
+      isEnergy,
+      isFocus,
+      cost,
+      resourceActual,
+      resourceMax,
+      manaActual,
+      maelstormFree,
+      lastWillRage,
+      actionCost,
+      clearcast,
+      roll: 0,
+      critChance: 0,
+      critMult: 1.5,
+      isCrit: false,
+      texts: {},
+    };
+
     const min = ability.currentMin || 0;
     const max = ability.currentMax || 0;
     let roll = min + Math.floor(Math.random() * (max - min + 1));
-    if (ability.id === 'shield_bash' && this.charSvc.character().classKey === 'valkyrie') {
-      const wardedRank = this.charSvc.talentRank('warded');
-      if (wardedRank > 0) roll = Math.round(roll * (1 + wardedRank * 0.10));
-    }
-    if (ability.id === 'cone_of_cold' && this.charSvc.character().classKey === 'mage') {
-      const iccRank = this.charSvc.talentRank('improved_cone_of_cold');
-      if (iccRank > 0) roll = Math.round(roll * (1 + iccRank * 0.15));
-    }
+    ctx.roll = roll;
+    this.runSpellHooks('modifyRoll', ability, ctx);
+    roll = ctx.roll;
     let critChance = parseFloat((isRage || isEnergy || isFocus) ? this.charSvc.meleeCrit() : this.charSvc.spellCrit());
-    if (ability.castType === 'instant' && this.charSvc.character().classKey === 'mage') {
-      critChance += this.charSvc.talentRank('magic_resistance') * 2;
-    }
-    if (ability.id === 'backstab' && this.charSvc.character().classKey === 'rogue') {
-      critChance += this.charSvc.talentRank('improved_backstab') * 10;
-    }
-    if (ability.id === 'fire_blast' && this.charSvc.character().classKey === 'mage') {
-      critChance += this.charSvc.talentRank('improved_fire_blast') * 10;
-    }
-    if (ability.school === 'Escarcha' && this.charSvc.character().classKey === 'mage') {
-      critChance += this.charSvc.talentRank('frost_power') * 2;
-    }
-    if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'warrior') {
-      critChance += this.charSvc.talentRank('unyielding_strikes') * 1;
-    }
-    if (ability.id === 'basic_attack' && this.charSvc.character().classKey === 'rogue') {
-      critChance += this.charSvc.talentRank('improved_energetic_attacks') * 1;
-    }
-    if (this.charSvc.character().classKey === 'valkyrie') {
-      critChance += this.charSvc.talentRank('endurance') * 2;
-    }
-    if (this.charSvc.character().classKey === 'bard' && ['scherzo', 'sforzando'].includes(ability.id)) {
-      critChance += this.charSvc.talentRank('rinforzando') * 4;
-    }
-    if (this.charSvc.character().classKey === 'valkyrie') {
-      critChance += this.charSvc.talentRank('hurtfull_lightning') * 2;
-    }
-    if (ability.type === 'heal' && !ability.isHot && !ability.isDot && this.charSvc.character().classKey === 'priest') {
-      critChance += this.charSvc.talentRank('illumination') * 2;
-    }
+    ctx.critChance = critChance;
+    this.runSpellHooks('modifyCritChance', ability, ctx);
+    critChance = ctx.critChance;
     if (ability.school === 'Fuego' && this.charSvc.hasEffect('combustion')) {
       critChance += 50;
     }
     if (this.charSvc.hasEffect('inner_focus')) {
       critChance += 25;
     }
-    if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
-      const hawkActive = (this.charSvc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
-      if (hawkActive) critChance += this.charSvc.talentRank('improved_aspect_of_the_hawk') * 4;
-    }
-    if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
-      critChance += this.charSvc.talentRank('destruction_specialization') * 5;
-    }
-    if (this.charSvc.character().classKey === 'shaman' && (ability.id === 'lightning_bolt' || ability.id === 'chain_lightning')) {
-      critChance += this.charSvc.talentRank('thundering_strikes') * 5;
-    }
-    if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
-      critChance += 5;
-    }
     const isCrit = Math.random() * 100 < critChance;
+    ctx.isCrit = isCrit;
     if (isCrit) {
       let critMult = 1.5;
-      if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
-        critMult = 1.5 + this.charSvc.talentRank('destruction_specialization') * 0.10;
-      }
-      if (this.charSvc.character().classKey === 'valkyrie' && ability.type === 'damage') {
-        critMult = critMult + this.charSvc.talentRank('hurtfull_lightning') * 0.05;
-      }
+      ctx.critMult = critMult;
+      this.runSpellHooks('critMultEarly', ability, ctx);
       if (this.charSvc.hasEffect('demonic_form')) {
-        critMult = critMult * 1.25;
+        ctx.critMult = ctx.critMult * 1.25;
       }
       if (this.charSvc.hasEffect('recklessness')) {
-        critMult = critMult * 1.20;
+        ctx.critMult = ctx.critMult * 1.20;
       }
-    if (this.charSvc.hasEffect('arcane_power')) {
-        critMult = critMult * 1.25;
+      if (this.charSvc.hasEffect('arcane_power')) {
+        ctx.critMult = ctx.critMult * 1.25;
       }
-      if (this.charSvc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
-        critMult = critMult * (1 + this.charSvc.talentRank('mortal_shots') * 0.05);
-      }
-      if (this.charSvc.character().classKey === 'shaman' && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
-        critMult += this.charSvc.talentRank('elemental_fury') * 0.05;
-      }
-      if (ability.school === 'Escarcha' && this.charSvc.character().classKey === 'mage') {
-        critMult += this.charSvc.talentRank('frost_power') * 0.10;
-      }
-      if (this.charSvc.character().classKey === 'mage') {
-        const fireOrbCritMult = this.charSvc.hasEffect('combustion') ? 0.10 : 0.05;
-        critMult += this.charSvc.countElementalOrbs('fire') * fireOrbCritMult;
-      }
-      if (this.charSvc.character().classKey === 'shaman' && this.charSvc.hasEffect('ascendance') && ['lightning_bolt', 'chain_lightning', 'flame_shock', 'earth_shock'].includes(ability.id)) {
-        critMult = critMult * 1.25;
-      }
-      if (this.charSvc.character().classKey === 'rogue') {
-        critMult += this.charSvc.talentRank('lethality') * 0.05;
-      }
+      this.runSpellHooks('critMultLate', ability, ctx);
+      critMult = ctx.critMult;
       roll = Math.round(roll * critMult);
     }
     let efCritText = '';
@@ -2347,6 +2307,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
       if (hooks.castUtility?.(ability, ctx)) return true;
     }
     return false;
+  }
+
+  private runSpellHooks<M extends keyof SpellHooks>(method: M, ability: any, ctx: SpellCastContext): void {
+    for (const hooks of classSpellHooks) {
+      const fn = hooks[method];
+      if (fn) (fn as any)(ability, ctx);
+    }
   }
 
   castUtility(ability: any) {

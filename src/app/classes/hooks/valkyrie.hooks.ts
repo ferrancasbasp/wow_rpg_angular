@@ -13,6 +13,26 @@ export const valkyrieAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyRoll(ability, ctx) {
+      if (ability.id === 'shield_bash' && ctx.svc.character().classKey === 'valkyrie') {
+        const wardedRank = ctx.svc.talentRank('warded');
+        if (wardedRank > 0) ctx.roll = Math.round(ctx.roll * (1 + wardedRank * 0.10));
+      }
+    },
+    modifyCritChance(_ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'valkyrie') {
+        ctx.critChance += svc.talentRank('endurance') * 2;
+        ctx.critChance += svc.talentRank('hurtfull_lightning') * 2;
+      }
+    },
+    critMultEarly(ability, ctx) {
+      if (ctx.svc.character().classKey === 'valkyrie' && ability.type === 'damage') {
+        ctx.critMult = ctx.critMult + ctx.svc.talentRank('hurtfull_lightning') * 0.05;
+      }
+    },
+  },
 };
 
 function castValkyriesCall(ability: any, { svc, player }: ClassHooksContext) {

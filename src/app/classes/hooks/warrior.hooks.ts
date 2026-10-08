@@ -16,6 +16,13 @@ export const warriorAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      if (ability.id === 'basic_attack' && ctx.svc.character().classKey === 'warrior') {
+        ctx.critChance += ctx.svc.talentRank('unyielding_strikes') * 1;
+      }
+    },
+  },
 };
 
 function castColossusSmash(ability: any, { svc, player }: ClassHooksContext) {

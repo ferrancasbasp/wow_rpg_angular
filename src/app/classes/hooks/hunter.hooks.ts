@@ -20,6 +20,21 @@ export const hunterAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
+        const hawkActive = (svc.character().activeEffects || []).some(e => e.type === 'buff' && e.name === 'Aspect of the Hawk');
+        if (hawkActive) ctx.critChance += svc.talentRank('improved_aspect_of_the_hawk') * 4;
+      }
+    },
+    critMultLate(ability, ctx) {
+      const svc = ctx.svc;
+      if (svc.character().classKey === 'hunter' && ['auto_shot', 'arcanic_shot', 'aimed_shot', 'multi_shot'].includes(ability.id)) {
+        ctx.critMult = ctx.critMult * (1 + svc.talentRank('mortal_shots') * 0.05);
+      }
+    },
+  },
 };
 
 function castExplosiveShot(ability: any, { svc, player }: ClassHooksContext) {

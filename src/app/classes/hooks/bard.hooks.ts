@@ -9,6 +9,13 @@ export const bardAbilityHooks: ClassAbilityHooks = {
     }
     return false;
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      if (ctx.svc.character().classKey === 'bard' && ['scherzo', 'sforzando'].includes(ability.id)) {
+        ctx.critChance += ctx.svc.talentRank('rinforzando') * 4;
+      }
+    },
+  },
 };
 
 function castFinale(ability: any, { svc, player, t }: ClassHooksContext) {

@@ -23,6 +23,18 @@ export const warlockAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
+        ctx.critChance += ctx.svc.talentRank('destruction_specialization') * 5;
+      }
+    },
+    critMultEarly(ability, ctx) {
+      if (ability.id === 'chaos_bolt' || ability.id === 'rain_of_fire') {
+        ctx.critMult = 1.5 + ctx.svc.talentRank('destruction_specialization') * 0.10;
+      }
+    },
+  },
 };
 
 function castSummonInfernal(ability: any, { svc, t }: ClassHooksContext) {

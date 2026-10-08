@@ -8,6 +8,13 @@ export const priestAbilityHooks: ClassAbilityHooks = {
     }
     return false;
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      if (ability.type === 'heal' && !ability.isHot && !ability.isDot && ctx.svc.character().classKey === 'priest') {
+        ctx.critChance += ctx.svc.talentRank('illumination') * 2;
+      }
+    },
+  },
 };
 
 function castHolyNova(ability: any, { svc, player }: ClassHooksContext) {

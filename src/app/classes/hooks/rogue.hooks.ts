@@ -16,6 +16,22 @@ export const rogueAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyCritChance(ability, ctx) {
+      const svc = ctx.svc;
+      if (ability.id === 'backstab' && svc.character().classKey === 'rogue') {
+        ctx.critChance += svc.talentRank('improved_backstab') * 10;
+      }
+      if (ability.id === 'basic_attack' && svc.character().classKey === 'rogue') {
+        ctx.critChance += svc.talentRank('improved_energetic_attacks') * 1;
+      }
+    },
+    critMultLate(_ability, ctx) {
+      if (ctx.svc.character().classKey === 'rogue') {
+        ctx.critMult += ctx.svc.talentRank('lethality') * 0.05;
+      }
+    },
+  },
 };
 
 function castShadowDance(ability: any, { svc }: ClassHooksContext) {

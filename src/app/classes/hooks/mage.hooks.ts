@@ -16,6 +16,36 @@ export const mageAbilityHooks: ClassAbilityHooks = {
         return false;
     }
   },
+  spell: {
+    modifyRoll(ability, ctx) {
+      if (ability.id === 'cone_of_cold' && ctx.svc.character().classKey === 'mage') {
+        const iccRank = ctx.svc.talentRank('improved_cone_of_cold');
+        if (iccRank > 0) ctx.roll = Math.round(ctx.roll * (1 + iccRank * 0.15));
+      }
+    },
+    modifyCritChance(ability, ctx) {
+      const svc = ctx.svc;
+      if (ability.castType === 'instant' && svc.character().classKey === 'mage') {
+        ctx.critChance += svc.talentRank('magic_resistance') * 2;
+      }
+      if (ability.id === 'fire_blast' && svc.character().classKey === 'mage') {
+        ctx.critChance += svc.talentRank('improved_fire_blast') * 10;
+      }
+      if (ability.school === 'Escarcha' && svc.character().classKey === 'mage') {
+        ctx.critChance += svc.talentRank('frost_power') * 2;
+      }
+    },
+    critMultLate(ability, ctx) {
+      const svc = ctx.svc;
+      if (ability.school === 'Escarcha' && svc.character().classKey === 'mage') {
+        ctx.critMult += svc.talentRank('frost_power') * 0.10;
+      }
+      if (svc.character().classKey === 'mage') {
+        const fireOrbCritMult = svc.hasEffect('combustion') ? 0.10 : 0.05;
+        ctx.critMult += svc.countElementalOrbs('fire') * fireOrbCritMult;
+      }
+    },
+  },
 };
 
 function castCombustion(ability: any, { svc }: ClassHooksContext) {
