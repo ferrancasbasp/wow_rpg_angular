@@ -91,10 +91,34 @@ Las tres pantallas de la app (rutas en `app.routes.ts`):
 `components/` renderiza las tres pantallas (jugador, master, combate) → `firebase.service.ts`
 persiste/sincroniza la partida.
 
+## Arquitectura de hooks de clases (IMPORTANTE)
+
+`castSpell` de `player.component.ts` **ya no contiene lógica por clase**: es un esqueleto por
+etapas (S0→S9) que delega en **hooks por clase** en `src/app/classes/hooks/` (`<clase>.hooks.ts`).
+
+Antes de tocar cualquier diseño de clase, ability o talento, **lee primero `docs/CLASS-HOOKS.md`**
+(contratos, orden del pipeline y reglas de oro) y el mapa de etapas en `classes/hooks/spell-hooks.ts`.
+
+Reglas mínimas para agentes:
+
+- Toda rama que dependa de `classKey` o talento de una clase vive en el hook de esa clase, **nunca**
+  inline en el driver (y nunca en ambas partes: doble ejecución).
+- Todos los hooks de todas las clases corren en cada cast: guarda con
+  `if (ctx.svc.character().classKey !== '<clase>') return;`.
+- Hook nuevo → se declara en `SpellHooks`, se documenta en el mapa de `spell-hooks.ts`, se llama
+  `runSpellHooks('<hook>', …)` en el driver y se registra el archivo de clase en
+  `classes/hooks/registry.ts` (orden: warlock, warrior, mage, shaman, hunter, rogue, priest, druid,
+  valkyrie, bard).
+- Fragmentos de toast de S9 van a `ctx.texts['<clave>']` (el esqueleto los fusiona en orden);
+  `ctx.sendAbility` es lo que se envía al master (mutar eso, no `ctx.ability`).
+- `castSpell`/`castUtility` de un hook devuelven `true` solo si gestionan el flujo completo
+  (early-return).
+
 ## Convenciones a respetar
 
-- Añadir una clase nueva: crear `classes/<clase>.ts` exportando un `CharacterClass` y registrarla
-  en `class-registry.service.ts`.
+- Añadir una clase nueva: crear `classes/<clase>.ts` exportando un `CharacterClass`, registrarla
+  en `class-registry.service.ts` **y** crear su `<clase>.hooks.ts` + registrarlo en
+  `registry.ts` (ver `docs/CLASS-HOOKS.md` §7).
 - Los textos de UI van en español; si se añade texto nuevo visible, considerar añadir su entrada
   correspondiente en `translation.service.ts` (es/en).
 - Los iconos de talentos/habilidades referencian imágenes bajo `public/img/`.
