@@ -74,24 +74,24 @@ export class ItemGeneratorComponent {
     }
     const bonus: Partial<Stats> = {};
     for (const key of STAT_KEYS_ARRAY) {
-      const v = this.statValues()[key] || 0;
-      if (v > 0) bonus[key] = v;
+      bonus[key] = this.statValues()[key] || 0;
     }
     const defense = this.defense() || 0;
     const weaponDamage = this.weaponDamage() || 0;
-    if (Object.keys(bonus).length === 0 && defense <= 0 && weaponDamage <= 0) {
+    const hasStatBonus = STAT_KEYS_ARRAY.some(key => (bonus[key] || 0) > 0);
+    if (!hasStatBonus && defense <= 0 && weaponDamage <= 0) {
       this.showToast('Añade al menos un bonus (stat, armadura o daño)');
       return;
     }
     this.saving.set(true);
     try {
-      const payload = {
+      const payload: any = {
         name: trimmed,
         slot: this.slot(),
         rarity: this.rarity(),
         bonus,
-        defense: defense > 0 ? defense : undefined,
-        weaponDamage: weaponDamage > 0 ? weaponDamage : undefined,
+        defense: this.defense() || 0,
+        weaponDamage: this.weaponDamage() || 0,
         owner: null,
         createdAt: Date.now(),
       };
@@ -104,7 +104,8 @@ export class ItemGeneratorComponent {
       this.weaponDamage.set(null);
     } catch (e) {
       console.error('Firebase save item error:', e);
-      this.showToast('❌ No se pudo guardar — revisa Firebase');
+      const err = e as { code?: string; message?: string };
+      this.showToast('❌ No se pudo guardar: ' + (err?.code || err?.message || 'revisa consola'));
     } finally {
       this.saving.set(false);
     }
