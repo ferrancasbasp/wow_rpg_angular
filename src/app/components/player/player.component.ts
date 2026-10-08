@@ -448,70 +448,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
 
 
-  castCallFromValhalla(ability: any) {
-    if (this.charSvc.simMode()) {
-      this.charSvc.showToast('Call from Valhalla no esta disponible en la simulacion');
-      return;
-    }
-    const myName = this.charSvc.character().name || 'Jugador';
-    this.sendDamagePayload({
-      player: myName,
-      ability: ability.name + ' (Revive)',
-      rank: ability.currentRank || 1,
-      damage: this.charSvc.maxHP(),
-      damageType: 'rebirth',
-      aoe: false,
-      effects: null,
-      buffAp: 50,
-      buffSp: 50,
-      buffDuration: 2,
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    this.charSvc.showToast('⚔️ Call from Valhalla: revivira a un aliado muerto con ' + this.charSvc.maxHP() + ' HP y +50 AP/SP (2 turnos) — asigna el objetivo en el Master');
-  }
-
-  castValkyriesCall(ability: any) {
-    const myName = this.charSvc.character().name || 'Jugador';
-    const turn = this.charSvc.turnNumber();
-    const now = Date.now();
-    const heal = Math.round(this.charSvc.maxHP() * 0.15);
-    this.sendDamagePayload({
-      player: myName,
-      ability: ability.name + ' (Cura)',
-      rank: ability.currentRank || 1,
-      damage: heal,
-      damageType: 'heal',
-      aoe: true,
-      effects: null,
-      isHot: false,
-      hotTick: 0,
-      hotDuration: 0,
-      isShield: false,
-      turn,
-      timestamp: now,
-      assigned: false,
-    });
-    this.sendDamagePayload({
-      player: myName,
-      ability: ability.name + ' (Accion)',
-      rank: ability.currentRank || 1,
-      damage: 0,
-      damageType: 'buff',
-      aoe: true,
-      buffStat: 'actions_per_turn',
-      buffValue: 1,
-      buffDuration: 1,
-      isPercent: false,
-      effects: null,
-      turn,
-      timestamp: now,
-      assigned: false,
-    });
-    this.charSvc.showToast("Valkyrie's Call: +1 accion a todos los aliados y cura de " + heal + ' HP — 2 eventos AOE al Master');
-  }
-
 
 
   onNameInput(event: Event) {
@@ -2791,8 +2727,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (this.dispatchClassAbility(ability, hookCtx)) {
       return;
-    } else if (ability.id === 'valkyries_call') {
-      this.castValkyriesCall(ability);
     } else if (ability.id === 'valk_last_will') {
       const odinsAbility = this.charSvc.classConfig().abilities.find(a => a.id === 'valk_odins_will');
       const odinsRank = odinsAbility ? (this.charSvc.maxAvailableRank(odinsAbility) || 1) : 1;
@@ -2815,8 +2749,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       });
       this.charSvc.syncPlayerStatus();
       this.charSvc.showToast('📯 Last Will: 3 turnos gastando vida en vez de ira (10 de ira → 5% de vida), +60% probabilidad de critico, +20 ira y Odin\'s Will activo (R' + odinsRank + ')');
-    } else if (ability.id === 'valk_call_from_valhalla') {
-      this.castCallFromValhalla(ability);
     } else if (ability.id === 'finale') {
       this.castFinale(ability);
     } else if (ability.id === 'nature_guardian') {
