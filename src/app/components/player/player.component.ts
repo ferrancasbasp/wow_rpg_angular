@@ -472,28 +472,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast('⚔️ Call from Valhalla: revivira a un aliado muerto con ' + this.charSvc.maxHP() + ' HP y +50 AP/SP (2 turnos) — asigna el objetivo en el Master');
   }
 
-  castRebirth(ability: any) {
-    if (this.charSvc.simMode()) {
-      this.charSvc.showToast('Rebirth no esta disponible en la simulacion');
-      return;
-    }
-    const flatHp = ability.currentMin || 200;
-    const myName = this.charSvc.character().name || 'Jugador';
-    this.sendDamagePayload({
-      player: myName,
-      ability: ability.name + ' (Revive)',
-      rank: ability.currentRank || 1,
-      damage: flatHp,
-      damageType: 'rebirth',
-      aoe: false,
-      effects: null,
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    this.charSvc.showToast('🌿 Rebirth R' + (ability.currentRank || 1) + ': avisado al Master (' + flatHp + ' HP) — debe revivirte con el botón 🌿');
-  }
-
   castValkyriesCall(ability: any) {
     const myName = this.charSvc.character().name || 'Jugador';
     const turn = this.charSvc.turnNumber();
@@ -2839,8 +2817,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.showToast('📯 Last Will: 3 turnos gastando vida en vez de ira (10 de ira → 5% de vida), +60% probabilidad de critico, +20 ira y Odin\'s Will activo (R' + odinsRank + ')');
     } else if (ability.id === 'valk_call_from_valhalla') {
       this.castCallFromValhalla(ability);
-    } else if (ability.id === 'rebirth') {
-      this.castRebirth(ability);
     } else if (ability.id === 'finale') {
       this.castFinale(ability);
     } else if (ability.id === 'nature_guardian') {
