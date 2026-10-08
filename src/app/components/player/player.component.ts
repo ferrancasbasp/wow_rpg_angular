@@ -15,7 +15,7 @@ import {
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb } from '../../models/game.models';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
-import { warlockAbilityHooks } from '../../classes/hooks/warlock.hooks';
+import { classAbilityHooks } from '../../classes/hooks/registry';
 import type { ClassHooksContext } from '../../classes/hooks/class-hooks';
 
 const ORB_SYMBOLS: Record<ElementalOrb, string> = {
@@ -505,38 +505,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.showToast(ability.name + ' R' + (rnk ? rnk.rank : 1) + ': 🔥 ' + total + ' Fuego (' + tick + '/t · 3t) a todos los enemigos — enviado al Master');
   }
 
-  castColossusSmash(ability: any) {
-    const weaponDmg = this.charSvc.totalWeaponDamage();
-    const apBonus = Math.round(this.charSvc.attackPower() / 7);
-    const base = Math.round(weaponDmg * 2) + apBonus;
-    const min = Math.max(1, Math.round(base * 0.5));
-    const max = Math.max(min + 1, Math.round(base * 1.5));
-    let roll = min + Math.floor(Math.random() * (max - min + 1));
-    let isCrit = false;
-    if (Math.random() * 100 < parseFloat(this.charSvc.meleeCrit())) {
-      isCrit = true;
-      let critMult = 1.5;
-      if (this.charSvc.hasEffect('recklessness')) critMult = critMult * 1.20;
-      roll = Math.round(roll * critMult);
-    }
-    if (this.charSvc.inBattleStance()) {
-      roll = Math.round(roll * (1.10 + this.charSvc.talentRank('improved_stances') * 0.02));
-    }
-    this.charSvc.addTurnDamage(roll);
-    this.sendDamagePayload({
-      player: this.charSvc.character().name || 'Jugador',
-      ability: ability.name,
-      rank: 1,
-      damage: roll,
-      damageType: 'physical',
-      effects: [{ type: 'debuff', name: 'Colossus Smash', target: 'armor', value: 30, duration: 2, debuffType: 'none', stackable: false }],
-      turn: this.charSvc.turnNumber(),
-      timestamp: Date.now(),
-      assigned: false,
-    });
-    this.charSvc.showToast(ability.name + ': 💥 ' + roll + ' Fisico' + (isCrit ? ' · CRITICO' : '') + ' · armadura −30 (2 turnos) — enviado al Master');
-  }
-
   castDisengage(ability: any) {
     this.charSvc.character.update(c => ({
       ...c,
@@ -795,30 +763,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       effectText = 'envenena antes tus armas para potenciar el veneno';
     }
     this.charSvc.showToast('☠️ Poison Mastery activa · ' + effectText + ' (' + duration + ' turnos)');
-  }
-
-  castShieldWall(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'shield_wall'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Shield Wall', target: 'shield_wall', value: 60, duration },
-      ],
-    }));
-    this.charSvc.showToast('🛡️ Shield Wall activa · -60% daño recibido e inmune a control de masas (' + duration + ' turnos)');
-  }
-
-  castRecklessness(ability: any) {
-    const duration = 3;
-    this.charSvc.character.update(c => ({
-      ...c,
-      activeEffects: [
-        ...(c.activeEffects || []).filter(e => e.target !== 'recklessness'),
-        { id: Date.now() + Math.random(), type: 'buff' as const, name: 'Recklessness', target: 'recklessness', value: 30, duration },
-      ],
-    }));
-    this.charSvc.showToast('🔥 Recklessness activa · +30% critico y +20% danyo critico · -30% resistencia (' + duration + ' turnos)');
   }
 
   castCombustion(ability: any) {
@@ -2853,6 +2797,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private dispatchClassAbility(ability: any, ctx: ClassHooksContext): boolean {
+    for (const hooks of classAbilityHooks) {
+      if (hooks.castUtility?.(ability, ctx)) return true;
+    }
+    return false;
+  }
+
   castUtility(ability: any) {
     if (ability.passive) {
       this.charSvc.showToast('Pasiva: ' + ability.name + ' activa');
@@ -3181,7 +3132,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.charSvc.summonPet(ability.isPetSummon);
     } else if (ability.id === 'explosive_shot') {
       this.castExplosiveShot(ability);
-    } else if (warlockAbilityHooks.castUtility?.(ability, hookCtx) ?? false) {
+    } else if (this.dispatchClassAbility(ability, hookCtx)) {
       return;
     } else if (ability.totem) {
       this.castTotem(ability);
@@ -3231,12 +3182,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.castBladeFlurry(ability);
     } else if (ability.id === 'poison_mastery') {
       this.castPoisonMastery(ability);
-    } else if (ability.id === 'shield_wall') {
-      this.castShieldWall(ability);
-    } else if (ability.id === 'colossus_smash') {
-      this.castColossusSmash(ability);
-    } else if (ability.id === 'recklessness') {
-      this.castRecklessness(ability);
     } else if (ability.id === 'combustion') {
       this.castCombustion(ability);
     } else if (ability.id === 'icy_veins') {
