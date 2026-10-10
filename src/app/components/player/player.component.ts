@@ -92,6 +92,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   partyItems = signal<Item[]>([]);
   walletCopper = signal(0);
   sellingItem = signal<string | null>(null);
+  equipping = signal<string | null>(null);
   readonly ITEM_SELL_COPPER = ITEM_SELL_COPPER;
 
   readonly rarityColor = RARITY_COLOR;
@@ -150,6 +151,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.charSvc.loadFromLocalStorage();
+    if (!localStorage.getItem('eq_db_migrated_v1')) {
+      this.charSvc.clearEquipment();
+      localStorage.setItem('eq_db_migrated_v1', '1');
+      this.charSvc.showToast('Equipo manual limpiado — equipa desde la bolsa del grupo (🎒)');
+    }
     this.charSvc.registerPlayer();
     this.initPlayerEventListener();
     this.initPartyFrames();
@@ -280,15 +286,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   itemBonusList(item: Item): { label: string; value: number }[] {
-    const statKeys: StatKey[] = ['fuerza', 'agilidad', 'intelecto', 'aguante', 'espiritu'];
-    const out: { label: string; value: number }[] = [];
-    statKeys.forEach((k) => {
-      const v = (item.bonus || {})[k] || 0;
-      if (v > 0) out.push({ label: STAT_ABBR[k], value: v });
-    });
-    if ((item.defense || 0) > 0) out.push({ label: 'ARM', value: item.defense || 0 });
-    if ((item.weaponDamage || 0) > 0) out.push({ label: 'DÑO', value: item.weaponDamage || 0 });
-    return out;
+    return this.bonusList(item.bonus, item.defense, item.weaponDamage);
   }
 
   initPlayerEventListener() {
@@ -557,40 +555,100 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.charSvc.character.update(c => ({ ...c, name: value }));
   }
 
-  onEquipNameInput(event: Event, slotKey: string) {
-    const value = (event.target as HTMLInputElement).value;
-    this.charSvc.character.update(c => ({
-      ...c,
-      equipment: {
-        ...c.equipment,
-        [slotKey]: { ...(c.equipment as any)[slotKey], name: value },
-      },
-    }));
+  stashItemsForSlot(slotKey: string): Item[] {
+    return this.partyItems()
+      .filter(i => !i.owner && i.slot === slotKey)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  onEquipBonusInput(event: Event, slotKey: string, statKey: string) {
-    const value = +(event.target as HTMLInputElement).value || 0;
-    this.charSvc.character.update(c => ({
-      ...c,
-      equipment: {
-        ...c.equipment,
-        [slotKey]: {
-          ...(c.equipment as any)[slotKey],
-          bonus: { ...(c.equipment as any)[slotKey].bonus, [statKey]: value },
+  itemSummary(item: Item): string {
+    return this.bonusList(item.bonus, item.defense, item.weaponDamage).map(b => `+${b.value} ${b.label}`).join(' · ');
+  }
+
+  equipBonusList(slotKey: string): { label: string; value: number }[] {
+    const eq = this.getEquipItem(slotKey);
+    return this.bonusList(eq?.bonus, eq?.defense, eq?.weaponDamage);
+  }
+
+  private bonusList(bonus: any, defense?: number, weaponDamage?: number): { label: string; value: number }[] {
+    const statKeys: StatKey[] = ['fuerza', 'agilidad', 'intelecto', 'aguante', 'espiritu'];
+    const out: { label: string; value: number }[] = [];
+    statKeys.forEach((k) => {
+      const v = (bonus || {})[k] || 0;
+      if (v > 0) out.push({ label: STAT_ABBR[k], value: v });
+    });
+    if ((defense || 0) > 0) out.push({ label: 'ARM', value: defense || 0 });
+    if ((weaponDamage || 0) > 0) out.push({ label: 'DÑO', value: weaponDamage || 0 });
+    return out;
+  }
+
+  async onEquipSelect(event: Event, slotKey: string) {
+    const id = (event.target as HTMLSelectElement).value;
+    (event.target as HTMLSelectElement).value = '';
+    if (!id) return;
+    const item = this.partyItems().find(i => i.id === id);
+    if (!item || item.owner) {
+      this.charSvc.showToast('❌ Ese ítem ya no está en la bolsa');
+      return;
+    }
+    await this.equipItem(slotKey, item);
+  }
+
+  async equipItem(slotKey: string, item: Item) {
+    const myName = (this.charSvc.character().name || '').trim();
+    if (!myName) {
+      this.charSvc.showToast('❌ Ponle nombre al personaje antes de equipar');
+      return;
+    }
+    if (this.equipping()) return;
+    this.equipping.set(item.id);
+    try {
+      const res = await this.firebase.runTransaction('items/' + item.id + '/owner', (cur) => (cur == null ? myName : undefined));
+      if (!res?.committed) {
+        this.charSvc.showToast('❌ ' + item.name + ' acaba de ser equipado por otro');
+        return;
+      }
+      const prev = this.getEquipItem(slotKey);
+      if (prev?.itemId) {
+        try { await this.firebase.removeData('items/' + prev.itemId + '/owner'); } catch { /* se libera en el stash igualmente al fallar */ }
+      }
+      this.charSvc.character.update(c => ({
+        ...c,
+        equipment: {
+          ...c.equipment,
+          [slotKey]: {
+            name: item.name,
+            bonus: { fuerza: 0, agilidad: 0, intelecto: 0, aguante: 0, espiritu: 0, ...(item.bonus || {}) },
+            ...(item.defense ? { defense: item.defense } : {}),
+            ...(item.weaponDamage ? { weaponDamage: item.weaponDamage } : {}),
+            itemId: item.id,
+          },
         },
-      },
-    }));
+      }));
+      this.charSvc.saveToLocalStorage();
+      this.charSvc.showToast('✅ Equipado: ' + item.name);
+    } catch (e) {
+      const err = e as { code?: string; message?: string };
+      this.charSvc.showToast('❌ No se pudo equipar: ' + (err?.code || err?.message || 'revisa consola'));
+    } finally {
+      this.equipping.set(null);
+    }
   }
 
-  onEquipExtraInput(event: Event, slotKey: string, fieldKey: string) {
-    const value = +(event.target as HTMLInputElement).value || 0;
+  async unequipItem(slotKey: string) {
+    const prev = this.getEquipItem(slotKey);
+    if (prev?.itemId) {
+      try { await this.firebase.removeData('items/' + prev.itemId + '/owner'); } catch { /* noop */ }
+    }
     this.charSvc.character.update(c => ({
       ...c,
       equipment: {
         ...c.equipment,
-        [slotKey]: { ...(c.equipment as any)[slotKey], [fieldKey]: value },
+        [slotKey]: { name: '', bonus: { fuerza: 0, agilidad: 0, intelecto: 0, aguante: 0, espiritu: 0 } },
       },
     }));
+    this.charSvc.saveToLocalStorage();
+    this.charSvc.showToast('Desequipado: ' + (prev?.name || 'slot'));
   }
 
   instantLevel25() {

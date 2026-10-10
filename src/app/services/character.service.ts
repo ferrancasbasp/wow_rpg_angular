@@ -1541,6 +1541,15 @@ export class CharacterService {
     this.character.update(c => ({ ...c, equipment: { ...c.equipment, ...updates } }));
   }
 
+  clearEquipment() {
+    const empty: any = {};
+    for (const slot of ['head', 'chest', 'hands', 'legs', 'feet', 'mainHand', 'offHand', 'twoHand', 'ranged']) {
+      empty[slot] = { name: '', bonus: { fuerza: 0, agilidad: 0, intelecto: 0, aguante: 0, espiritu: 0 } };
+    }
+    this.character.update(c => ({ ...c, equipment: empty }));
+    this.saveToLocalStorage();
+  }
+
   saveToLocalStorage() {
     if (this.simMode()) return;
     try {

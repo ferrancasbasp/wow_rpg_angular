@@ -684,30 +684,27 @@
                       <div class="equip-slot-header">
                         <span class="equip-slot-label">{{ slot.label }}</span>
                       </div>
-                      <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
-                             class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
-                      <div class="equip-bonus-grid">
-                        @for (entry of statEntries; track entry[1]) {
-                          <div class="equip-bonus-cell">
-                            <span class="equip-bonus-label">{{ STAT_ABBR[entry[1]] }}</span>
-                            <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
-                                   (input)="onEquipBonusInput($event, slot.key, entry[1])"
-                                   class="equip-bonus-input" min="0" placeholder="0">
+                      @if (getEquipItem(slot.key).name) {
+                        <div class="equip-equipped-box">
+                          <div class="equip-equipped-name">{{ getEquipItem(slot.key).name }}</div>
+                          <div class="item-card-bonus">
+                            @for (b of equipBonusList(slot.key); track b.label) {
+                              <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+                            }
                           </div>
-                        }
-                      </div>
-                      @if (slot.extraFields) {
-                        <div class="equip-extra-fields">
-                          @for (field of slot.extraFields; track field.key) {
-                            <div class="equip-bonus-cell">
-                              <span class="equip-extra-label">{{ field.label }}</span>
-                              <input type="number" [value]="getEquipExtra(slot.key, field.key)"
-                                     (input)="onEquipExtraInput($event, slot.key, field.key)"
-                                     class="equip-bonus-input" min="0" placeholder="0">
-                            </div>
-                          }
+                          <button type="button" class="equip-unequip-btn" (click)="unequipItem(slot.key)" [disabled]="equipping() !== null">
+                            Desequipar
+                          </button>
                         </div>
+                      } @else {
+                        <div class="equip-empty-hint">Sin ítem</div>
                       }
+                      <select class="equip-select" (change)="onEquipSelect($event, slot.key)" [disabled]="equipping() !== null">
+                        <option value="" selected>+ Equipar de la bolsa ({{ stashItemsForSlot(slot.key).length }})</option>
+                        @for (it of stashItemsForSlot(slot.key); track it.id) {
+                          <option [value]="it.id">{{ it.name }} · {{ itemSummary(it) }}</option>
+                        }
+                      </select>
                     </div>
                   }
                 </div>
@@ -731,30 +728,27 @@
                       <div class="equip-slot-header">
                         <span class="equip-slot-label">{{ slot.label }}</span>
                       </div>
-                      <input type="text" [value]="getEquipItem(slot.key).name" (input)="onEquipNameInput($event, slot.key)"
-                             class="equip-name-input" [placeholder]="trSvc.t('not_equipped')">
-                      <div class="equip-bonus-grid">
-                        @for (entry of statEntries; track entry[1]) {
-                          <div class="equip-bonus-cell">
-                            <span class="equip-bonus-label">{{ STAT_ABBR[entry[1]] }}</span>
-                            <input type="number" [value]="getEquipItem(slot.key).bonus[entry[1]] || 0"
-                                   (input)="onEquipBonusInput($event, slot.key, entry[1])"
-                                   class="equip-bonus-input" min="0" placeholder="0">
+                      @if (getEquipItem(slot.key).name) {
+                        <div class="equip-equipped-box">
+                          <div class="equip-equipped-name">{{ getEquipItem(slot.key).name }}</div>
+                          <div class="item-card-bonus">
+                            @for (b of equipBonusList(slot.key); track b.label) {
+                              <span class="item-card-stat">+{{ b.value }} {{ b.label }}</span>
+                            }
                           </div>
-                        }
-                      </div>
-                      @if (slot.extraFields) {
-                        <div class="equip-extra-fields">
-                          @for (field of slot.extraFields; track field.key) {
-                            <div class="equip-bonus-cell">
-                              <span class="equip-extra-label">{{ field.label }}</span>
-                              <input type="number" [value]="getEquipExtra(slot.key, field.key)"
-                                     (input)="onEquipExtraInput($event, slot.key, field.key)"
-                                     class="equip-bonus-input" min="0" placeholder="0">
-                            </div>
-                          }
+                          <button type="button" class="equip-unequip-btn" (click)="unequipItem(slot.key)" [disabled]="equipping() !== null">
+                            Desequipar
+                          </button>
                         </div>
+                      } @else {
+                        <div class="equip-empty-hint">Sin ítem</div>
                       }
+                      <select class="equip-select" (change)="onEquipSelect($event, slot.key)" [disabled]="equipping() !== null">
+                        <option value="" selected>+ Equipar de la bolsa ({{ stashItemsForSlot(slot.key).length }})</option>
+                        @for (it of stashItemsForSlot(slot.key); track it.id) {
+                          <option [value]="it.id">{{ it.name }} · {{ itemSummary(it) }}</option>
+                        }
+                      </select>
                     </div>
                   }
                 </div>

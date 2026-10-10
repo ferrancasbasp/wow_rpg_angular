@@ -1503,6 +1503,43 @@
     }
     .item-sell-btn:disabled { opacity: 0.6; cursor: wait; }
 
+    .equip-equipped-box {
+      display: flex; flex-direction: column; gap: 6px;
+      border: 1px solid var(--gold-dark); border-radius: 6px;
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+    }
+    .equip-equipped-name {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+      color: var(--gold-light);
+    }
+    .equip-unequip-btn {
+      align-self: flex-start;
+      border: 1px solid var(--danger); border-radius: 4px;
+      background: rgba(220,60,60,0.12); color: var(--danger);
+      font-family: 'Cinzel', serif; font-size: 11px; cursor: pointer;
+      padding: 3px 8px; transition: var(--transition);
+    }
+    .equip-unequip-btn:hover:not(:disabled) {
+      background: rgba(220,60,60,0.3); color: #ffd0d0;
+      box-shadow: 0 0 8px rgba(220,60,60,0.5);
+    }
+    .equip-unequip-btn:disabled { opacity: 0.6; cursor: wait; }
+    .equip-empty-hint {
+      font-size: 11px; color: var(--text-muted, #8a8f98); font-style: italic;
+      padding: 4px 2px;
+    }
+    .equip-select {
+      width: 100%;
+      border: 1px solid var(--gold-dark); border-radius: 4px;
+      background: var(--bg-dark, #1a1a1a); color: var(--text-main, #e0e0e0);
+      font-family: 'Cinzel', serif; font-size: 11px;
+      padding: 5px 6px; cursor: pointer; transition: var(--transition);
+    }
+    .equip-select:hover:not(:disabled) { border-color: var(--gold); }
+    .equip-select:disabled { opacity: 0.6; cursor: wait; }
+    .equip-select option { background: #1a1a1a; color: #e0e0e0; }
+
     .party-items-section + .party-items-section { margin-top: 22px; }
     .party-items-section-title {
       font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;

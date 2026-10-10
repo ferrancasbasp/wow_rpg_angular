@@ -266,6 +266,7 @@ export interface EquipmentItem {
   bonus: Partial<Stats>;
   weaponDamage?: number;
   defense?: number;
+  itemId?: string;
 }
 
 export interface Equipment {

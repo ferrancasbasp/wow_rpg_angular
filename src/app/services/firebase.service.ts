@@ -30,8 +30,8 @@ export class FirebaseService {
     return remove(ref(this.db, path));
   }
 
-  runTransaction(path: string, updater: (current: number | null) => number) {
-    return runTransaction(ref(this.db, path), (current: any) => updater(current == null ? null : Number(current) || 0));
+  runTransaction(path: string, updater: (current: any) => any) {
+    return runTransaction(ref(this.db, path), (current: any) => updater(current));
   }
 
   onValue(path: string, callback: (data: any) => void) {
