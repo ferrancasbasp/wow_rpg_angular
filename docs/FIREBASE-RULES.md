@@ -59,6 +59,10 @@ el resto.
     "wallet": {
       ".read": true,
       ".write": true
+    },
+    "combatEvents": {
+      ".read": true,
+      ".write": true
     }
   }
 }
@@ -79,6 +83,7 @@ Resumen de las reglas:
 | `playerEvents`   | ✅   | ✅       | El master envía eventos; los jugadores los borran al consumirlos |
 | `monsters`       | ✅   | ✅       | El master y combat leen enemigos |
 | `wallet`         | ✅   | ✅       | Bolsa del grupo (`wallet/copper`, transacción al vender) |
+| `combatEvents`   | ✅   | ✅       | Notificaciones del panel de combat (loot "Exp conseguida") |
 | (resto)          | ❌   | ❌       | Denegado: `/.read`, `/.write` en falso |
 
 Notas importantes:

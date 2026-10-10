@@ -43,6 +43,13 @@ interface CombatPlayer {
   template: `
     <div class="combat-bg"></div>
 
+    @if (lootNotification(); as loot) {
+      <div class="loot-notification">
+        <div class="loot-title">Exp conseguida</div>
+        <div class="loot-amount">+{{ loot.xp }}</div>
+      </div>
+    }
+
     <div class="combat-header">
       <div class="combat-title">Combat</div>
       <div class="connection-status">
@@ -397,6 +404,43 @@ interface CombatPlayer {
       .monster-card { width: 100%; max-width: 400px; }
       .combat-grid { padding: 10px; }
     }
+
+    .loot-notification {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 300;
+      pointer-events: none;
+      text-align: center;
+      background: rgba(10, 10, 15, 0.92);
+      border: 2px solid var(--gold);
+      border-radius: 12px;
+      padding: 22px 44px;
+      box-shadow: 0 0 40px var(--gold-glow), 0 0 80px rgba(0,0,0,0.6);
+      animation: loot-pop 0.5s ease;
+    }
+    .loot-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 6px;
+    }
+    .loot-amount {
+      font-family: 'Cinzel', serif;
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 18px var(--gold-glow);
+    }
+    @keyframes loot-pop {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+      70% { transform: translate(-50%, -50%) scale(1.05); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
   `],
 })
 export class CombatComponent implements OnInit {
@@ -413,10 +457,23 @@ export class CombatComponent implements OnInit {
   damagedIds = signal<Record<string, string | null>>({});
   attackingIds = signal<Record<string, boolean>>({});
   flashNumbers = signal<Record<string, FlashNumber | null>>({});
+  lootNotification = signal<{ xp: number } | null>(null);
+  private lootTimer: any = null;
 
   ngOnInit() {
     this.firebase.onValue('.info/connected', (val) => {
       this.connected.set(val === true);
+    });
+
+    this.firebase.onValue('combatEvents', (data) => {
+      if (!data || typeof data !== 'object') return;
+      const events = Object.values(data) as any[];
+      const latest = events
+        .filter((e) => e && e.type === 'loot')
+        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
+      if (latest && Date.now() - (latest.timestamp || 0) < 15000) {
+        this.showLoot(latest.xp);
+      }
     });
 
     this.firebase.onValue('monsters', (data) => {
@@ -454,6 +511,13 @@ export class CombatComponent implements OnInit {
   playerHpPercent(p: CombatPlayer): number {
     if (!p.maxHp || p.maxHp <= 0) return 0;
     return Math.max(0, Math.floor((p.hp / p.maxHp) * 100));
+  }
+
+  showLoot(xp: number) {
+    if (!xp || xp <= 0) return;
+    this.lootNotification.set({ xp });
+    if (this.lootTimer) clearTimeout(this.lootTimer);
+    this.lootTimer = setTimeout(() => this.lootNotification.set(null), 8000);
   }
 
   playerHpClass(p: CombatPlayer): string {

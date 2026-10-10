@@ -110,8 +110,9 @@
           @if (isMonsterTargeting()) {
             <span class="targeting-hint">💚 {{ targetingLabel() }}</span>
           } @else {
-            {{ trSvc.t('monsters') }} ({{ monsters().length }})
+            <span>{{ trSvc.t('monsters') }} ({{ monsters().length }})</span>
           }
+          <button class="loot-tally-btn" (click)="lootAndTally()" title="Da la XP de los derrotados a la party y los limpia">💰 Loot and Tally</button>
         </div>
         <div class="panel-body">
           <div class="add-monster-row">

@@ -73,6 +73,22 @@
       font-size: 16px;
       font-weight: 700;
       color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .loot-tally-btn {
+      margin-left: auto;
+      border: 1px solid #cd7f32; border-radius: 4px;
+      background: rgba(205,127,50,0.15); color: #e0a06a;
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; cursor: pointer;
+      padding: 4px 10px; transition: var(--transition);
+    }
+    .loot-tally-btn:hover {
+      background: rgba(205,127,50,0.35); color: #ffe3c0;
+      box-shadow: 0 0 8px rgba(205,127,50,0.5);
+    }
       padding: 12px 16px;
       border-bottom: 1px solid rgba(138, 115, 68, 0.2);
       background: linear-gradient(180deg, rgba(138, 115, 68, 0.08) 0%, transparent 100%);

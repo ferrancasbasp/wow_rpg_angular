@@ -1330,6 +1330,47 @@ export class MasterComponent implements OnInit {
     this.xpAmount.set(null);
   }
 
+  mobXp(m: Monster): number {
+    const base = 50 * (m.level || 0) - 10;
+    return Math.max(0, m.isElite ? base * 2 : base);
+  }
+
+  lootAndTally() {
+    const defeated = this.monsters().filter((m) => m.currentHP <= 0);
+    if (defeated.length === 0) { this.showToast('No hay monstruos derrotados'); return; }
+    const targets = this.getSendTargets();
+    if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
+
+    const totalXp = defeated.reduce((sum, m) => sum + this.mobXp(m), 0);
+    if (totalXp <= 0) { this.showToast('Los derrotados no dan XP (nivel muy bajo)'); return; }
+
+    for (const target of targets) {
+      this.firebase.pushData('playerEvents', {
+        target,
+        type: 'xp',
+        amount: totalXp,
+        timestamp: Date.now(),
+      });
+    }
+
+    // Limpieza de los derrotados (desaparecen del master y del combat)
+    this.monsters.update((list) => list.filter((m) => m.currentHP > 0));
+    this.saveMonsters();
+
+    // Notificacion al panel de combat
+    this.firebase.removeData('combatEvents').catch(() => {});
+    this.firebase.pushData('combatEvents', {
+      type: 'loot',
+      xp: totalXp,
+      players: targets.length,
+      timestamp: Date.now(),
+    });
+
+    const label = targets.length > 1 ? `All (${targets.length})` : targets[0];
+    this.sendLog.update(log => [`${label}: +${totalXp} XP (${defeated.length} derrotados)`, ...log].slice(0, 8));
+    this.showToast(`💰 Loot: +${totalXp} XP → ${label}`);
+  }
+
   sendInstant25() {
     const targets = this.getSendTargets();
     if (targets.length === 0) { this.showToast('Selecciona un jugador o All'); return; }
