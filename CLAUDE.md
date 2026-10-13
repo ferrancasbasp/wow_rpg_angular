@@ -30,21 +30,25 @@ src/
 ├── main.ts             # bootstrap de la app standalone
 ├── styles.css           # estilos globales
 └── app/
-    ├── app.routes.ts    # rutas: '' -> player, 'player', 'master', 'combat'
+    ├── app.routes.ts    # rutas: '' -> player, 'player', 'master', 'combat', 'sim', 'item-gen'
     ├── classes/         # definición de cada clase jugable
-    ├── components/      # las 3 pantallas de la app
+    ├── components/      # las pantallas de la app
     ├── data/            # datos estáticos del juego
     ├── models/          # tipos/interfaces del dominio
     └── services/        # lógica de negocio (signals)
 
 public/
 └── img/                 # assets: iconos de clases, talentos, habilidades, enemigos
+
+docs/
+├── CLASS-HOOKS.md       # arquitectura de hooks por clase (lectura obligatoria, ver más abajo)
+└── FIREBASE-RULES.md    # reglas recomendadas de Firebase RTDB (el proyecto corre hoy en modo abierto)
 ```
 
 ### `src/app/classes/`
 
 Un archivo por clase jugable de WoW (`hunter.ts`, `mage.ts`, `warrior.ts`, `priest.ts`, `rogue.ts`,
-`druid.ts`, `shaman.ts`, `bard.ts`, `warlock.ts`). Cada uno exporta un objeto `CharacterClass` con:
+`druid.ts`, `shaman.ts`, `bard.ts`, `warlock.ts`, `valkyrie.ts`). Cada uno exporta un objeto `CharacterClass` con:
 
 - fórmulas de stats derivados (HP, maná, spell power, attack power, regen de maná)
 - stats base y su crecimiento por nivel
@@ -56,11 +60,15 @@ Es, en esencia, el balanceo/contenido del juego. Registrado centralmente en
 
 ### `src/app/components/`
 
-Las tres pantallas de la app (rutas en `app.routes.ts`):
+Las pantallas de la app (rutas en `app.routes.ts`):
 
-- **`player/`** — hoja de personaje del jugador: stats, acciones, talentos.
-- **`master/`** — vista del master/DM: gestión de NPCs, encuentros, control de partida.
+- **`player/`** — hoja de personaje del jugador: stats, acciones, talentos, equipo, party items.
+- **`master/`** — vista del master/DM: gestión de NPCs, encuentros, control de partida, loot/XP.
 - **`combat/`** — lógica y vista del combate por turnos.
+- **`sim/`** — simulador de combate standalone (usa `sim-combat.service.ts`, reporta a una hoja de
+  cálculo externa vía `data/sim-config.ts`).
+- **`item-generator/`** — pantalla de creación manual de items (rareza, slot, stats) para el stash
+  del grupo.
 
 ### `src/app/data/`
 
@@ -68,6 +76,11 @@ Las tres pantallas de la app (rutas en `app.routes.ts`):
   musicales del bardo, tabla de XP por nivel, personaje por defecto, slots de equipo, etc.
 - **`npc-registry.ts`** — catálogo de NPCs/enemigos (HP, armadura, ataques, imagen) usado por el
   master y el combate.
+- **`items.ts`** — rarezas (`ItemRarity`) y slots de equipo de los items del grupo.
+- **`skills.ts`** — categorías y catálogo de habilidades no-combate (físicas, sociales, exploración…).
+- **`mob-symbols.ts`** — iconos de marcado de enemigos (calavera, cruz, cuadrado…) usados por el master.
+- **`sim-config.ts`** — URL de la hoja de cálculo externa que consume `sim-combat.service.ts`.
+- **`version.ts`** — versión actual de la app (mostrada en la UI).
 
 ### `src/app/models/`
 
@@ -81,15 +94,19 @@ Las tres pantallas de la app (rutas en `app.routes.ts`):
   turnos, cálculo de daño, uso de habilidades, gestión de acciones por turno.
 - **`class-registry.service.ts`** — registro que mapea clave -> objeto de clase de `classes/`.
 - **`firebase.service.ts`** — wrapper de Firebase Realtime Database (push/set/remove/onValue) para
-  guardar y sincronizar partidas.
+  guardar y sincronizar partidas. Reglas recomendadas del proyecto en `docs/FIREBASE-RULES.md`.
 - **`translation.service.ts`** — diccionario es/en y signal de idioma activo.
+- **`local-cache.ts`** — cache local en una sola clave de `localStorage` (`ttrpg_wow_character_v15`):
+  personaje, turn state, sim pendiente y monstruos; incluye migración desde claves legacy.
+- **`sim-combat.service.ts`** — lógica del simulador de combate (`components/sim/`) y envío de
+  resultados a la hoja de cálculo externa.
 
 ## Flujo general
 
 `classes/` + `data/npc-registry.ts` definen el contenido del juego → `models/` lo tipa →
 `services/` (sobre todo `character.service.ts`) contiene la lógica y el estado reactivo →
-`components/` renderiza las tres pantallas (jugador, master, combate) → `firebase.service.ts`
-persiste/sincroniza la partida.
+`components/` renderiza las pantallas (jugador, master, combate, simulador, generador de items) →
+`firebase.service.ts` persiste/sincroniza la partida.
 
 ## Arquitectura de hooks de clases (IMPORTANTE)
 
