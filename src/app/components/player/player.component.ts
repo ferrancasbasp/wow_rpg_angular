@@ -2823,6 +2823,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   fullRest() {
+    this.charSvc.stopPlaying();
     if (!this.charSvc.simMode()) {
       this.charSvc.registerPlayer();
     }

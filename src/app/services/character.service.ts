@@ -672,6 +672,11 @@ export class CharacterService {
     }
   }
 
+  stopPlaying() {
+    this.playingSongIds.set([]);
+    this.perfectHarmony.set(false);
+  }
+
   sharedHarmonyNote(): number | null {
     if (this.activeSongs().length < 3) return null;
     const songs = CANCIONES.filter(c => this.activeSongs().includes(c.id));
