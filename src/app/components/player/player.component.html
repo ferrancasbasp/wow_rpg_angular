@@ -917,6 +917,44 @@
             </div>
           </div>
           <div class="equip-screen-body talent-screen-body">
+            @if (charSvc.character().classKey === 'canconer') {
+              <div class="canconer-layout">
+                <div class="canciones-list">
+                  <div class="canciones-hint">Canciones — clic para activar y ver su figura en la rueda</div>
+                  @for (song of canciones; track song.id) {
+                    <button type="button" class="cancion-row" [class.active]="activeSongs().includes(song.id)"
+                            (click)="toggleSong(song.id)">
+                      <span class="cancion-dot" [style.background]="song.color"></span>
+                      <span class="cancion-name">{{ song.name }}</span>
+                      <span class="cancion-notes">{{ song.notes.join(' · ') }}</span>
+                    </button>
+                  }
+                </div>
+                <div class="wheel-wrap">
+                  <svg viewBox="0 0 320 320" class="wheel-svg">
+                    <circle cx="160" cy="160" r="118" fill="none" stroke="#8a7344" stroke-width="1.5" />
+                    <circle cx="160" cy="160" r="88" fill="none" stroke="rgba(138,115,68,0.25)" stroke-width="1" />
+                    @for (song of canciones; track song.id) {
+                      @if (activeSongs().includes(song.id)) {
+                        <polygon [attr.points]="songPoints(song)" fill-opacity="0.10"
+                                 [attr.fill]="song.color" [attr.stroke]="song.color"
+                                 stroke-width="2.5" stroke-linejoin="round" />
+                      }
+                    }
+                    @for (note of wheelNotes; track note.n) {
+                      <g>
+                        <circle [attr.cx]="wheelPoint(note.n).x" [attr.cy]="wheelPoint(note.n).y" r="11"
+                                fill="#1a1a1a" stroke="#c9b27e" stroke-width="1.5" />
+                        <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y + 4.5"
+                              text-anchor="middle" class="wheel-num">{{ note.n }}</text>
+                        <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y - 16"
+                              text-anchor="middle" class="wheel-name">{{ note.name }}</text>
+                      </g>
+                    }
+                  </svg>
+                </div>
+              </div>
+            } @else {
             <div class="talent-modal-layout">
               <div class="talent-modal-tree">
               <div class="wow-talent-list">
@@ -1013,8 +1051,9 @@
               } @else {
                 <div class="talent-info-empty">{{ trSvc.t('hover_talent_info') }}</div>
               }
-            </div>
-            </div>
+             </div>
+             </div>
+            }
           </div>
           <div class="equip-screen-footer talent-screen-footer">
             <button class="action-btn danger" (click)="resetTalents()">{{ trSvc.t('reset_talents') }}</button>

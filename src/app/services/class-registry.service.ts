@@ -7,6 +7,7 @@ import { PRIEST } from '../classes/priest';
 import { SHAMAN } from '../classes/shaman';
 import { DRUID } from '../classes/druid';
 import { BARD } from '../classes/bard';
+import { CANCONER } from '../classes/canconer';
 import { WARLOCK } from '../classes/warlock';
 import { HUNTER } from '../classes/hunter';
 import { VALKYRIE } from '../classes/valkyrie';
@@ -21,6 +22,7 @@ export class ClassRegistryService {
     shaman: SHAMAN,
     druid: DRUID,
     bard: BARD,
+    canconer: CANCONER,
     warlock: WARLOCK,
     hunter: HUNTER,
     valkyrie: VALKYRIE,

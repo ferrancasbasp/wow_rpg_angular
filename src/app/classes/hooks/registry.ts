@@ -10,7 +10,8 @@ import { priestAbilityHooks } from './priest.hooks';
 import { druidAbilityHooks } from './druid.hooks';
 import { valkyrieAbilityHooks } from './valkyrie.hooks';
 import { bardAbilityHooks } from './bard.hooks';
+import { canconerAbilityHooks } from './canconer.hooks';
 
-export const classAbilityHooks: ClassAbilityHooks[] = [warlockAbilityHooks, warriorAbilityHooks, mageAbilityHooks, shamanAbilityHooks, hunterAbilityHooks, rogueAbilityHooks, priestAbilityHooks, druidAbilityHooks, valkyrieAbilityHooks, bardAbilityHooks];
+export const classAbilityHooks: ClassAbilityHooks[] = [warlockAbilityHooks, warriorAbilityHooks, mageAbilityHooks, shamanAbilityHooks, hunterAbilityHooks, rogueAbilityHooks, priestAbilityHooks, druidAbilityHooks, valkyrieAbilityHooks, bardAbilityHooks, canconerAbilityHooks];
 
 export const classSpellHooks: SpellHooks[] = classAbilityHooks.map(h => h.spell).filter((s): s is SpellHooks => !!s);

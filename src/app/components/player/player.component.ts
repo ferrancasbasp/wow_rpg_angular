@@ -15,6 +15,7 @@ import {
 import { MOB_SYMBOLS } from '../../data/mob-symbols';
 import { StatKey, ActiveEffect, EquipmentItem, EffectType, CharacterClass, ElementalOrb, Item, ItemSlot } from '../../models/game.models';
 import { ITEM_SLOTS, SLOT_ICON, RARITY_COLOR, ITEM_SELL_COPPER } from '../../data/items';
+import { CANCIONES, WHEEL_NOTES } from '../../data/canciones';
 import { SKILLS, SKILL_CATEGORIES, computeSkills, skillCapFor, SkillDef } from '../../data/skills';
 import { classAbilityHooks, classSpellHooks } from '../../classes/hooks/registry';
 import type { ClassHooksContext, PlayerLink } from '../../classes/hooks/class-hooks';
@@ -94,6 +95,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
   sellingItem = signal<string | null>(null);
   equipping = signal<string | null>(null);
   readonly ITEM_SELL_COPPER = ITEM_SELL_COPPER;
+
+  canciones = CANCIONES;
+  wheelNotes = WHEEL_NOTES;
+  activeSongs = signal<string[]>([]);
 
   readonly rarityColor = RARITY_COLOR;
   readonly slotIcon = SLOT_ICON;
@@ -219,6 +224,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   toggleHealTarget(name: string) {
     this.selectedHealTarget.update(t => t === name ? null : name);
+  }
+
+  toggleSong(id: string) {
+    this.activeSongs.update(l => l.includes(id) ? l.filter(x => x !== id) : [...l, id]);
+  }
+
+  wheelPoint(n: number): { x: number; y: number } {
+    const angle = ((n - 1) * 30 - 90) * Math.PI / 180;
+    return { x: 160 + 118 * Math.cos(angle), y: 160 + 118 * Math.sin(angle) };
+  }
+
+  songPoints(song: { notes: number[] }): string {
+    return song.notes.map(n => {
+      const p = this.wheelPoint(n);
+      return `${p.x},${p.y}`;
+    }).join(' ');
   }
 
   stashItems = computed<Item[]>(() => this.partyItems().filter(i => !i.owner));
