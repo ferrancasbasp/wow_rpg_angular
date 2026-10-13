@@ -23,8 +23,8 @@ export const WHEEL_NOTES: { n: number; name: string }[] = [
 
 export const CANCIONES: Cancion[] = [
   { id: 'alba', name: 'Cantar del Alba', short: 'Alba', notes: [1, 5, 9], color: '#3498db' },
-  { id: 'arquero', name: 'Balada del Arquero Errante', short: 'Balada', notes: [1, 5, 7, 8], color: '#e74c3c' },
-  { id: 'tormenta', name: 'Oda a la Tormenta', short: 'Oda', notes: [1, 3, 5, 7, 11], color: '#f1c40f' },
-  { id: 'requiem', name: 'Réquiem por los Caídos', short: 'Réquiem', notes: [1, 2, 3, 7, 8, 9], color: '#2ecc71' },
-  { id: 'marcha', name: 'Marcha de los Héroes', short: 'Marcha', notes: [2, 4, 6, 8, 10, 12], color: '#9b59b6' },
+  { id: 'arquero', name: 'Balada del Arquero Errante', short: 'Balada', notes: [5, 8, 12], color: '#e74c3c' },
+  { id: 'tormenta', name: 'Oda a la Tormenta', short: 'Oda', notes: [3, 5, 7, 11], color: '#f1c40f' },
+  { id: 'requiem', name: 'Réquiem por los Caídos', short: 'Réquiem', notes: [1, 2, 3, 8, 10], color: '#2ecc71' },
+  { id: 'marcha', name: 'Marcha de los Héroes', short: 'Marcha', notes: [2, 4, 6, 10, 12], color: '#9b59b6' },
 ];

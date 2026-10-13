@@ -1620,6 +1620,18 @@
       0%, 100% { box-shadow: 0 0 3px rgba(241,196,15,0.25); }
       50% { box-shadow: 0 0 14px rgba(241,196,15,0.7); }
     }
+    .ability-card.note-playing-glow {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+      animation: playing-note-pulse 1.8s ease-in-out infinite;
+    }
+    .ability-card.note-playing-glow .ability-note-badge {
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+    @keyframes playing-note-pulse {
+      0%, 100% { box-shadow: 0 0 5px var(--gold-glow); }
+      50% { box-shadow: 0 0 14px var(--gold-glow); }
+    }
 
     .party-items-section + .party-items-section { margin-top: 22px; }
     .party-items-section-title {

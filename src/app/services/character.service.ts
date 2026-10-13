@@ -652,7 +652,25 @@ export class CharacterService {
   });
 
   activeSongs = signal<string[]>([]);
+  playingSongIds = signal<string[]>([]);
   perfectHarmony = signal(false);
+
+  readonly playingSongs = computed(() => CANCIONES.filter(c => this.playingSongIds().includes(c.id)));
+
+  isNotePlaying(n: number): boolean {
+    return this.playingSongs().some(s => s.notes.includes(n));
+  }
+
+  playNote(n: number) {
+    const containing = CANCIONES.filter(c => this.activeSongs().includes(c.id) && c.notes.includes(n));
+    if (containing.length === 0) return;
+    this.playingSongIds.set(containing.map(c => c.id));
+    if (this.activeSongs().length === 3 && containing.length === 3) {
+      this.togglePerfectHarmony(n);
+    } else {
+      this.perfectHarmony.set(false);
+    }
+  }
 
   sharedHarmonyNote(): number | null {
     if (this.activeSongs().length < 3) return null;
@@ -668,14 +686,16 @@ export class CharacterService {
   toggleSong(id: string) {
     if (this.activeSongs().includes(id)) {
       this.activeSongs.update(l => l.filter(x => x !== id));
+      this.playingSongIds.set([]);
       this.perfectHarmony.set(false);
       return;
     }
     if (this.activeSongs().length >= 3) {
-      this.showToast('🎵 Maximo 3 canciones activas — desactiva una primero');
+      this.showToast('🎵 Maximo 3 canciones preparadas — desactiva una primero');
       return;
     }
     this.activeSongs.update(l => [...l, id]);
+    this.playingSongIds.set([]);
     this.perfectHarmony.set(false);
   }
 

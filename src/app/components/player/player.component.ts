@@ -251,6 +251,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return { color: songs[0].color, harmony: songs.length >= 2 };
   }
 
+  isAbilityNotePlaying(abilityId: string): boolean {
+    const ni = this.songNoteInfo(abilityId);
+    return !!ni && this.charSvc.isNotePlaying(ni.n);
+  }
+
   wheelPoint(n: number): { x: number; y: number } {
     const angle = ((n - 1) * 30 - 90) * Math.PI / 180;
     return { x: 160 + 118 * Math.cos(angle), y: 160 + 118 * Math.sin(angle) };
@@ -1512,8 +1517,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   castSpell(ability: any) {
     if (String(ability.id).startsWith('song_')) {
       const ni = this.songNoteInfo(ability.id);
-      if (ni && this.charSvc.togglePerfectHarmony(ni.n)) return;
-      this.charSvc.showToast('🎵 ' + ability.name + ' — sin efecto todavia');
+      if (ni) this.charSvc.playNote(ni.n);
       return;
     }
     const resType = this.charSvc.resourceConfig().type;
