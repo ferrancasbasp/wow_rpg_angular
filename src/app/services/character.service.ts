@@ -652,10 +652,23 @@ export class CharacterService {
   });
 
   activeSongs = signal<string[]>([]);
+  perfectHarmony = signal(false);
+
+  sharedHarmonyNote(): number | null {
+    if (this.activeSongs().length < 3) return null;
+    const songs = CANCIONES.filter(c => this.activeSongs().includes(c.id));
+    if (songs.length < 3) return null;
+    const [first, ...rest] = songs;
+    for (const n of first.notes) {
+      if (rest.every(s => s.notes.includes(n))) return n;
+    }
+    return null;
+  }
 
   toggleSong(id: string) {
     if (this.activeSongs().includes(id)) {
       this.activeSongs.update(l => l.filter(x => x !== id));
+      this.perfectHarmony.set(false);
       return;
     }
     if (this.activeSongs().length >= 3) {
@@ -663,6 +676,15 @@ export class CharacterService {
       return;
     }
     this.activeSongs.update(l => [...l, id]);
+    this.perfectHarmony.set(false);
+  }
+
+  togglePerfectHarmony(note: number): boolean {
+    if (this.sharedHarmonyNote() !== note) return false;
+    const next = !this.perfectHarmony();
+    this.perfectHarmony.set(next);
+    this.showToast(next ? '✨ Perfect Harmony!' : 'Perfect Harmony desactivada');
+    return true;
   }
 
   readonly computedAbilities = computed<Ability[]>(() => {

@@ -1511,6 +1511,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   castSpell(ability: any) {
     if (String(ability.id).startsWith('song_')) {
+      const ni = this.songNoteInfo(ability.id);
+      if (ni && this.charSvc.togglePerfectHarmony(ni.n)) return;
       this.charSvc.showToast('🎵 ' + ability.name + ' — sin efecto todavia');
       return;
     }

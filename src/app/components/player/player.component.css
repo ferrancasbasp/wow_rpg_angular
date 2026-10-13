@@ -1607,6 +1607,19 @@
       padding: 1px 6px; white-space: nowrap;
     }
     .note-harmony-mark { color: var(--gold-light); }
+    .playing-song.perfect {
+      border-color: #f1c40f !important; color: #f1c40f !important;
+      font-size: 13px; letter-spacing: 0.08em;
+      text-shadow: 0 0 10px rgba(241,196,15,0.7);
+      animation: note-pulse 1.2s ease-in-out infinite;
+    }
+    .ability-grid.perfect-harmony .ability-card {
+      animation: harmony-glow 1.8s ease-in-out infinite;
+    }
+    @keyframes harmony-glow {
+      0%, 100% { box-shadow: 0 0 3px rgba(241,196,15,0.25); }
+      50% { box-shadow: 0 0 14px rgba(241,196,15,0.7); }
+    }
 
     .party-items-section + .party-items-section { margin-top: 22px; }
     .party-items-section-title {

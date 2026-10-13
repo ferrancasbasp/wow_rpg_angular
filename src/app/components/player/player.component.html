@@ -68,7 +68,11 @@
             </div>
             <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
           </div>
-          @if (charSvc.character().classKey === 'canconer' && charSvc.activeSongs().length > 0) {
+          @if (charSvc.character().classKey === 'canconer' && charSvc.perfectHarmony()) {
+            <div class="playing-songs-row">
+              <span class="playing-song perfect">✨ Perfect Harmony ✨</span>
+            </div>
+          } @else if (charSvc.character().classKey === 'canconer' && charSvc.activeSongs().length > 0) {
             <div class="playing-songs-row">
               <span class="playing-label">🎵 Tocando:</span>
               @for (song of activeSongObjects(); track song.id) {
@@ -452,7 +456,8 @@
           </button>
         </div>
         <div class="panel-body">
-          <div class="ability-grid" [class.valk-fallen]="charSvc.character().classKey === 'valkyrie' && valkFallen()">
+          <div class="ability-grid" [class.valk-fallen]="charSvc.character().classKey === 'valkyrie' && valkFallen()"
+               [class.perfect-harmony]="charSvc.perfectHarmony()">
           @for (ability of charSvc.unlockedAbilities(); track ability.id) {
             <div class="ability-card"
                      [class.ability-locked]="(!charSvc.isLastWillActive() && charSvc.resourceActual() < (ability.costRage || charSvc.getEffectiveEnergyCost(ability) || (charSvc.resourceConfig().type === 'focus' ? charSvc.getEffectiveFocusCost(ability) : charSvc.getEffectiveManaCost(ability)))) || (ability.spendsCombo && (charSvc.character().comboPoints || 0) === 0) || (ability.spendsSunShards && (charSvc.getSunShards() || 0) === 0) || (ability.energyCost && !charSvc.valkyriePoolHas(ability.energyCost)) || (ability.id === 'valk_mending' && charSvc.character().classKey === 'valkyrie' && charSvc.valkyriePoolValue() === 0) || (ability.id === 'valk_lightning_bolt' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || charSvc.valkyriePoolValue() === 0)) || (ability.id === 'valk_dive_strike' && charSvc.character().classKey === 'valkyrie' && (!charSvc.odinsWillActive() || !charSvc.valkyrieFlying()))"
