@@ -1571,6 +1571,42 @@
     .wheel-name {
       font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; fill: var(--gold);
     }
+    .note-active {
+      filter: drop-shadow(0 0 4px currentColor);
+      animation: note-pulse 1.8s ease-in-out infinite;
+      cursor: default;
+    }
+    .note-harmony {
+      filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 14px currentColor);
+      animation: note-pulse 1.8s ease-in-out infinite;
+    }
+    .note-num-active { fill: #14140f; font-weight: 700; }
+    @keyframes note-pulse {
+      0%, 100% { opacity: 0.82; }
+      50% { opacity: 1; }
+    }
+    .playing-songs-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-top: 6px; padding: 0 2px;
+    }
+    .playing-label {
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+      color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .playing-song {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+      border: 1px solid; border-radius: 4px;
+      background: rgba(0,0,0,0.35);
+      padding: 2px 8px;
+      animation: note-pulse 1.8s ease-in-out infinite;
+    }
+    .ability-note-badge {
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+      border: 1px solid; border-radius: 4px;
+      background: rgba(0,0,0,0.35);
+      padding: 1px 6px; white-space: nowrap;
+    }
+    .note-harmony-mark { color: var(--gold-light); }
 
     .party-items-section + .party-items-section { margin-top: 22px; }
     .party-items-section-title {

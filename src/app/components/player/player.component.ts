@@ -98,7 +98,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   canciones = CANCIONES;
   wheelNotes = WHEEL_NOTES;
-  activeSongs = signal<string[]>([]);
 
   readonly rarityColor = RARITY_COLOR;
   readonly slotIcon = SLOT_ICON;
@@ -227,7 +226,29 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   toggleSong(id: string) {
-    this.activeSongs.update(l => l.includes(id) ? l.filter(x => x !== id) : [...l, id]);
+    this.charSvc.toggleSong(id);
+  }
+
+  activeSongObjects() {
+    return CANCIONES.filter(c => this.charSvc.activeSongs().includes(c.id));
+  }
+
+  songNoteInfo(abilityId: string): { n: number; name: string; color: string; shared: boolean } | null {
+    const id = String(abilityId);
+    if (!id.startsWith('song_')) return null;
+    const parts = id.split('_');
+    const song = CANCIONES.find(c => c.id === parts[1]);
+    const n = Number(parts[2]);
+    if (!song || !n) return null;
+    const note = this.wheelNotes.find(w => w.n === n);
+    const shared = this.activeSongObjects().filter(c => c.notes.includes(n)).length >= 2;
+    return { n, name: note?.name || '', color: song.color, shared };
+  }
+
+  wheelNoteActive(n: number): { color: string; harmony: boolean } | null {
+    const songs = this.activeSongObjects().filter(c => c.notes.includes(n));
+    if (songs.length === 0) return null;
+    return { color: songs[0].color, harmony: songs.length >= 2 };
   }
 
   wheelPoint(n: number): { x: number; y: number } {
@@ -1489,6 +1510,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   castSpell(ability: any) {
+    if (String(ability.id).startsWith('song_')) {
+      this.charSvc.showToast('🎵 ' + ability.name + ' — sin efecto todavia');
+      return;
+    }
     const resType = this.charSvc.resourceConfig().type;
     const isRage = resType === 'rage';
     const isEnergy = resType === 'energy';

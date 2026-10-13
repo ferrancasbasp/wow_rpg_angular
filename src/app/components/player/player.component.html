@@ -68,6 +68,14 @@
             </div>
             <div class="resource-text">{{ charSvc.resourceActual() }} / {{ charSvc.resourceMax() }}</div>
           </div>
+          @if (charSvc.character().classKey === 'canconer' && charSvc.activeSongs().length > 0) {
+            <div class="playing-songs-row">
+              <span class="playing-label">🎵 Tocando:</span>
+              @for (song of activeSongObjects(); track song.id) {
+                <span class="playing-song" [style.borderColor]="song.color" [style.color]="song.color">{{ song.short }}</span>
+              }
+            </div>
+          }
         </div>
 
         <div class="xp-mini-bar">
@@ -467,10 +475,16 @@
                    <span class="ability-cd-badge">{{ charSvc.getCooldown(ability.id) }}</span>
                  }
                </div>
-               <div class="ability-info">
-                 <div class="ability-name-row">
-                   <div class="ability-name">{{ ability.name }}</div>
-                   <button type="button" class="ability-info-btn"
+                <div class="ability-info">
+                  <div class="ability-name-row">
+                    <div class="ability-name">{{ ability.name }}</div>
+                    @if (songNoteInfo(ability.id); as ni) {
+                      <span class="ability-note-badge" [style.borderColor]="ni.color" [style.color]="ni.color"
+                            title="Nota {{ ni.n }} — {{ ni.name }}{{ ni.shared ? ' · Armonia' : '' }}">
+                        ♪ {{ ni.n }} {{ ni.name }}@if (ni.shared) {<span class="note-harmony-mark"> ✦</span>}
+                      </span>
+                    }
+                    <button type="button" class="ability-info-btn"
                            (click)="$event.stopPropagation(); hoveredAbility.set(ability)"
                            aria-label="{{ trSvc.t('info') }}">i</button>
                  </div>
@@ -922,7 +936,7 @@
                 <div class="canciones-list">
                   <div class="canciones-hint">Canciones — clic para activar y ver su figura en la rueda</div>
                   @for (song of canciones; track song.id) {
-                    <button type="button" class="cancion-row" [class.active]="activeSongs().includes(song.id)"
+                    <button type="button" class="cancion-row" [class.active]="charSvc.activeSongs().includes(song.id)"
                             (click)="toggleSong(song.id)">
                       <span class="cancion-dot" [style.background]="song.color"></span>
                       <span class="cancion-name">{{ song.name }}</span>
@@ -935,7 +949,7 @@
                     <circle cx="160" cy="160" r="118" fill="none" stroke="#8a7344" stroke-width="1.5" />
                     <circle cx="160" cy="160" r="88" fill="none" stroke="rgba(138,115,68,0.25)" stroke-width="1" />
                     @for (song of canciones; track song.id) {
-                      @if (activeSongs().includes(song.id)) {
+                      @if (charSvc.activeSongs().includes(song.id)) {
                         <polygon [attr.points]="songPoints(song)" fill-opacity="0.10"
                                  [attr.fill]="song.color" [attr.stroke]="song.color"
                                  stroke-width="2.5" stroke-linejoin="round" />
@@ -943,10 +957,22 @@
                     }
                     @for (note of wheelNotes; track note.n) {
                       <g>
-                        <circle [attr.cx]="wheelPoint(note.n).x" [attr.cy]="wheelPoint(note.n).y" r="11"
-                                fill="#1a1a1a" stroke="#c9b27e" stroke-width="1.5" />
-                        <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y + 4.5"
-                              text-anchor="middle" class="wheel-num">{{ note.n }}</text>
+                        @if (wheelNoteActive(note.n); as glow) {
+                          <circle [attr.cx]="wheelPoint(note.n).x" [attr.cy]="wheelPoint(note.n).y"
+                                  [attr.r]="glow.harmony ? 13 : 12"
+                                  [attr.fill]="glow.color"
+                                  [attr.stroke]="glow.harmony ? '#ffffff' : glow.color"
+                                  stroke-width="2"
+                                  class="note-active" [class.note-harmony]="glow.harmony"
+                                  [style.color]="glow.color" />
+                          <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y + 4.5"
+                                text-anchor="middle" class="wheel-num note-num-active">{{ note.n }}</text>
+                        } @else {
+                          <circle [attr.cx]="wheelPoint(note.n).x" [attr.cy]="wheelPoint(note.n).y" r="11"
+                                  fill="#1a1a1a" stroke="#c9b27e" stroke-width="1.5" />
+                          <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y + 4.5"
+                                text-anchor="middle" class="wheel-num">{{ note.n }}</text>
+                        }
                         <text [attr.x]="wheelPoint(note.n).x" [attr.y]="wheelPoint(note.n).y - 16"
                               text-anchor="middle" class="wheel-name">{{ note.name }}</text>
                       </g>

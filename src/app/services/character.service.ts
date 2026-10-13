@@ -4,6 +4,7 @@ import { ClassRegistryService } from './class-registry.service';
 import { FirebaseService } from './firebase.service';
 import { SimCombatService } from './sim-combat.service';
 import { STAT_KEYS, MAX_LEVEL, xpForLevel, createDefaultCharacter, EQUIPMENT_SLOTS } from '../data/game-data';
+import { CANCIONES } from '../data/canciones';
 import { ensureLocalCacheHygiene, getCharacter, setCharacter, getTurnState, setTurnState, clearTurnState } from './local-cache';
 
 interface CharacterAvatarPaths {
@@ -623,9 +624,50 @@ export class CharacterService {
     return main + off;
   });
 
+  readonly songAbilities = computed<Ability[]>(() => {
+    if (this.character().classKey !== 'canconer') return [];
+    const out: Ability[] = [];
+    for (const song of CANCIONES) {
+      if (!this.activeSongs().includes(song.id)) continue;
+      for (const note of song.notes) {
+        out.push({
+          id: `song_${song.id}_${note}`,
+          name: `${song.short} ${note}`,
+          icon: '🎶',
+          iconImg: '',
+          school: 'Magia',
+          type: 'damage',
+          requiredLevel: 1,
+          damageType: 'magical',
+          baseDamage: 0,
+          spellPowerRatio: 0,
+          costPct: 0,
+          castType: 'instant',
+          cooldown: 0,
+          description: `Figura de ${song.name} — nota ${note}. Sin efecto todavia.`,
+        });
+      }
+    }
+    return out;
+  });
+
+  activeSongs = signal<string[]>([]);
+
+  toggleSong(id: string) {
+    if (this.activeSongs().includes(id)) {
+      this.activeSongs.update(l => l.filter(x => x !== id));
+      return;
+    }
+    if (this.activeSongs().length >= 3) {
+      this.showToast('🎵 Maximo 3 canciones activas — desactiva una primero');
+      return;
+    }
+    this.activeSongs.update(l => [...l, id]);
+  }
+
   readonly computedAbilities = computed<Ability[]>(() => {
     const cls = this.classConfig();
-    return cls.abilities.filter(a => a.type !== 'utility' && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(ability => {
+    return cls.abilities.concat(this.songAbilities()).filter(a => a.type !== 'utility' && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(ability => {
       let value = (ability.baseDamage || 0) + this.spellPower() * (ability.spellPowerRatio || 0);
       const talentNotes: string[] = [];
 
@@ -748,7 +790,7 @@ export class CharacterService {
   readonly unlockedAbilities = computed<Ability[]>(() => {
     const weaponDmg = this.totalWeaponDamage();
     const apBonus = Math.round(this.attackPower() / 7);
-    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && (a.id === 'basic_attack' || this.trainedRank(a.id) > 0) && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(a => {
+    return this.computedAbilities().filter(a => a.type !== 'utility' && !a.isPetSummon && !a.petAbility && (a.id === 'basic_attack' || a.id.startsWith('song_') || this.trainedRank(a.id) > 0) && (!a.talentGate || this.talentRank(a.talentGate) > 0)).map(a => {
       const rank = a.id === 'basic_attack' ? 1 : (a.talentGate ? this.maxAvailableRank(a) : this.trainedRank(a.id));
       const dmgRange = a.damageRanges?.find(dr => dr.rank === rank);
       const isPhysical = a.damageType === 'physical';
