@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>TTRPG WoW</title>
+  <script type="text/javascript">
+    // Single Page Apps for GitHub Pages - https://github.com/rafgraph/spa-github-pages
+    // Redirige cualquier ruta directa (p.ej. /wow_rpg_angular/player) a index.html
+    // añadiéndola como query (?/player) que luego index.html restaura.
+    (function (l) {
+      var pathSegmentsToKeep = 1;
+      var path = l.pathname.split('/');
+      var kept = path.slice(0, 1 + pathSegmentsToKeep).join('/');
+      var rest = path.slice(1 + pathSegmentsToKeep).join('/').replace(/&/g, '~and~');
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        kept + '/?/' + rest +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    })(window.location);
+  </script>
+</head>
+<body>
+</body>
+</html>
